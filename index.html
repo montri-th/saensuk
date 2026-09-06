@@ -28,7 +28,8 @@
   <link rel="stylesheet" href="assets/explorer.css?v=20260906-marker-brand">
   <script defer src="assets/vendor/leaflet/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
   <script defer src="assets/app.js"></script>
-  <script defer src="assets/record-explorer.js?v=20260906-marker-brand"></script>
+  <script defer src="assets/marker-grouping.js?v=20260906-building-only"></script>
+  <script defer src="assets/record-explorer.js?v=20260906-building-only"></script>
 </head>
 <body id="top">
   <a class="skip-link" href="#main">ข้ามไปยังเนื้อหาหลัก</a>
@@ -241,7 +242,7 @@
               </div>
             </div>
 
-            <p class="result-note" data-result-note>เรียงกลุ่มที่เหมาะกับการดูภาพถนนก่อน</p>
+            <p class="result-note" data-result-note>เรียงรายการที่เหมาะกับการดูภาพถนนก่อน</p>
             <ol class="record-list" data-record-list aria-label="รายการทะเบียนบ้านที่ตรงตัวกรอง"></ol>
             <div class="pagination" aria-label="เปลี่ยนหน้ารายการ">
               <button type="button" data-page-prev disabled>ก่อนหน้า</button>
@@ -294,11 +295,11 @@
                   </svg>
                   ซอย/ชุมชน
                 </span>
-                <span><i class="legend-cluster" aria-hidden="true">12</i> หลายรายการ</span>
+                <span><i class="legend-cluster" aria-hidden="true">12</i> ทะเบียนอาคารที่พิกัดเดียวกัน</span>
                 <span><i class="legend-selected" aria-hidden="true"></i> รายการที่เลือก</span>
               </div>
             </div>
-            <p class="map-disclosure" data-map-disclosure>พื้นหลังปิดอยู่ จึงยังไม่ส่งพื้นที่ที่ดูออกไปภายนอก เลือกถนน (OpenStreetMap) หรือดาวเทียม (Esri World Imagery) เมื่อต้องการเปรียบเทียบ · หมุดตัวเลขรวมรายการใกล้กันบนหน้าจอเพื่อไม่ให้สัญลักษณ์ซ้อน จึงไม่ได้แปลว่าทุกรายการใช้พิกัดเดียวกัน · ภาพถ่ายอาจต่างช่วงเวลาและความละเอียด ไม่ใช่หลักฐานสิทธิหรือแนวเขต · ระดับแปลงแสดงเป็นจุดอ้างอิง เพราะ CSV ไม่มีรูปแปลง</p>
+            <p class="map-disclosure" data-map-disclosure>พื้นหลังปิดอยู่ จึงยังไม่ส่งพื้นที่ที่ดูออกไปภายนอก เลือกถนน (OpenStreetMap) หรือดาวเทียม (Esri World Imagery) เมื่อต้องการเปรียบเทียบ · ทะเบียนคนละหลังไม่ถูกรวมเพราะอยู่ใกล้กัน หมุดตัวเลขใช้เฉพาะอาคารชุด สำนักงาน หรือรายการพิกัดระดับอาคารที่ใช้พิกัดเดียวกันในข้อมูล · ภาพถ่ายอาจต่างช่วงเวลาและความละเอียด ไม่ใช่หลักฐานสิทธิหรือแนวเขต · ระดับแปลงแสดงเป็นจุดอ้างอิง เพราะ CSV ไม่มีรูปแปลง</p>
           </section>
 
           <aside class="detail-pane" id="detail-panel" role="tabpanel" aria-label="รายละเอียดรายการที่เลือก" data-panel="detail">

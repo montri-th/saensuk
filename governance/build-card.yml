@@ -1,5 +1,5 @@
 artifact: saensuk-house-geocode-review-desk
-artifact_release: "v3-2026-09-06"
+artifact_release: "v4-2026-09-06"
 audience: [municipal_officer, municipal_executive]
 locale: [th]
 
@@ -42,7 +42,7 @@ motion:
 
 icons:
   interface_glyphs: "No new font glyphs introduced."
-  map_symbols: "component-local analytical shapes: cross, split hexagon, triangle, numbered group, selection ring"
+  map_symbols: "component-local analytical shapes: cross, split hexagon, triangle, same-coordinate eligible-building group, selection ring"
 
 content:
   source_snapshot: "master table v3, 2026-09-05"
@@ -56,9 +56,9 @@ qa:
   tested_at: "2026-09-06"
   light_lockup_and_motif: "passed rendered desktop and mobile review"
   dark_lockup_and_motif: "passed rendered desktop review"
-  marker_collision: "passed z13/z16/z18/z19/z20 with zero center pairs under 36px; minimum 40.2px"
-  marker_interaction: "cluster zoom and maximum-zoom record cycling passed"
-  marker_redraw: "median 6.6–19.3ms across tested zooms"
+  marker_grouping: "proximity grouping removed; a numbered group now requires one exact coordinate plus condominium, office, or building-level semantics"
+  marker_interaction: "ordinary coincident or sub-pixel points remain separate and cycle without a building badge; mixed same-coordinate records stay reachable; eligible-building groups zoom and cycle"
+  marker_redraw: "synthetic 42,524-row grouping median 137.5ms; requires remeasurement with the controlled CSV"
   responsive: "passed 320, 360, 390, 768, 1024, 1180, and 1440 CSS px"
   text_scaling: "passed Thai 130% and 200% reflow without horizontal overflow"
   accessibility: "keyboard selection, focus retention, reduced motion, live status, and redundant color/shape legend passed"

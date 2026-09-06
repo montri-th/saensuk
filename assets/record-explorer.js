@@ -4,6 +4,23 @@
   const explorer = document.querySelector("[data-explorer]");
   if (!explorer) return;
 
+  const fallbackCoordinateKey = (row) => Number.isFinite(row?.lat) && Number.isFinite(row?.lon)
+    ? `${Number(row.lat).toFixed(7)},${Number(row.lon).toFixed(7)}`
+    : "";
+  const markerGrouping = window.CityChatMarkerGrouping || {
+    coordinateKey: fallbackCoordinateKey,
+    layoutGroups: (indices, rows) => (Array.isArray(indices) ? indices : [])
+      .filter((index) => Number.isInteger(index) && Number.isFinite(rows?.[index]?.lat) && Number.isFinite(rows?.[index]?.lon))
+      .map((index) => ({ indices: [index], coordinateKey: fallbackCoordinateKey(rows[index]), buildingKind: "", buildingGroup: false })),
+    combineCoordinateTargets: (targets) => {
+      const valid = (Array.isArray(targets) ? targets : []).filter((target) => Array.isArray(target?.indices));
+      if (!valid.length) return null;
+      const indices = [...new Set(valid.flatMap((target) => target.indices))];
+      return { ...valid[valid.length - 1], indices, coordinateStack: indices.length > 1 };
+    },
+    combineOrdinaryScreenOverlaps: (_markers, anchor) => anchor || null
+  };
+
   const isSafeTopLevel = () => {
     try {
       return window.top === window.self && document.documentElement.dataset.topLevelSafe === "true";
@@ -202,9 +219,7 @@
     return parts.join(" · ");
   };
 
-  const coordinateKey = (row) => row.lat === null || row.lon === null
-    ? ""
-    : `${Number(row.lat).toFixed(7)},${Number(row.lon).toFixed(7)}`;
+  const coordinateKey = (row) => markerGrouping.coordinateKey(row);
 
   const hasBadStreetviewFlag = (row) => {
     const flags = String(row.flags || "");
@@ -443,7 +458,7 @@
     state.page = Math.min(state.page, totalPages - 1);
     elements.filteredCount.textContent = NUMBER.format(state.filtered.length);
     elements.resultNote.textContent = state.filtered.length
-      ? `พบ ${NUMBER.format(state.filtered.length)} รายการ · หมุดตัวเลขรวมรายการที่ซ้อนกัน ขยายหรือคลิกเพื่อแยกดู`
+      ? `พบ ${NUMBER.format(state.filtered.length)} รายการ · ทะเบียนทั่วไปแสดงแยก หมุดตัวเลขใช้เฉพาะรายการอาคารที่ใช้พิกัดเดียวกันในข้อมูล`
       : "ไม่พบรายการที่ตรงตัวกรอง ลองลดเงื่อนไขหรือเปลี่ยนคำค้น";
 
     state.pointLayer?.setIndices(state.filtered);
@@ -806,89 +821,6 @@
     return radius;
   };
 
-  const mergeNearbyMarkerGroups = (groups, minimumDistance) => {
-    let current = groups.map((group) => ({
-      indices: [...group.indices],
-      coordinateKeys: new Set(group.coordinateKeys),
-      sumX: group.sumX,
-      sumY: group.sumY,
-      point: L.point(group.sumX / group.indices.length, group.sumY / group.indices.length)
-    }));
-    const distanceSquared = minimumDistance * minimumDistance;
-
-    for (let pass = 0; pass < 24 && current.length > 1; pass += 1) {
-      const buckets = new Map();
-      const next = [];
-      let merged = false;
-      const bucketKey = (point) => `${Math.floor(point.x / minimumDistance)}:${Math.floor(point.y / minimumDistance)}`;
-      const addToBucket = (group) => {
-        const key = bucketKey(group.point);
-        if (!buckets.has(key)) buckets.set(key, []);
-        buckets.get(key).push(group);
-      };
-      const removeFromBucket = (group, key) => {
-        const bucket = buckets.get(key);
-        if (!bucket) return;
-        const index = bucket.indexOf(group);
-        if (index !== -1) bucket.splice(index, 1);
-        if (!bucket.length) buckets.delete(key);
-      };
-
-      current.sort((left, right) => right.indices.length - left.indices.length || left.indices[0] - right.indices[0]);
-      for (const group of current) {
-        const gridX = Math.floor(group.point.x / minimumDistance);
-        const gridY = Math.floor(group.point.y / minimumDistance);
-        let nearest = null;
-        let nearestDistance = Infinity;
-        for (let y = gridY - 1; y <= gridY + 1; y += 1) {
-          for (let x = gridX - 1; x <= gridX + 1; x += 1) {
-            const candidates = buckets.get(`${x}:${y}`) || [];
-            for (const candidate of candidates) {
-              const dx = candidate.point.x - group.point.x;
-              const dy = candidate.point.y - group.point.y;
-              const candidateDistance = dx * dx + dy * dy;
-              if (candidateDistance < distanceSquared && candidateDistance < nearestDistance) {
-                nearest = candidate;
-                nearestDistance = candidateDistance;
-              }
-            }
-          }
-        }
-
-        if (!nearest) {
-          const copy = {
-            indices: [...group.indices],
-            coordinateKeys: new Set(group.coordinateKeys),
-            sumX: group.sumX,
-            sumY: group.sumY,
-            point: L.point(group.point.x, group.point.y)
-          };
-          next.push(copy);
-          addToBucket(copy);
-          continue;
-        }
-
-        const previousBucket = bucketKey(nearest.point);
-        removeFromBucket(nearest, previousBucket);
-        nearest.indices.push(...group.indices);
-        group.coordinateKeys.forEach((key) => nearest.coordinateKeys.add(key));
-        nearest.sumX += group.sumX;
-        nearest.sumY += group.sumY;
-        nearest.point = L.point(
-          nearest.sumX / nearest.indices.length,
-          nearest.sumY / nearest.indices.length
-        );
-        addToBucket(nearest);
-        merged = true;
-      }
-
-      current = next;
-      if (!merged) break;
-    }
-
-    return current;
-  };
-
   const selectedMarkerMarkup = (row) => {
     const bucket = markerBucket(row);
     let shape;
@@ -915,6 +847,7 @@
         this._indices = [];
         this._selected = null;
         this._drawn = [];
+        this._coordinateTargets = new Map();
       },
       onAdd(map) {
         this._map = map;
@@ -956,7 +889,13 @@
             best = { marker, distance };
           }
         }
-        return best?.marker || null;
+        const marker = best?.marker || null;
+        if (!marker) return null;
+        const coordinateTargets = this._coordinateTargets.get(marker.coordinateKey) || [marker];
+        const combined = markerGrouping.combineCoordinateTargets(coordinateTargets) || marker;
+        const target = { ...combined, point: marker.point, hitRadius: marker.hitRadius };
+        if (this._map.getZoom() < 18 || target.buildingKind || target.mixedCoordinate) return target;
+        return markerGrouping.combineOrdinaryScreenOverlaps(this._drawn, target, 2.5) || target;
       },
       _reset() {
         if (!this._map || !this._canvas) return;
@@ -973,40 +912,32 @@
         context.setTransform(dpr, 0, 0, dpr, 0, 0);
         context.clearRect(0, 0, size.x, size.y);
         const zoom = this._map.getZoom();
-        const minimumDistance = zoom <= 13 ? 46 : zoom <= 15 ? 44 : 40;
-        const exactGroups = new Map();
-
-        for (const index of this._indices) {
-          const row = state.rows[index];
-          if (!row || !Number.isFinite(row.lat) || !Number.isFinite(row.lon)) continue;
-          const point = this._map.latLngToContainerPoint([row.lat, row.lon]);
-          if (point.x < -24 || point.y < -24 || point.x > size.x + 24 || point.y > size.y + 24) continue;
-          const key = coordinateKey(row);
-          if (!key) continue;
-          if (!exactGroups.has(key)) exactGroups.set(key, { indices: [], coordinateKeys: new Set([key]), sumX: 0, sumY: 0 });
-          const group = exactGroups.get(key);
-          group.indices.push(index);
-          group.sumX += point.x;
-          group.sumY += point.y;
+        const palette = markerPalette();
+        this._drawn = markerGrouping.layoutGroups(this._indices, state.rows)
+          .map((group) => {
+            const row = state.rows[group.indices[0]];
+            if (!row) return null;
+            const point = this._map.latLngToContainerPoint([row.lat, row.lon]);
+            if (point.x < -24 || point.y < -24 || point.x > size.x + 24 || point.y > size.y + 24) return null;
+            return { ...group, point };
+          })
+          .filter(Boolean)
+          .sort((left, right) => Number(left.buildingGroup) - Number(right.buildingGroup));
+        this._coordinateTargets.clear();
+        for (const marker of this._drawn) {
+          if (!this._coordinateTargets.has(marker.coordinateKey)) this._coordinateTargets.set(marker.coordinateKey, []);
+          this._coordinateTargets.get(marker.coordinateKey).push(marker);
         }
 
-        const palette = markerPalette();
-        this._drawn = mergeNearbyMarkerGroups([...exactGroups.values()], minimumDistance)
-          .map((group) => ({
-            indices: group.indices,
-            point: group.point,
-            aggregate: group.coordinateKeys.size > 1,
-            sameCoordinate: group.coordinateKeys.size === 1
-          }))
-          .sort((left, right) => left.indices.length - right.indices.length);
-
         for (const marker of this._drawn) {
-          if (marker.indices.length > 1) {
+          if (marker.buildingGroup) {
             marker.hitRadius = drawClusterSymbol(context, marker.point, marker.indices.length, palette);
           } else {
-            const row = state.rows[marker.indices[0]];
             const radius = zoom >= 18 ? 7 : zoom >= 16 ? 6 : 5.5;
-            drawPointSymbol(context, row, marker.point, radius, palette);
+            for (const index of marker.indices) {
+              const row = state.rows[index];
+              if (row) drawPointSymbol(context, row, marker.point, radius, palette);
+            }
             marker.hitRadius = radius + 3;
           }
         }
@@ -1129,13 +1060,16 @@
     const marker = state.pointLayer?.hitTest(event.containerPoint);
     if (!marker?.indices?.length) return;
 
-    if (marker.indices.length > 1 && state.map.getZoom() < 20) {
-      const nextZoom = Math.min(20, state.map.getZoom() + 2);
+    if ((marker.buildingGroup || marker.hasNumberedBuildingGroup) && state.map.getZoom() < 18) {
+      const nextZoom = Math.min(18, state.map.getZoom() + 2);
       const center = state.map.containerPointToLatLng(marker.point);
       state.map.setView(center, nextZoom, {
         animate: !window.matchMedia("(prefers-reduced-motion: reduce)").matches
       });
-      elements.answer.textContent = `ขยายบริเวณที่รวม ${NUMBER.format(marker.indices.length)} รายการแล้ว — หมุดจะรวมต่อเมื่ออยู่ใกล้กัน เพื่อไม่ให้สัญลักษณ์ซ้อน`;
+      const extra = marker.mixedCoordinate
+        ? ` และมีทะเบียนแยก ${NUMBER.format(marker.ordinaryRecordCount)} รายการที่พิกัดเดียวกัน`
+        : "";
+      elements.answer.textContent = `ขยายไปยังหมุดอาคารพิกัดเดียวกัน ${NUMBER.format(marker.buildingRecordCount || marker.indices.length)} รายการแล้ว${extra}`;
       return;
     }
 
@@ -1144,8 +1078,20 @@
     selectRecord(nextIndex, { moveMap: false });
     if (marker.indices.length > 1) {
       const position = marker.indices.indexOf(nextIndex) + 1;
-      const scope = marker.sameCoordinate ? "ตำแหน่งเดียวกัน" : "บริเวณใกล้กันบนหน้าจอ";
-      elements.answer.textContent = `${scope} มี ${NUMBER.format(marker.indices.length)} รายการ · กำลังดู ${NUMBER.format(position)} จาก ${NUMBER.format(marker.indices.length)} · คลิกหมุดซ้ำเพื่อดูรายการถัดไป`;
+      if (marker.mixedCoordinate) {
+        elements.answer.textContent = `พิกัดนี้มีทะเบียนในอาคาร ${NUMBER.format(marker.buildingRecordCount)} รายการ และทะเบียนแยก ${NUMBER.format(marker.ordinaryRecordCount)} รายการ · กำลังดู ${NUMBER.format(position)} จาก ${NUMBER.format(marker.indices.length)} · คลิกจุดซ้ำเพื่อดูรายการถัดไป`;
+      } else if (marker.buildingGroup) {
+        const scope = marker.buildingKind === "condominium"
+          ? "กลุ่มอาคารชุดพิกัดนี้"
+          : marker.buildingKind === "office"
+            ? "กลุ่มสำนักงานพิกัดนี้"
+            : "กลุ่มอาคารพิกัดนี้";
+        elements.answer.textContent = `${scope} มีทะเบียน ${NUMBER.format(marker.indices.length)} รายการ · กำลังดู ${NUMBER.format(position)} จาก ${NUMBER.format(marker.indices.length)} · คลิกหมุดซ้ำเพื่อดูรายการถัดไป`;
+      } else if (marker.screenOverlap) {
+        elements.answer.textContent = `มีจุดทะเบียน ${NUMBER.format(marker.indices.length)} จุดซ้อนกันในระดับซูมนี้ แต่ไม่ได้รวมเป็นอาคาร · กำลังดู ${NUMBER.format(position)} จาก ${NUMBER.format(marker.indices.length)} · คลิกจุดซ้ำเพื่อดูรายการถัดไป`;
+      } else {
+        elements.answer.textContent = `ทะเบียน ${NUMBER.format(marker.indices.length)} รายการใช้พิกัดประมาณเดียวกัน แต่ไม่ได้ถูกรวมเป็นอาคาร · กำลังดู ${NUMBER.format(position)} จาก ${NUMBER.format(marker.indices.length)} · คลิกจุดซ้ำเพื่อดูรายการถัดไป`;
+      }
     }
   };
 
@@ -1171,9 +1117,9 @@
   };
 
   const BASEMAP_DISCLOSURES = {
-    none: "พื้นหลังปิดอยู่ จึงยังไม่ส่งพื้นที่ที่ดูออกไปภายนอก เลือกถนน (OpenStreetMap) หรือดาวเทียม (Esri World Imagery) เมื่อต้องการเปรียบเทียบ · หมุดตัวเลขรวมรายการใกล้กันบนหน้าจอเพื่อไม่ให้สัญลักษณ์ซ้อน จึงไม่ได้แปลว่าทุกรายการใช้พิกัดเดียวกัน · ภาพถ่ายอาจต่างช่วงเวลาและความละเอียด ไม่ใช่หลักฐานสิทธิหรือแนวเขต · ระดับแปลงแสดงเป็นจุดอ้างอิง เพราะ CSV ไม่มีรูปแปลง",
-    streets: "พื้นหลังถนนจาก OpenStreetMap เปิดอยู่ ผู้ให้บริการอาจได้รับ IP และพื้นที่แผนที่ที่เปิดดู แต่เว็บไม่ส่งเลขที่บ้าน รหัสทะเบียน หรือไฟล์ CSV · หมุดตัวเลขรวมรายการใกล้กันบนหน้าจอเพื่อไม่ให้สัญลักษณ์ซ้อน จึงไม่ได้แปลว่าทุกรายการใช้พิกัดเดียวกัน · ระดับแปลงยังแสดงเป็นจุดอ้างอิง เพราะ CSV ไม่มีรูปแปลง",
-    satellite: "ภาพถ่ายดาวเทียม Esri World Imagery เปิดอยู่ ผู้ให้บริการอาจได้รับ IP และพื้นที่แผนที่ที่เปิดดู แต่เว็บไม่ส่งเลขที่บ้าน รหัสทะเบียน หรือไฟล์ CSV · หมุดตัวเลขรวมรายการใกล้กันบนหน้าจอเพื่อไม่ให้สัญลักษณ์ซ้อน จึงไม่ได้แปลว่าทุกรายการใช้พิกัดเดียวกัน · ภาพอาจมาจากหลายช่วงเวลาและหลายแหล่ง ใช้เปรียบเทียบบริบท ไม่ใช่หลักฐานสิทธิ ความสดของข้อมูล หรือแนวเขต"
+    none: "พื้นหลังปิดอยู่ จึงยังไม่ส่งพื้นที่ที่ดูออกไปภายนอก เลือกถนน (OpenStreetMap) หรือดาวเทียม (Esri World Imagery) เมื่อต้องการเปรียบเทียบ · ทะเบียนคนละหลังไม่ถูกรวมเพราะอยู่ใกล้กัน หมุดตัวเลขใช้เฉพาะอาคารชุด สำนักงาน หรือรายการพิกัดระดับอาคารที่ใช้พิกัดเดียวกันในข้อมูล · ภาพถ่ายอาจต่างช่วงเวลาและความละเอียด ไม่ใช่หลักฐานสิทธิหรือแนวเขต · ระดับแปลงแสดงเป็นจุดอ้างอิง เพราะ CSV ไม่มีรูปแปลง",
+    streets: "พื้นหลังถนนจาก OpenStreetMap เปิดอยู่ ผู้ให้บริการอาจได้รับ IP และพื้นที่แผนที่ที่เปิดดู แต่เว็บไม่ส่งเลขที่บ้าน รหัสทะเบียน หรือไฟล์ CSV · ทะเบียนคนละหลังไม่ถูกรวมเพราะอยู่ใกล้กัน หมุดตัวเลขใช้เฉพาะอาคารชุด สำนักงาน หรือรายการพิกัดระดับอาคารที่ใช้พิกัดเดียวกันในข้อมูล · ระดับแปลงยังแสดงเป็นจุดอ้างอิง เพราะ CSV ไม่มีรูปแปลง",
+    satellite: "ภาพถ่ายดาวเทียม Esri World Imagery เปิดอยู่ ผู้ให้บริการอาจได้รับ IP และพื้นที่แผนที่ที่เปิดดู แต่เว็บไม่ส่งเลขที่บ้าน รหัสทะเบียน หรือไฟล์ CSV · ทะเบียนคนละหลังไม่ถูกรวมเพราะอยู่ใกล้กัน หมุดตัวเลขใช้เฉพาะอาคารชุด สำนักงาน หรือรายการพิกัดระดับอาคารที่ใช้พิกัดเดียวกันในข้อมูล · ภาพอาจมาจากหลายช่วงเวลาและหลายแหล่ง ใช้เปรียบเทียบบริบท ไม่ใช่หลักฐานสิทธิ ความสดของข้อมูล หรือแนวเขต"
   };
 
   const createBasemapLayer = (mode) => {

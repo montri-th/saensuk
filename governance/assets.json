@@ -13,7 +13,7 @@
   "cache": {
     "strategy": "revision-bearing-filename",
     "asset_revision": "v091",
-    "page_bundle_revision": "20260906-marker-brand",
+    "page_bundle_revision": "20260906-building-only",
     "note": "The four public asset URLs carry v091 in their filenames; a byte change requires a new revision-bearing filename and a matching manifest update."
   },
   "source_set": {
