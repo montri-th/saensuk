@@ -1,0 +1,7 @@
+.DS_Store
+
+# Local registry sources and review exports must never enter the public site.
+*house-geocode-master-table*.csv
+*review-draft*.csv
+private-data/
+local-data/

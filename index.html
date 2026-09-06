@@ -3,36 +3,32 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>จากทะเบียนบ้านสู่แผนที่ที่รู้ขอบเขตของตัวเอง | CityChat แสนสุข</title>
-  <meta name="description" content="ภาพรวมผลการวางตำแหน่งทะเบียนบ้านเทศบาลเมืองแสนสุข 42,524 รายการ อธิบายระดับตำแหน่ง ข้อจำกัด และงานที่ต้องทำต่อด้วยภาษาที่เข้าใจง่าย">
+  <title>โต๊ะตรวจตำแหน่งบ้าน | CityChat แสนสุข</title>
+  <meta name="description" content="เปิดตารางตำแหน่งทะเบียนบ้านแสนสุขจากเครื่องของคุณ ดูจุดและขอบเขตชุมชน ตรวจรายละเอียดรายรายการ และเปิด Street View อย่างรู้ข้อจำกัด">
   <meta name="robots" content="index,follow">
   <meta name="theme-color" content="#1D4497">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: https://tile.openstreetmap.org; connect-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'">
   <link rel="canonical" href="https://montri-th.github.io/saensuk/">
   <meta property="og:type" content="website">
   <meta property="og:locale" content="th_TH">
   <meta property="og:site_name" content="CityChat · แสนสุข">
-  <meta property="og:title" content="แผนที่ที่รู้ว่า เรารู้ละเอียดแค่ไหน">
-  <meta property="og:description" content="91.8% มีตำแหน่งตั้งต้น และ 0 จุดผ่านการตรวจภาคสนาม — ดูผลล่าสุดและงานที่เทศบาลควรทำต่อ">
+  <meta property="og:title" content="โต๊ะตรวจตำแหน่งบ้าน · CityChat แสนสุข">
+  <meta property="og:description" content="เปิดไฟล์ในเครื่อง เลือกรายการ ดูระดับตำแหน่งบนแผนที่ และบันทึกผลตรวจโดยไม่อัปโหลดตารางทะเบียนบ้าน">
   <meta property="og:url" content="https://montri-th.github.io/saensuk/">
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="แผนที่ที่รู้ว่า เรารู้ละเอียดแค่ไหน">
-  <meta name="twitter:description" content="ผลการวางตำแหน่งทะเบียนบ้านแสนสุขล่าสุด อธิบายความครอบคลุม ระดับตำแหน่ง และคิวงานคน">
-  <script>
-    (() => {
-      try {
-        const savedTheme = localStorage.getItem("saensuk-theme");
-        if (savedTheme === "light" || savedTheme === "dark") {
-          document.documentElement.dataset.theme = savedTheme;
-        }
-      } catch (_) {}
-    })();
-  </script>
+  <meta name="twitter:title" content="โต๊ะตรวจตำแหน่งบ้าน · CityChat แสนสุข">
+  <meta name="twitter:description" content="สำรวจตำแหน่งบ้านรายรายการจากไฟล์ในเครื่อง พร้อมขอบเขตชุมชนและทางออกไป Street View แบบตั้งใจเปิด">
+  <script src="assets/theme-init.js"></script>
   <link rel="preload" href="assets/fonts/ibm-plex-sans-thai-looped-thai-700-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/bai-jamjuree-thai-400-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="assets/tokens.css">
+  <link rel="stylesheet" href="assets/vendor/leaflet/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
   <link rel="stylesheet" href="assets/styles.css">
-  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@id":"https://montri-th.github.io/saensuk/#page","@type":"WebPage","name":"จากทะเบียนบ้านสู่แผนที่ที่รู้ขอบเขตของตัวเอง | CityChat แสนสุข","description":"ภาพรวมผลการวางตำแหน่งทะเบียนบ้านเทศบาลเมืองแสนสุข 42,524 รายการ พร้อมระดับตำแหน่ง ข้อจำกัด และงานที่ต้องทำต่อ","url":"https://montri-th.github.io/saensuk/","inLanguage":"th"}]}</script>
+  <link rel="stylesheet" href="assets/explorer.css">
+  <script defer src="assets/vendor/leaflet/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
   <script defer src="assets/app.js"></script>
+  <script defer src="assets/record-explorer.js"></script>
 </head>
 <body id="top">
   <a class="skip-link" href="#main">ข้ามไปยังเนื้อหาหลัก</a>
@@ -51,6 +47,7 @@
 
       <nav class="nav-panel" id="site-nav" aria-label="เมนูในหน้านี้">
         <div class="nav-links">
+          <a href="#explorer">ตรวจรายบ้าน</a>
           <a href="#results">ผลล่าสุด</a>
           <a href="#precision">ระดับตำแหน่ง</a>
           <a href="#next">งานที่ต้องทำต่อ</a>
@@ -72,37 +69,31 @@
     <section class="hero" aria-labelledby="hero-title">
       <div class="hero-grid">
         <div class="hero-copy">
-          <p class="eyebrow eyebrow-on-deep">ภาพรวมทะเบียนบ้านแสนสุข · ผลประมวลผลล่าสุด 5 ก.ย. 2569</p>
-          <h1 id="hero-title">แผนที่ที่รู้ว่า<br>เรารู้ละเอียดแค่ไหน</h1>
-          <p class="hero-lead" data-primary-answer>จากทะเบียนบ้าน <strong>42,524 รายการ</strong> CityChat แยกตำแหน่งตั้งแต่ระดับแปลง ระดับอาคาร จุดประมาณ ไปจนถึงรายการที่ระบบตั้งใจงดเดา เพื่อให้เทศบาลเห็นทั้งความคืบหน้าและขอบเขตของข้อมูล</p>
+          <p class="eyebrow eyebrow-on-deep">CityChat Review Desk · ผลล่าสุด 5 ก.ย. 2569</p>
+          <h1 id="hero-title">เปิดตาราง<br>แล้วตรวจทีละบ้าน</h1>
+          <p class="hero-lead" data-primary-answer>เลือกไฟล์ master table v3 จากเครื่องของคุณ แล้วสำรวจ <strong>42,524 รายการ</strong> บนแผนที่ คลิกดูหลักฐานรายแถว เปิด Street View เมื่อจุดละเอียดพอ และบันทึกสิ่งที่พบไว้ส่งออกเป็นไฟล์ทำงาน</p>
           <p class="hero-signal" aria-label="91.8 เปอร์เซ็นต์มีตำแหน่งตั้งต้น แต่ยังไม่มีจุดที่ผ่านการตรวจภาคสนาม">
             <span><strong>91.8%</strong> มีตำแหน่งตั้งต้น</span>
             <span class="hero-signal-warning"><strong>0</strong> ตรวจภาคสนาม</span>
           </p>
           <div class="hero-actions">
-            <a class="button button-primary" href="#results" data-action-id="see-latest-results">ดูผลล่าสุด</a>
-            <a class="text-link-on-deep" href="#next">ดูงานที่ต้องทำต่อ</a>
+            <a class="button button-primary" href="#explorer" data-action-id="open-review-desk">เริ่มตรวจบนแผนที่</a>
+            <a class="text-link-on-deep" href="#results">อ่านภาพรวมก่อน</a>
           </div>
         </div>
 
-        <div class="city-dialogue" aria-label="ภาพสรุปจากทะเบียนบ้านสู่ตำแหน่งตั้งต้น">
-          <div class="dialogue-orbit" aria-hidden="true"></div>
-          <article class="talk-card talk-card-source">
-            <p class="talk-label">ทะเบียนบ้านบอกว่า</p>
-            <p class="talk-number">42,524</p>
-            <p class="talk-copy">รายการต้องมีสถานะครบทุกแถว</p>
-          </article>
-          <article class="talk-card talk-card-mapped">
-            <p class="talk-label">แผนที่ตอบได้แล้ว</p>
-            <p class="talk-number">39,056</p>
-            <p class="talk-copy">มีตำแหน่งตั้งต้นในระดับใดระดับหนึ่ง</p>
-          </article>
-          <article class="talk-card talk-card-review">
-            <p class="talk-label">เมื่อหลักฐานไม่พอ</p>
-            <p class="talk-number">3,468</p>
-            <p class="talk-copy">งดเดาพิกัดและส่งให้คนตรวจ</p>
-          </article>
-          <p class="field-check-chip"><strong>0</strong> จุดผ่านการตรวจภาคสนาม</p>
+        <div class="city-dialogue hero-review-card" aria-label="สามขั้นตอนของโต๊ะตรวจรายบ้าน">
+          <div>
+            <p class="eyebrow">ข้อมูลในมือคุณ · แผนที่ช่วยตั้งคำถาม</p>
+            <h2>จากหนึ่งแถว<br>สู่สิ่งที่ควรตรวจต่อ</h2>
+          </div>
+          <ol class="hero-review-steps">
+            <li><span>1</span><p><strong>เลือกตาราง</strong> ระบบตรวจว่าเป็น master table v3 ที่ตรงกัน</p></li>
+            <li><span>2</span><p><strong>คลิกบ้านหรือจุด</strong> เห็นระดับ รัศมี และขอบเขตชุมชน</p></li>
+            <li><span>3</span><p><strong>ดูหลักฐานประกอบ</strong> เปิดภาพถนนเมื่อจุดละเอียดพอ แล้วเก็บร่างผลตรวจ</p></li>
+          </ol>
+          <label class="hero-file-button" for="record-file" role="button" tabindex="0" data-file-label>เลือก master table v3 จากเครื่อง</label>
+          <p class="hero-local-note">ไฟล์ไม่ถูกอัปโหลด · ข้อมูลหายเมื่อปิดหรือรีโหลดแท็บ</p>
         </div>
       </div>
     </section>
@@ -116,6 +107,233 @@
         </div>
       </div>
     </aside>
+
+    <section class="explorer-section" id="explorer" aria-labelledby="explorer-title" data-explorer>
+      <div class="explorer-intro">
+        <div>
+          <p class="eyebrow">CityChat Review Desk</p>
+          <h2 id="explorer-title">เลือกหนึ่งรายการ<br>แล้วถามแผนที่ให้ถูกคำถาม</h2>
+        </div>
+        <p>ดูว่าจุดนี้รู้ถึงระดับไหน อยู่ในชุมชนใด มีรัศมีคลาดเคลื่อนเท่าไร และควรตรวจจากภาพถนนหรือส่งลงพื้นที่ต่อ</p>
+      </div>
+
+      <div class="local-data-banner" role="note">
+        <span class="local-data-icon" aria-hidden="true">⌂</span>
+        <div>
+          <strong>ตารางทะเบียนอยู่ในเบราว์เซอร์นี้เท่านั้น</strong>
+          <p>เว็บไม่อัปโหลดหรือบันทึกไฟล์และผลตรวจ เมื่อรีโหลดหรือปิดแท็บ ข้อมูลรายบ้านจะถูกล้าง · เพื่อความปลอดภัย ให้เปิดจาก montri-th.github.io/saensuk/ โดยตรง ไม่ใช้หน้าที่ฝังเว็บนี้</p>
+        </div>
+      </div>
+
+      <div class="explorer-alert embedding-warning" data-embedding-warning role="alert" hidden>
+        <div>
+          <strong>โต๊ะตรวจถูกปิดในหน้าที่ฝังเว็บ</strong>
+          <p>กรุณาเปิด https://montri-th.github.io/saensuk/ โดยตรงในแท็บใหม่ก่อนเลือกไฟล์ทะเบียน</p>
+        </div>
+      </div>
+
+      <div class="file-gate" data-file-gate>
+        <div class="file-gate-copy">
+          <p class="file-gate-step">01 · เปิดโต๊ะตรวจ</p>
+          <h3>เลือก master table v3</h3>
+          <p>ระบบจะตรวจรุ่น จำนวนแถว โครงสร้าง และลายนิ้วมือไฟล์ก่อนแสดงผล เพื่อไม่ผสมผลคนละรอบ</p>
+          <label class="file-button" for="record-file" role="button" tabindex="0" data-file-label>เลือกไฟล์ CSV จากเครื่อง</label>
+          <input id="record-file" class="native-file-input" type="file" accept=".csv,text/csv" data-file-input disabled>
+          <p class="file-requirement">รองรับเฉพาะไฟล์ UTF-8 รุ่น v3 วันที่ 5 ก.ย. 2569 · ไม่ส่งไฟล์ขึ้นเซิร์ฟเวอร์</p>
+        </div>
+        <div class="file-gate-proof" aria-label="เงื่อนไขไฟล์ที่ระบบจะตรวจ">
+          <p><span>รุ่นที่คาดไว้</span><strong>v3</strong></p>
+          <p><span>จำนวนรายการ</span><strong>42,524</strong></p>
+          <p><span>คอลัมน์</span><strong>22</strong></p>
+          <p><span>ผลภาคสนามในต้นฉบับ</span><strong>0</strong></p>
+        </div>
+      </div>
+
+      <div class="parse-state" data-parse-state role="status" aria-live="polite" aria-atomic="true" hidden>
+        <div class="parse-pulse" aria-hidden="true"></div>
+        <div>
+          <strong data-parse-title>กำลังอ่านไฟล์ในเครื่อง…</strong>
+          <p data-parse-detail>กำลังตรวจโครงสร้างก่อนเปิดข้อมูลรายบ้าน</p>
+        </div>
+      </div>
+
+      <div class="explorer-alert" data-explorer-alert role="alert" tabindex="-1" hidden>
+        <strong data-alert-title>เปิดไฟล์นี้ไม่ได้</strong>
+        <p data-alert-detail></p>
+        <button class="quiet-button" type="button" data-alert-reset>เลือกไฟล์ใหม่</button>
+      </div>
+
+      <div class="review-workspace" data-workspace hidden>
+        <div class="dataset-bar">
+          <div class="dataset-identity">
+            <span class="local-badge">อ่านในเครื่อง</span>
+            <div>
+              <strong>master table v3 · 5 ก.ย. 2569</strong>
+              <p><span data-dataset-rows>42,524</span> รายการ · ตรวจไฟล์ผ่านแล้ว</p>
+            </div>
+          </div>
+          <div class="dataset-actions">
+            <button class="quiet-button" type="button" data-change-file>เปลี่ยนไฟล์</button>
+            <button class="quiet-button" type="button" data-clear-file>ล้างข้อมูล</button>
+            <button class="export-button" type="button" data-export disabled>ส่งออกผลตรวจ <span data-review-count>0</span></button>
+          </div>
+        </div>
+
+        <div class="workspace-answer" role="status" aria-live="polite">
+          <span class="answer-orb" aria-hidden="true"></span>
+          <p data-workspace-answer>พร้อมแล้ว — เลือกรายการจากคิวเพื่อดูตำแหน่งและหลักฐาน</p>
+        </div>
+
+        <div class="mobile-workspace-tabs" role="tablist" aria-label="เลือกส่วนของโต๊ะตรวจ">
+          <button id="mobile-tab-queue" type="button" role="tab" aria-selected="true" aria-controls="queue-panel" data-mobile-panel="queue">คิวรายการ</button>
+          <button id="mobile-tab-map" type="button" role="tab" aria-selected="false" aria-controls="map-panel" tabindex="-1" data-mobile-panel="map">แผนที่</button>
+          <button id="mobile-tab-detail" type="button" role="tab" aria-selected="false" aria-controls="detail-panel" tabindex="-1" data-mobile-panel="detail">รายละเอียด</button>
+        </div>
+
+        <div class="review-grid" data-active-panel="queue">
+          <aside class="queue-pane" id="queue-panel" role="tabpanel" aria-labelledby="mobile-tab-queue queue-title" data-panel="queue">
+            <div class="pane-heading">
+              <div>
+                <p class="pane-kicker">คิวตรวจ</p>
+                <h3 id="queue-title">รายการทะเบียนบ้าน</h3>
+              </div>
+              <span class="count-pill" data-filtered-count>42,524</span>
+            </div>
+
+            <div class="queue-filters">
+              <label class="field field-search">
+                <span>ค้นหารายการ</span>
+                <input type="search" data-search autocomplete="off" spellcheck="false" placeholder="เลขที่บ้าน ชุมชน ถนน หรือรหัส">
+              </label>
+              <div class="filter-row">
+                <label class="field">
+                  <span>ระดับตำแหน่ง</span>
+                  <select data-geom-filter>
+                    <option value="">ทุกระดับ</option>
+                    <option value="parcel">ระดับแปลง</option>
+                    <option value="building">ระดับอาคาร</option>
+                    <option value="cluster">ระดับกลุ่มบ้าน</option>
+                    <option value="interpolated">แทรกระหว่างเพื่อนบ้าน</option>
+                    <option value="soi_road">ระดับซอย/ถนน</option>
+                    <option value="community">ระดับชุมชน</option>
+                    <option value="review">งดเดา—รอคนตรวจ</option>
+                  </select>
+                </label>
+                <label class="field">
+                  <span>ชุมชน</span>
+                  <select data-community-filter>
+                    <option value="">ทุกชุมชน</option>
+                  </select>
+                </label>
+              </div>
+              <div class="review-tabs" role="group" aria-label="กรองตามผลตรวจในเบราว์เซอร์">
+                <button type="button" aria-pressed="true" data-review-filter="">ทั้งหมด</button>
+                <button type="button" aria-pressed="false" data-review-filter="pending">ยังไม่ตรวจ</button>
+                <button type="button" aria-pressed="false" data-review-filter="reviewed">บันทึกแล้ว</button>
+              </div>
+            </div>
+
+            <p class="result-note" data-result-note>เรียงกลุ่มที่เหมาะกับการดูภาพถนนก่อน</p>
+            <ol class="record-list" data-record-list aria-label="รายการทะเบียนบ้านที่ตรงตัวกรอง"></ol>
+            <div class="pagination" aria-label="เปลี่ยนหน้ารายการ">
+              <button type="button" data-page-prev disabled>ก่อนหน้า</button>
+              <p data-page-label>หน้า 1 จาก 1</p>
+              <button type="button" data-page-next>ถัดไป</button>
+            </div>
+          </aside>
+
+          <section class="map-pane" id="map-panel" role="tabpanel" aria-labelledby="mobile-tab-map map-title" data-panel="map">
+            <div class="map-toolbar">
+              <div>
+                <p class="pane-kicker">พื้นที่ที่เรารู้</p>
+                <h3 id="map-title">แผนที่ตรวจตำแหน่ง</h3>
+              </div>
+              <div class="map-actions">
+                <button type="button" class="quiet-button" data-fit-results>เห็นจุดที่กรอง</button>
+                <button type="button" class="quiet-button" aria-pressed="true" data-toggle-boundaries>ขอบเขตชุมชน</button>
+                <button type="button" class="map-tile-button" aria-pressed="false" data-toggle-tiles>เปิดพื้นหลังถนน</button>
+              </div>
+            </div>
+            <div class="map-stage">
+              <div id="record-map" class="record-map" role="region" aria-label="แผนที่เสริมสำหรับเลือกดูตำแหน่ง รายการทั้งหมดเข้าถึงได้จากคิวด้านข้าง"></div>
+              <div class="map-loading" data-map-loading>กำลังเตรียมขอบเขตชุมชน…</div>
+              <div class="map-legend" aria-label="คำอธิบายสีจุดบนแผนที่">
+                <span><i class="dot dot-specific"></i> แปลง/อาคาร</span>
+                <span><i class="dot dot-estimated"></i> จุดประมาณ</span>
+                <span><i class="dot dot-coarse"></i> ซอย/ชุมชน</span>
+              </div>
+            </div>
+            <p class="map-disclosure" data-map-disclosure>พื้นหลังถนนปิดอยู่ จึงยังไม่ส่งพื้นที่ที่ดูออกไปภายนอก หากเปิด OpenStreetMap ผู้ให้บริการอาจได้รับ IP และพื้นที่ที่ดู · ระดับแปลงแสดงเป็นจุดอ้างอิง เพราะ CSV มีรหัสแปลงแต่ไม่มีรูปแปลง · ขอบเขตชุมชนใช้เพื่อสื่อสารและ QA ไม่ใช่แนวเขตทางกฎหมาย</p>
+          </section>
+
+          <aside class="detail-pane" id="detail-panel" role="tabpanel" aria-label="รายละเอียดรายการที่เลือก" data-panel="detail">
+            <div class="detail-empty" data-detail-empty>
+              <span aria-hidden="true">↖</span>
+              <h3 id="detail-title">เลือกรายการเพื่อเริ่มตรวจ</h3>
+              <p>รายละเอียด เลขที่บ้าน ระดับตำแหน่ง รัศมี และคำแนะนำจะปรากฏตรงนี้</p>
+            </div>
+
+            <div class="record-detail" data-record-detail hidden>
+              <div class="record-detail-head">
+                <p class="pane-kicker" data-detail-id>รายการทะเบียน</p>
+                <h3 data-detail-house tabindex="-1">บ้านเลขที่ —</h3>
+                <p class="detail-answer" data-detail-answer></p>
+              </div>
+
+              <div class="truth-chips" data-detail-chips></div>
+
+              <dl class="record-fields" data-record-fields></dl>
+
+              <div class="external-action">
+                <button type="button" class="streetview-button" data-streetview>เปิด Street View ดูบริบท ↗</button>
+                <button type="button" class="maps-button" data-google-map>เปิด Google Maps ดูบริเวณ ↗</button>
+                <p data-streetview-note>ลิงก์มีพิกัดที่เลือกโดยไม่ใส่เลขที่บ้านหรือรหัสทะเบียน Google ยังอาจได้รับ IP ข้อมูลการเชื่อมต่อ และข้อมูลบัญชีหรือเซสชันตามปกติ ภาพถนนเป็นหลักฐานประกอบ ไม่ใช่การยืนยันตำแหน่งโดยลำพัง</p>
+              </div>
+
+              <form class="review-form" data-review-form>
+                <fieldset>
+                  <legend>บันทึกร่างจากการตรวจ</legend>
+                  <label class="field">
+                    <span>แหล่งหลักฐาน</span>
+                    <select data-review-source>
+                      <option value="">เลือกแหล่งที่ใช้ตรวจ</option>
+                      <option value="google-street-view">Google Street View</option>
+                      <option value="google-maps">Google Maps (ดูบริเวณ)</option>
+                      <option value="field-observation">สำรวจภาคสนาม</option>
+                      <option value="agency-evidence">ภาพหรือเอกสารภายในหน่วยงาน</option>
+                      <option value="table-review">ตรวจจากข้อมูลในตาราง</option>
+                    </select>
+                  </label>
+                  <label class="field">
+                    <span>ผลที่พบ</span>
+                    <select data-review-result>
+                      <option value="">ยังไม่บันทึก</option>
+                      <option value="plate-matches">เห็นป้ายทะเบียนบ้านตรงกับรายการ</option>
+                      <option value="plate-conflicts">เห็นป้าย แต่เลขไม่ตรงกับรายการ</option>
+                      <option value="plate-not-visible">มองไม่เห็นหรืออ่านป้ายไม่ได้</option>
+                      <option value="no-imagery">ไม่มีภาพถนนใช้ตรวจ</option>
+                      <option value="field-visit">ต้องส่งลงพื้นที่</option>
+                    </select>
+                  </label>
+                  <label class="field">
+                    <span>เหตุผล/บันทึก (จำเป็นเมื่อระบุว่าป้ายตรงหรือขัดกัน · ไม่เกิน 500 ตัวอักษร)</span>
+                    <textarea rows="3" maxlength="500" data-review-note placeholder="เช่น ภาพเก่า ประตูถูกบัง เลขที่ไม่ชัด หรือหลักฐานที่ควรหาเพิ่ม"></textarea>
+                  </label>
+                  <button class="save-review-button" type="submit">เก็บร่างไว้ในแท็บนี้</button>
+                  <p class="review-memory-note">ทุกรายการส่งออกจะระบุแหล่งหลักฐานและสถานะ “ร่าง—ยังไม่ยืนยัน” ร่างจะหายเมื่อรีโหลดหรือปิดแท็บ</p>
+                </fieldset>
+              </form>
+            </div>
+          </aside>
+        </div>
+      </div>
+
+      <noscript>
+        <p class="explorer-alert explorer-alert-static">เครื่องมือตรวจรายบ้านต้องใช้ JavaScript กรุณาเปิด JavaScript หรืออ่านภาพรวมผลด้านล่างแทน</p>
+      </noscript>
+    </section>
+
+    <div class="summary-divider" aria-hidden="true"><span></span><p>อ่านภาพรวมผลรอบล่าสุด</p><span></span></div>
 
     <section class="section" id="results" aria-labelledby="results-title">
       <div class="section-heading">
@@ -489,8 +707,8 @@
       </div>
 
       <div class="privacy-note">
-        <p class="privacy-note-label">หน้าเว็บสาธารณะนี้ตั้งใจไม่แสดงข้อมูลรายหลัง</p>
-        <p>เลขที่บ้าน รหัสทะเบียน รหัสแปลง ที่อยู่เจ้าของ และพิกัดรายหลังไม่ถูกฝังในหน้าเว็บ เพราะบางช่องสามารถเชื่อมกลับไปยังข้อมูล LTAX ที่มีการควบคุมสิทธิ์ได้</p>
+        <p class="privacy-note-label">เว็บสาธารณะไม่ฝังข้อมูลรายหลัง แต่เปิดให้เจ้าหน้าที่อ่านไฟล์ของตนเอง</p>
+        <p>เลขที่บ้าน รหัสทะเบียน รหัสแปลง และพิกัดรายหลังไม่อยู่ในโค้ดเว็บไซต์ ข้อมูลจะแสดงต่อเมื่อผู้ใช้เลือกไฟล์จากเครื่อง และเก็บไว้เฉพาะในหน่วยความจำของแท็บนี้</p>
       </div>
     </section>
 
@@ -508,6 +726,7 @@
             <div><dt>รายงานประมวลผล</dt><dd>ขั้น 0–3 รุ่น v3 · 5 ก.ย. 2569</dd></div>
             <div><dt>กติกาประมวลผล</dt><dd>รุ่น 1.2.0</dd></div>
             <div><dt>แผนดำเนินงาน</dt><dd>Implementation plan v1 · 4 ก.ย. 2569</dd></div>
+            <div><dt>ขอบเขตชุมชน</dt><dd>ไฟล์ GeoJSON ที่ผู้ใช้จัดเตรียม · 23 ชุมชน · ใช้เพื่อสื่อสารและ QA ไม่ใช่แนวเขตทางกฎหมาย</dd></div>
           </dl>
         </div>
         <div>
@@ -524,7 +743,7 @@
         <summary>ข้อจำกัดที่ต้องรู้ก่อนนำตัวเลขไปใช้</summary>
         <ul>
           <li>39,056 รายการที่มีจุด มีค่าพิกัดไม่ซ้ำ 7,515 คู่ เพราะอาคาร กลุ่มบ้าน ซอย และชุมชนใช้จุดร่วมกันตามวิธีออกแบบ</li>
-          <li>จุดประมาณ 2,242 รายการมีรัศมีมากกว่า 1 กิโลเมตร จึงต้องอ่านเป็นบริเวณ ไม่ใช่หน้าบ้าน</li>
+          <li>2,242 แถวทะเบียนมีรัศมีมากกว่า 1 กิโลเมตร และหลายแถวใช้พิกัดร่วมกัน จึงต้องอ่านเป็นบริเวณ ไม่ใช่หน้าบ้านหรือจำนวนจุดไม่ซ้ำ</li>
           <li>ค่า “ยังไม่มีข้อมูล” ถูกแยกจากศูนย์ และกลุ่มที่หลักฐานไม่พอถูกเว้นพิกัดโดยตั้งใจ</li>
           <li>ระบบผ่านการทดสอบทางเทคนิค แต่ทุกแถวยังคงมีสถานะที่ต้องตรวจหรือยืนยันต่อ</li>
         </ul>
@@ -536,7 +755,7 @@
     <div class="footer-inner">
       <div>
         <p class="footer-brand">Landometer</p>
-        <p>CityChat · ภาพรวมการวางตำแหน่งทะเบียนบ้านเทศบาลเมืองแสนสุข</p>
+        <p>CityChat · โต๊ะตรวจตำแหน่งทะเบียนบ้านเทศบาลเมืองแสนสุข</p>
       </div>
       <div class="footer-meta">
         <p>ข้อมูลสรุป ณ 5 กันยายน 2569</p>
