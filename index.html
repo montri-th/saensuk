@@ -22,13 +22,13 @@
   <script src="assets/theme-init.js"></script>
   <link rel="preload" href="assets/fonts/ibm-plex-sans-thai-looped-thai-700-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/bai-jamjuree-thai-400-normal.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="assets/tokens.css">
+  <link rel="stylesheet" href="assets/tokens.css?v=20260906-marker-brand">
   <link rel="stylesheet" href="assets/vendor/leaflet/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
-  <link rel="stylesheet" href="assets/styles.css">
-  <link rel="stylesheet" href="assets/explorer.css?v=20260906-satellite">
+  <link rel="stylesheet" href="assets/styles.css?v=20260906-marker-brand">
+  <link rel="stylesheet" href="assets/explorer.css?v=20260906-marker-brand">
   <script defer src="assets/vendor/leaflet/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
   <script defer src="assets/app.js"></script>
-  <script defer src="assets/record-explorer.js?v=20260906-satellite"></script>
+  <script defer src="assets/record-explorer.js?v=20260906-marker-brand"></script>
 </head>
 <body id="top">
   <a class="skip-link" href="#main">ข้ามไปยังเนื้อหาหลัก</a>
@@ -69,6 +69,10 @@
     <section class="hero" aria-labelledby="hero-title">
       <div class="hero-grid">
         <div class="hero-copy">
+          <div class="citychat-hero-lockup" role="img" aria-label="CityChat">
+            <img class="citychat-lockup-deep-surface" src="assets/brand/citychat-lockup-v091-deep-surface.png" width="494" height="106" alt="">
+            <img class="citychat-lockup-light-surface" src="assets/brand/citychat-lockup-v091-light-surface.png" width="494" height="106" alt="">
+          </div>
           <p class="eyebrow eyebrow-on-deep">CityChat Review Desk · ผลล่าสุด 5 ก.ย. 2569</p>
           <h1 id="hero-title">เปิดตาราง<br>แล้วตรวจทีละบ้าน</h1>
           <p class="hero-lead" data-primary-answer>เลือกไฟล์ master table v3 จากเครื่องของคุณ แล้วสำรวจ <strong>42,524 รายการ</strong> บนแผนที่ คลิกดูหลักฐานรายแถว เปิด Street View เมื่อจุดละเอียดพอ และบันทึกสิ่งที่พบไว้ส่งออกเป็นไฟล์ทำงาน</p>
@@ -83,6 +87,10 @@
         </div>
 
         <div class="city-dialogue hero-review-card" aria-label="สามขั้นตอนของโต๊ะตรวจรายบ้าน">
+          <div class="conversation-motif" aria-hidden="true">
+            <img class="conversation-motif-light" src="assets/brand/conversation-motif-v091-light.svg" width="156" height="127" alt="">
+            <img class="conversation-motif-dark" src="assets/brand/conversation-motif-v091-dark.svg" width="156" height="127" alt="">
+          </div>
           <div>
             <p class="eyebrow">ข้อมูลในมือคุณ · แผนที่ช่วยตั้งคำถาม</p>
             <h2>จากหนึ่งแถว<br>สู่สิ่งที่ควรตรวจต่อ</h2>
@@ -262,13 +270,35 @@
                 <button type="button" class="map-tile-button" aria-pressed="false" data-basemap="satellite">ดาวเทียม</button>
               </div>
               <div class="map-loading" data-map-loading>กำลังเตรียมขอบเขตชุมชน…</div>
-              <div class="map-legend" aria-label="คำอธิบายสีจุดบนแผนที่">
-                <span><i class="dot dot-specific"></i> แปลง/อาคาร</span>
-                <span><i class="dot dot-estimated"></i> จุดประมาณ</span>
-                <span><i class="dot dot-coarse"></i> ซอย/ชุมชน</span>
+              <div class="map-legend" aria-label="คำอธิบายระดับและรูปทรงจุดบนแผนที่">
+                <span>
+                  <svg class="legend-symbol" viewBox="0 0 24 24" aria-hidden="true">
+                    <path class="legend-halo" d="M9 2h6v7h7v6h-7v7H9v-7H2V9h7Z"></path>
+                    <path class="legend-core legend-specific" d="M9 2h6v7h7v6h-7v7H9v-7H2V9h7Z"></path>
+                  </svg>
+                  แปลง/อาคาร
+                </span>
+                <span>
+                  <svg class="legend-symbol" viewBox="0 0 24 24" aria-hidden="true">
+                    <path class="legend-halo" d="M12 2 21 7v10l-9 5-9-5V7Z"></path>
+                    <path class="legend-core legend-estimated" d="M12 2 21 7v10l-9 5-9-5V7Z"></path>
+                    <path class="legend-detail-halo" d="m5 18 14-12"></path>
+                    <path class="legend-detail" d="m5 18 14-12"></path>
+                  </svg>
+                  จุดประมาณ
+                </span>
+                <span>
+                  <svg class="legend-symbol" viewBox="0 0 24 24" aria-hidden="true">
+                    <path class="legend-halo" d="m12 2 10 20H2Z"></path>
+                    <path class="legend-core legend-coarse" d="m12 2 10 20H2Z"></path>
+                  </svg>
+                  ซอย/ชุมชน
+                </span>
+                <span><i class="legend-cluster" aria-hidden="true">12</i> หลายรายการ</span>
+                <span><i class="legend-selected" aria-hidden="true"></i> รายการที่เลือก</span>
               </div>
             </div>
-            <p class="map-disclosure" data-map-disclosure>พื้นหลังปิดอยู่ จึงยังไม่ส่งพื้นที่ที่ดูออกไปภายนอก เลือกถนน (OpenStreetMap) หรือดาวเทียม (Esri World Imagery) เมื่อต้องการเปรียบเทียบ · ภาพถ่ายอาจต่างช่วงเวลาและความละเอียด ไม่ใช่หลักฐานสิทธิหรือแนวเขต · ระดับแปลงแสดงเป็นจุดอ้างอิง เพราะ CSV ไม่มีรูปแปลง</p>
+            <p class="map-disclosure" data-map-disclosure>พื้นหลังปิดอยู่ จึงยังไม่ส่งพื้นที่ที่ดูออกไปภายนอก เลือกถนน (OpenStreetMap) หรือดาวเทียม (Esri World Imagery) เมื่อต้องการเปรียบเทียบ · หมุดตัวเลขรวมรายการใกล้กันบนหน้าจอเพื่อไม่ให้สัญลักษณ์ซ้อน จึงไม่ได้แปลว่าทุกรายการใช้พิกัดเดียวกัน · ภาพถ่ายอาจต่างช่วงเวลาและความละเอียด ไม่ใช่หลักฐานสิทธิหรือแนวเขต · ระดับแปลงแสดงเป็นจุดอ้างอิง เพราะ CSV ไม่มีรูปแปลง</p>
           </section>
 
           <aside class="detail-pane" id="detail-panel" role="tabpanel" aria-label="รายละเอียดรายการที่เลือก" data-panel="detail">

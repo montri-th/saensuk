@@ -231,14 +231,14 @@ svg {
 .hero {
   position: relative;
   overflow: hidden;
-  background: var(--atmosphere-entry);
-  color: var(--on-deep-primary);
+  background: var(--product-citychat-gradient);
+  color: var(--on-product-citychat);
 }
 
 .hero::before,
 .hero::after {
   position: absolute;
-  border: 1px solid var(--on-deep-secondary);
+  border: 1px solid var(--on-product-citychat-line);
   border-radius: 50%;
   content: "";
   pointer-events: none;
@@ -271,6 +271,38 @@ svg {
   padding: var(--space-16) var(--space-8);
 }
 
+.citychat-hero-lockup {
+  width: min(248px, 62vw);
+  margin-bottom: var(--space-6);
+}
+
+.citychat-hero-lockup img {
+  width: 100%;
+  height: auto;
+}
+
+.citychat-lockup-light-surface {
+  display: none;
+}
+
+:root[data-theme="dark"] .citychat-lockup-deep-surface {
+  display: none;
+}
+
+:root[data-theme="dark"] .citychat-lockup-light-surface {
+  display: block;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .citychat-lockup-deep-surface {
+    display: none;
+  }
+
+  :root:not([data-theme="light"]) .citychat-lockup-light-surface {
+    display: block;
+  }
+}
+
 .eyebrow {
   margin: 0 0 var(--space-3);
   color: var(--citychat-primary);
@@ -280,7 +312,7 @@ svg {
 }
 
 .eyebrow-on-deep {
-  color: var(--on-deep-secondary);
+  color: var(--on-product-citychat-metadata);
 }
 
 h1,
@@ -319,15 +351,21 @@ h3 {
   line-height: 1.35;
 }
 
+.section-heading:not(.section-heading-on-deep) h2,
+.section-heading:not(.section-heading-on-deep) h3,
+.explorer-intro h2 {
+  color: var(--citychat-heading);
+}
+
 .hero-lead {
   max-width: 640px;
   margin: 0;
-  color: var(--on-deep-secondary);
+  color: var(--on-product-citychat-2);
   font-size: 1.125rem;
 }
 
 .hero-lead strong {
-  color: var(--on-deep-primary);
+  color: var(--on-product-citychat);
   font-weight: 600;
 }
 
@@ -347,23 +385,23 @@ h3 {
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-1) var(--space-4);
-  border: 1px solid var(--on-deep-secondary);
+  border: 1px solid var(--on-product-citychat-line);
   border-radius: var(--radius-pill);
-  background: rgb(24 35 39 / 28%);
+  background: color-mix(in srgb, var(--on-product-citychat) 12%, transparent);
 }
 
 .hero-signal strong {
-  color: var(--energy-mint);
+  color: var(--on-product-citychat);
   font-family: var(--font-data);
   font-size: 1rem;
 }
 
 .hero-signal .hero-signal-warning {
-  border-color: var(--energy-yellow);
+  border-color: var(--on-product-citychat-line);
 }
 
 .hero-signal-warning strong {
-  color: var(--energy-yellow);
+  color: var(--on-product-citychat);
 }
 
 .hero-actions {
@@ -388,28 +426,28 @@ h3 {
 }
 
 .button-primary {
-  border-color: var(--on-deep-primary);
-  background: var(--on-deep-primary);
-  color: var(--brand-blue);
+  border-color: var(--on-product-citychat);
+  background: var(--on-product-citychat-surface);
+  color: var(--on-product-citychat-ink);
 }
 
 .button-primary:hover {
-  border-color: var(--energy-mint);
-  background: var(--energy-mint);
-  color: var(--on-light-primary);
+  border-color: var(--on-product-citychat);
+  background: color-mix(in srgb, var(--on-product-citychat-surface) 88%, var(--citychat-accent));
+  color: var(--on-product-citychat-ink);
 }
 
 .button-primary:focus-visible,
 .text-link-on-deep:focus-visible {
-  outline-color: var(--on-deep-focus-outer);
-  box-shadow: 0 0 0 2px var(--on-deep-focus-inner);
+  outline-color: var(--on-product-citychat-focus);
+  box-shadow: 0 0 0 2px var(--on-product-citychat-ink);
 }
 
 .text-link-on-deep {
   display: inline-flex;
   min-height: 44px;
   align-items: center;
-  color: var(--on-deep-primary);
+  color: var(--on-product-citychat);
   font-weight: 600;
   text-underline-offset: 5px;
 }
@@ -1938,6 +1976,14 @@ tbody th {
   .hero,
   .method-section {
     background: var(--brand-blue);
+  }
+
+  .citychat-lockup-deep-surface {
+    display: block !important;
+  }
+
+  .citychat-lockup-light-surface {
+    display: none !important;
   }
 
   .section,

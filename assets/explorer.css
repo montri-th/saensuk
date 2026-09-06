@@ -12,6 +12,52 @@
   box-shadow: 0 28px 70px rgb(17 25 29 / 24%);
 }
 
+.hero-review-card > :not(.conversation-motif) {
+  position: relative;
+  z-index: 1;
+}
+
+.conversation-motif {
+  position: absolute;
+  z-index: 0;
+  top: var(--space-6);
+  right: var(--space-6);
+  width: 112px;
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+.conversation-motif img {
+  width: 100%;
+  height: auto;
+}
+
+.conversation-motif-dark {
+  display: none;
+}
+
+:root[data-theme="dark"] .conversation-motif-light {
+  display: none;
+}
+
+:root[data-theme="dark"] .conversation-motif-dark {
+  display: block;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .conversation-motif-light {
+    display: none;
+  }
+
+  :root:not([data-theme="light"]) .conversation-motif-dark {
+    display: block;
+  }
+}
+
+.hero-review-card > div:nth-child(2) {
+  padding-right: 104px;
+}
+
 .hero-review-card .eyebrow {
   color: var(--citychat-primary);
 }
@@ -781,7 +827,7 @@ html:not([data-top-level-safe="true"]) [data-file-label] {
 }
 
 .basemap-picker .map-tile-button {
-  min-height: 36px;
+  min-height: 44px;
   border-color: transparent;
   background: transparent;
 }
@@ -833,42 +879,148 @@ html:not([data-top-level-safe="true"]) [data-file-label] {
   bottom: 38px;
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2) var(--space-3);
+  gap: var(--space-2) var(--space-4);
   max-width: calc(100% - 24px);
   padding: var(--space-2) var(--space-3);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-md);
   background: color-mix(in srgb, var(--surface-raised) 93%, transparent);
   color: var(--text-secondary);
-  font-size: 0.6875rem;
+  font-size: 0.8125rem;
+  line-height: 1.35;
   pointer-events: none;
 }
 
 .map-legend span {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 7px;
 }
 
-.dot {
-  width: 9px;
-  height: 9px;
-  border: 1px solid currentColor;
+.legend-symbol {
+  flex: 0 0 18px;
+  width: 18px;
+  height: 18px;
+  overflow: visible;
+}
+
+.legend-halo {
+  fill: var(--map-marker-halo);
+  stroke: var(--map-marker-halo);
+  stroke-linejoin: round;
+  stroke-width: 5;
+}
+
+.legend-core {
+  stroke: var(--map-marker-stroke);
+  stroke-linejoin: round;
+  stroke-width: 1.5;
+}
+
+.legend-specific { fill: var(--series-5); }
+.legend-estimated { fill: var(--series-7); }
+.legend-coarse { fill: var(--series-3); }
+
+.legend-detail-halo,
+.legend-detail {
+  fill: none;
+  stroke-linecap: round;
+}
+
+.legend-detail-halo {
+  stroke: var(--map-marker-halo);
+  stroke-width: 4;
+}
+
+.legend-detail {
+  stroke: var(--map-marker-stroke);
+  stroke-width: 1.25;
+}
+
+.legend-cluster {
+  display: inline-grid;
+  flex: 0 0 22px;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border: 2px solid var(--map-active);
   border-radius: 50%;
+  background: var(--surface-raised);
+  box-shadow: 0 0 0 2px var(--map-marker-halo);
+  color: var(--text-primary);
+  font-family: var(--font-data);
+  font-size: 0.5625rem;
+  font-style: normal;
+  font-weight: 600;
 }
 
-.dot-specific { background: var(--series-5); }
-
-.dot-estimated {
-  border-radius: 2px;
-  background: var(--series-7);
-  transform: rotate(45deg);
+.legend-selected {
+  display: inline-block;
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--map-selected);
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--map-marker-halo);
 }
 
-.dot-coarse {
-  border-radius: 0;
-  background: var(--series-3);
-  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+.selected-record-marker {
+  border: 0;
+  background: transparent;
+}
+
+.selected-record-marker svg {
+  width: 42px;
+  height: 42px;
+  overflow: visible;
+}
+
+.selected-marker-ring-halo,
+.selected-marker-ring {
+  fill: none;
+}
+
+.selected-marker-ring-halo {
+  stroke: var(--map-marker-halo);
+  stroke-width: 6;
+}
+
+.selected-marker-ring {
+  stroke: var(--map-selected);
+  stroke-width: 2.5;
+}
+
+.selected-marker-halo {
+  fill: var(--map-marker-halo);
+  stroke: var(--map-marker-halo);
+  stroke-linejoin: round;
+  stroke-width: 5;
+}
+
+.selected-marker-core {
+  stroke: var(--map-marker-stroke);
+  stroke-linejoin: round;
+  stroke-width: 1.5;
+}
+
+.selected-marker-specific { fill: var(--series-5); }
+.selected-marker-estimated { fill: var(--series-7); }
+.selected-marker-coarse { fill: var(--series-3); }
+
+.selected-marker-detail-halo,
+.selected-marker-detail {
+  fill: none;
+  stroke-linecap: round;
+}
+
+.selected-marker-detail-halo {
+  stroke: var(--map-marker-halo);
+  stroke-width: 4;
+}
+
+.selected-marker-detail {
+  stroke: var(--map-marker-stroke);
+  stroke-width: 1.25;
 }
 
 .map-disclosure {
@@ -1189,6 +1341,16 @@ html:not([data-top-level-safe="true"]) [data-file-label] {
     padding: var(--space-6);
   }
 
+  .conversation-motif {
+    top: var(--space-4);
+    right: var(--space-4);
+    width: 84px;
+  }
+
+  .hero-review-card > div:nth-child(2) {
+    padding-right: 72px;
+  }
+
   .file-button {
     width: 100%;
     padding-inline: var(--space-4);
@@ -1356,7 +1518,9 @@ html:not([data-top-level-safe="true"]) [data-file-label] {
 }
 
 @media (forced-colors: active) {
-  .dot,
+  .legend-symbol,
+  .legend-cluster,
+  .legend-selected,
   .answer-orb,
   .local-data-icon {
     forced-color-adjust: auto;

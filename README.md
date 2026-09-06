@@ -10,9 +10,17 @@ The published repository contains the public interface, aggregate figures, and c
 - A Web Worker verifies the exact SHA-256, UTF-8 encoding, ordered 22-column schema, 42,524 rows, coordinate counts, and seven-level geometry distribution before showing any record.
 - Records, indexes, selections, and review drafts remain in tab memory. They are not written to `localStorage`, `sessionStorage`, IndexedDB, a service worker, the page URL, or analytics, and are cleared on reload/close.
 - The list is paginated at 30 records. A canvas layer renders filtered points without creating tens of thousands of DOM markers.
+- Nearby records are collision-clustered at every zoom into numbered markers with a guaranteed screen-space gap. Selecting a group zooms in through level 20; at maximum zoom, repeated clicks cycle only the records named by that visible group. The interface distinguishes an exact shared coordinate from a small group of nearby screen positions, so a hidden record is never selected through a different visible symbol.
+- Marker meaning is redundant by color and shape: green cross for parcel/building-level points, blue diagonally split hexagon for estimated points, yellow triangle for coarse points, and a neutral numbered circle for a group. The selected record keeps its category shape and gains a static double ring.
 - Every saved review requires an evidence source; strong plate-match/conflict results also require a note. The explicit local export keeps every row marked `draft-unverified` and defends spreadsheet cells beginning with `=`, `+`, `-`, or `@`. The export remains sensitive working data.
 
 The page accepts only the approved snapshot whose SHA-256 is `15b897a48bdd14cf8c6ca71bcd560bf800102480a6ad7e5d35b433b85837bb4e`. A future dataset must update the contract and published aggregate narrative together.
+
+## Private Google Sheet connection
+
+The browser-to-Google-Sheet connection is not implemented in this release. It remains pending a Google OAuth Web Client ID, enabled Google Sheets API, consent configuration, and an authorized JavaScript origin. The intended connection uses a user-triggered Google Identity Services token, the read-only Sheets scope, and the file's existing Google Drive permissions; it will not publish a CSV/`gviz` endpoint or bypass file access controls. Until that setup is supplied and verified, the local approved-CSV upload remains the only data-loading path shown on the page.
+
+Because all project sites under `montri-th.github.io` share one browser origin, approving that origin also lets other repositories under the account initiate the same OAuth client. A dedicated custom hostname is the stronger isolation choice for sensitive working data.
 
 ## Maps and outbound boundaries
 
@@ -33,9 +41,11 @@ GitHub Pages project sites under `montri-th.github.io` share one browser origin.
 - Steps 0–3 run report v3 — 2026-09-05
 - Pipeline v3 / rules 1.2.0 — 2026-09-05
 - Implementation plan v1 — 2026-09-04
-- Visual guidance: Landometer Design System v0.9.1 (`v0.9.1-mp7`) and the approved normative CityChat DS Add-on v0.9. This page does not claim artifact-level conformance.
+- Visual guidance: Landometer Design System v0.9.1 (`v0.9.1-mp7`) and the approved normative CityChat DS Add-on v0.9.1. This page does not claim artifact-level conformance.
 
-No favicon, app icon, or large-image social preview is declared because this release has no identity asset approved for those roles.
+The hero uses the two exact, hash-verified CityChat horizontal lockups supplied by the governed handoff, selected for light or deep surfaces. Its Conversation Motif derivatives preserve the supplied geometry while mapping only the two motif colors to approved CityChat light/dark surface colors and removing embedded source metadata. These assets are approved here only for `identity.hero` and `conversation_motif.decorative`; they are not approved as favicons, compact or secondary logos, social previews, diagrams, or evidence. Full hashes, source bindings, transformations, alt guidance, and review gates are recorded in `governance/assets.json`.
+
+No favicon, app icon, or large-image social preview is declared because the approved CityChat assets do not carry those roles.
 
 Leaflet 1.9.4 is vendored locally under `assets/vendor/leaflet/` with its BSD-2-Clause license. The JavaScript and CSS hashes match the official Leaflet distribution.
 

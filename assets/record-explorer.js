@@ -443,7 +443,7 @@
     state.page = Math.min(state.page, totalPages - 1);
     elements.filteredCount.textContent = NUMBER.format(state.filtered.length);
     elements.resultNote.textContent = state.filtered.length
-      ? `พบ ${NUMBER.format(state.filtered.length)} รายการ · แผนที่แสดงเฉพาะรายการที่มีพิกัด`
+      ? `พบ ${NUMBER.format(state.filtered.length)} รายการ · หมุดตัวเลขรวมรายการที่ซ้อนกัน ขยายหรือคลิกเพื่อแยกดู`
       : "ไม่พบรายการที่ตรงตัวกรอง ลองลดเงื่อนไขหรือเปลี่ยนคำค้น";
 
     state.pointLayer?.setIndices(state.filtered);
@@ -676,17 +676,245 @@
 
   const cssColor = (name, fallback) => getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
 
+  const markerBucket = (row) => {
+    if (["parcel", "building"].includes(row.geom_level)) return "specific";
+    if (["cluster", "interpolated"].includes(row.geom_level)) return "estimated";
+    return "coarse";
+  };
+
   const pointColor = (row) => {
-    if (["parcel", "building"].includes(row.geom_level)) return cssColor("--series-5", "#007A58");
-    if (["cluster", "interpolated"].includes(row.geom_level)) return cssColor("--series-7", "#147A9F");
+    if (markerBucket(row) === "specific") return cssColor("--series-5", "#007A58");
+    if (markerBucket(row) === "estimated") return cssColor("--series-7", "#147A9F");
     return cssColor("--series-3", "#A87B00");
   };
+
+  const markerPalette = () => {
+    if (window.matchMedia("(forced-colors: active)").matches) {
+      return {
+        halo: "Canvas",
+        stroke: "CanvasText",
+        active: "Highlight",
+        selected: "Highlight",
+        clusterFill: "Canvas",
+        clusterText: "CanvasText",
+        specific: "CanvasText",
+        estimated: "CanvasText",
+        coarse: "CanvasText"
+      };
+    }
+    return {
+      halo: cssColor("--map-marker-halo", "#FFFFFF"),
+      stroke: cssColor("--map-marker-stroke", "#182327"),
+      active: cssColor("--map-active", "#347DA8"),
+      selected: cssColor("--map-selected", "#176B82"),
+      clusterFill: cssColor("--surface-raised", "#FFFFFF"),
+      clusterText: cssColor("--text-primary", "#182327"),
+      specific: cssColor("--series-5", "#007A58"),
+      estimated: cssColor("--series-7", "#147A9F"),
+      coarse: cssColor("--series-3", "#A87B00")
+    };
+  };
+
+  const tracePointShape = (context, bucket, radius) => {
+    context.beginPath();
+    if (bucket === "specific") {
+      const arm = radius * 0.4;
+      context.moveTo(-arm, -radius);
+      context.lineTo(arm, -radius);
+      context.lineTo(arm, -arm);
+      context.lineTo(radius, -arm);
+      context.lineTo(radius, arm);
+      context.lineTo(arm, arm);
+      context.lineTo(arm, radius);
+      context.lineTo(-arm, radius);
+      context.lineTo(-arm, arm);
+      context.lineTo(-radius, arm);
+      context.lineTo(-radius, -arm);
+      context.lineTo(-arm, -arm);
+      context.closePath();
+      return;
+    }
+    if (bucket === "estimated") {
+      for (let corner = 0; corner < 6; corner += 1) {
+        const angle = -Math.PI / 2 + corner * Math.PI / 3;
+        const x = Math.cos(angle) * radius;
+        const y = Math.sin(angle) * radius;
+        if (corner === 0) context.moveTo(x, y);
+        else context.lineTo(x, y);
+      }
+      context.closePath();
+      return;
+    }
+    context.moveTo(0, -radius);
+    context.lineTo(radius, radius);
+    context.lineTo(-radius, radius);
+    context.closePath();
+  };
+
+  const drawPointSymbol = (context, row, point, radius, palette) => {
+    const bucket = markerBucket(row);
+    context.save();
+    context.translate(point.x, point.y);
+    context.lineJoin = "round";
+    tracePointShape(context, bucket, radius);
+    context.strokeStyle = palette.halo;
+    context.lineWidth = 5;
+    context.stroke();
+    context.fillStyle = palette[bucket];
+    context.fill();
+    context.strokeStyle = palette.stroke;
+    context.lineWidth = 1.5;
+    context.stroke();
+    if (bucket === "estimated") {
+      context.beginPath();
+      context.moveTo(-radius * 0.66, radius * 0.56);
+      context.lineTo(radius * 0.66, -radius * 0.56);
+      context.strokeStyle = palette.halo;
+      context.lineWidth = 3.5;
+      context.lineCap = "round";
+      context.stroke();
+      context.strokeStyle = palette.stroke;
+      context.lineWidth = 1.15;
+      context.stroke();
+    }
+    context.restore();
+  };
+
+  const clusterLabel = (count) => count >= 1000 ? `${Math.floor(count / 1000)}k` : String(count);
+
+  const drawClusterSymbol = (context, point, count, palette) => {
+    const label = clusterLabel(count);
+    const radius = label.length >= 4 ? 17 : label.length === 3 ? 15 : 13;
+    context.save();
+    context.translate(point.x, point.y);
+    context.beginPath();
+    context.arc(0, 0, radius, 0, Math.PI * 2);
+    context.strokeStyle = palette.halo;
+    context.lineWidth = 6;
+    context.stroke();
+    context.fillStyle = palette.clusterFill;
+    context.fill();
+    context.strokeStyle = palette.active;
+    context.lineWidth = 2.5;
+    context.stroke();
+    context.fillStyle = palette.clusterText;
+    context.font = `600 ${label.length >= 4 ? 8 : 9}px "JetBrains Mono", monospace`;
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.fillText(label, 0, 0.5);
+    context.restore();
+    return radius;
+  };
+
+  const mergeNearbyMarkerGroups = (groups, minimumDistance) => {
+    let current = groups.map((group) => ({
+      indices: [...group.indices],
+      coordinateKeys: new Set(group.coordinateKeys),
+      sumX: group.sumX,
+      sumY: group.sumY,
+      point: L.point(group.sumX / group.indices.length, group.sumY / group.indices.length)
+    }));
+    const distanceSquared = minimumDistance * minimumDistance;
+
+    for (let pass = 0; pass < 24 && current.length > 1; pass += 1) {
+      const buckets = new Map();
+      const next = [];
+      let merged = false;
+      const bucketKey = (point) => `${Math.floor(point.x / minimumDistance)}:${Math.floor(point.y / minimumDistance)}`;
+      const addToBucket = (group) => {
+        const key = bucketKey(group.point);
+        if (!buckets.has(key)) buckets.set(key, []);
+        buckets.get(key).push(group);
+      };
+      const removeFromBucket = (group, key) => {
+        const bucket = buckets.get(key);
+        if (!bucket) return;
+        const index = bucket.indexOf(group);
+        if (index !== -1) bucket.splice(index, 1);
+        if (!bucket.length) buckets.delete(key);
+      };
+
+      current.sort((left, right) => right.indices.length - left.indices.length || left.indices[0] - right.indices[0]);
+      for (const group of current) {
+        const gridX = Math.floor(group.point.x / minimumDistance);
+        const gridY = Math.floor(group.point.y / minimumDistance);
+        let nearest = null;
+        let nearestDistance = Infinity;
+        for (let y = gridY - 1; y <= gridY + 1; y += 1) {
+          for (let x = gridX - 1; x <= gridX + 1; x += 1) {
+            const candidates = buckets.get(`${x}:${y}`) || [];
+            for (const candidate of candidates) {
+              const dx = candidate.point.x - group.point.x;
+              const dy = candidate.point.y - group.point.y;
+              const candidateDistance = dx * dx + dy * dy;
+              if (candidateDistance < distanceSquared && candidateDistance < nearestDistance) {
+                nearest = candidate;
+                nearestDistance = candidateDistance;
+              }
+            }
+          }
+        }
+
+        if (!nearest) {
+          const copy = {
+            indices: [...group.indices],
+            coordinateKeys: new Set(group.coordinateKeys),
+            sumX: group.sumX,
+            sumY: group.sumY,
+            point: L.point(group.point.x, group.point.y)
+          };
+          next.push(copy);
+          addToBucket(copy);
+          continue;
+        }
+
+        const previousBucket = bucketKey(nearest.point);
+        removeFromBucket(nearest, previousBucket);
+        nearest.indices.push(...group.indices);
+        group.coordinateKeys.forEach((key) => nearest.coordinateKeys.add(key));
+        nearest.sumX += group.sumX;
+        nearest.sumY += group.sumY;
+        nearest.point = L.point(
+          nearest.sumX / nearest.indices.length,
+          nearest.sumY / nearest.indices.length
+        );
+        addToBucket(nearest);
+        merged = true;
+      }
+
+      current = next;
+      if (!merged) break;
+    }
+
+    return current;
+  };
+
+  const selectedMarkerMarkup = (row) => {
+    const bucket = markerBucket(row);
+    let shape;
+    if (bucket === "specific") {
+      shape = '<path class="selected-marker-halo" d="M18 12h6v6h6v6h-6v6h-6v-6h-6v-6h6Z"></path><path class="selected-marker-core selected-marker-specific" d="M18 12h6v6h6v6h-6v6h-6v-6h-6v-6h6Z"></path>';
+    } else if (bucket === "estimated") {
+      shape = '<path class="selected-marker-halo" d="m21 11 9 5v10l-9 5-9-5V16Z"></path><path class="selected-marker-core selected-marker-estimated" d="m21 11 9 5v10l-9 5-9-5V16Z"></path><path class="selected-marker-detail-halo" d="m14 27 14-12"></path><path class="selected-marker-detail" d="m14 27 14-12"></path>';
+    } else {
+      shape = '<path class="selected-marker-halo" d="m21 11 10 20H11Z"></path><path class="selected-marker-core selected-marker-coarse" d="m21 11 10 20H11Z"></path>';
+    }
+    return `<svg viewBox="0 0 42 42" aria-hidden="true"><circle class="selected-marker-ring-halo" cx="21" cy="21" r="17"></circle><circle class="selected-marker-ring" cx="21" cy="21" r="17"></circle>${shape}</svg>`;
+  };
+
+  const selectedMarkerIcon = (row) => L.divIcon({
+    className: "selected-record-marker",
+    html: selectedMarkerMarkup(row),
+    iconSize: [42, 42],
+    iconAnchor: [21, 21]
+  });
 
   const createPointLayer = () => {
     const CanvasPointLayer = L.Layer.extend({
       initialize() {
         this._indices = [];
         this._selected = null;
+        this._drawn = [];
       },
       onAdd(map) {
         this._map = map;
@@ -712,6 +940,24 @@
         this._selected = Number.isInteger(index) ? index : null;
         this._reset();
       },
+      redraw() {
+        this._reset();
+      },
+      hitTest(containerPoint) {
+        let best = null;
+        for (let index = this._drawn.length - 1; index >= 0; index -= 1) {
+          const marker = this._drawn[index];
+          const dx = marker.point.x - containerPoint.x;
+          const dy = marker.point.y - containerPoint.y;
+          const distance = dx * dx + dy * dy;
+          const threshold = marker.hitRadius + 7;
+          if (distance > threshold * threshold) continue;
+          if (!best || distance < best.distance || (distance === best.distance && marker.indices.length > best.marker.indices.length)) {
+            best = { marker, distance };
+          }
+        }
+        return best?.marker || null;
+      },
       _reset() {
         if (!this._map || !this._canvas) return;
         const size = this._map.getSize();
@@ -726,61 +972,64 @@
         const context = this._canvas.getContext("2d");
         context.setTransform(dpr, 0, 0, dpr, 0, 0);
         context.clearRect(0, 0, size.x, size.y);
-        const seenCells = new Set();
+        const zoom = this._map.getZoom();
+        const minimumDistance = zoom <= 13 ? 46 : zoom <= 15 ? 44 : 40;
+        const exactGroups = new Map();
 
         for (const index of this._indices) {
-          if (index === this._selected) continue;
           const row = state.rows[index];
           if (!row || !Number.isFinite(row.lat) || !Number.isFinite(row.lon)) continue;
           const point = this._map.latLngToContainerPoint([row.lat, row.lon]);
-          if (point.x < -8 || point.y < -8 || point.x > size.x + 8 || point.y > size.y + 8) continue;
-          const cell = `${Math.round(point.x / 3)}:${Math.round(point.y / 3)}`;
-          if (seenCells.has(cell)) continue;
-          seenCells.add(cell);
-          const radius = this._map.getZoom() >= 16 ? 4 : 3;
-          const fine = ["parcel", "building"].includes(row.geom_level);
-          const estimated = ["cluster", "interpolated"].includes(row.geom_level);
-          context.save();
-          context.translate(point.x, point.y);
-          context.beginPath();
-          if (fine) {
-            context.arc(0, 0, radius, 0, Math.PI * 2);
-          } else if (estimated) {
-            context.rotate(Math.PI / 4);
-            context.rect(-radius, -radius, radius * 2, radius * 2);
-          } else {
-            context.moveTo(0, -radius - 1);
-            context.lineTo(radius + 1, radius + 1);
-            context.lineTo(-radius - 1, radius + 1);
-            context.closePath();
-          }
-          context.fillStyle = pointColor(row);
-          context.globalAlpha = 0.78;
-          context.fill();
-          context.globalAlpha = 1;
-          context.strokeStyle = cssColor("--surface-raised", "#FFFFFF");
-          context.lineWidth = 1;
-          context.stroke();
-          context.restore();
+          if (point.x < -24 || point.y < -24 || point.x > size.x + 24 || point.y > size.y + 24) continue;
+          const key = coordinateKey(row);
+          if (!key) continue;
+          if (!exactGroups.has(key)) exactGroups.set(key, { indices: [], coordinateKeys: new Set([key]), sumX: 0, sumY: 0 });
+          const group = exactGroups.get(key);
+          group.indices.push(index);
+          group.sumX += point.x;
+          group.sumY += point.y;
         }
-        context.globalAlpha = 1;
+
+        const palette = markerPalette();
+        this._drawn = mergeNearbyMarkerGroups([...exactGroups.values()], minimumDistance)
+          .map((group) => ({
+            indices: group.indices,
+            point: group.point,
+            aggregate: group.coordinateKeys.size > 1,
+            sameCoordinate: group.coordinateKeys.size === 1
+          }))
+          .sort((left, right) => left.indices.length - right.indices.length);
+
+        for (const marker of this._drawn) {
+          if (marker.indices.length > 1) {
+            marker.hitRadius = drawClusterSymbol(context, marker.point, marker.indices.length, palette);
+          } else {
+            const row = state.rows[marker.indices[0]];
+            const radius = zoom >= 18 ? 7 : zoom >= 16 ? 6 : 5.5;
+            drawPointSymbol(context, row, marker.point, radius, palette);
+            marker.hitRadius = radius + 3;
+          }
+        }
       }
     });
     return new CanvasPointLayer();
   };
+
+  const boundaryStyle = () => ({
+    color: cssColor("--map-active", "#347DA8"),
+    weight: 2,
+    dashArray: "7 5",
+    opacity: 0.9,
+    fillColor: cssColor("--citychat-primary", "#007A58"),
+    fillOpacity: 0.06
+  });
 
   const addBoundaryLayer = () => {
     if (!state.map || !state.boundaries || state.boundaryLayer) return;
     const tooltipClass = "community-tooltip";
     state.boundaryLayer = L.geoJSON(state.boundaries, {
       interactive: true,
-      style: () => ({
-        color: "#007A58",
-        weight: 1.5,
-        opacity: 0.8,
-        fillColor: "#0AD69C",
-        fillOpacity: 0.08
-      }),
+      style: boundaryStyle,
       onEachFeature: (feature, layer) => {
         const label = document.createElement("span");
         label.textContent = clean(feature.properties?.name, "ไม่ระบุชื่อ", 160);
@@ -818,7 +1067,7 @@
     state.pointLayer = createPointLayer();
     state.pointLayer.addTo(state.map);
     state.pointLayer.setIndices(state.filtered);
-    state.map.on("click", (event) => selectNearestPoint(event.containerPoint));
+    state.map.on("click", (event) => selectMapPoint(event));
     addBoundaryLayer();
     if (state.selectedIndex !== null) updateMapSelection(false);
     requestAnimationFrame(() => state.map?.invalidateSize());
@@ -831,14 +1080,11 @@
     if (!row || !Number.isFinite(row.lat) || !Number.isFinite(row.lon)) return;
     const location = [row.lat, row.lon];
     const markerColor = pointColor(row);
-    state.selectionMarker = L.circleMarker(location, {
-      radius: 9,
-      color: cssColor("--text-primary", "#182327"),
-      weight: 3,
-      opacity: 1,
-      fillColor: markerColor,
-      fillOpacity: 1,
-      interactive: false
+    state.selectionMarker = L.marker(location, {
+      icon: selectedMarkerIcon(row),
+      interactive: false,
+      keyboard: false,
+      zIndexOffset: 1000
     }).addTo(state.map);
 
     if (Number.isFinite(row.radius_m) && row.radius_m > 0) {
@@ -878,23 +1124,29 @@
     }
   };
 
-  const selectNearestPoint = (containerPoint) => {
+  const selectMapPoint = (event) => {
     if (!state.map || !state.rows.length) return;
-    let nearestIndex = null;
-    let nearestDistance = 18 * 18;
-    for (const index of state.filtered) {
-      const row = state.rows[index];
-      if (!Number.isFinite(row?.lat) || !Number.isFinite(row?.lon)) continue;
-      const point = state.map.latLngToContainerPoint([row.lat, row.lon]);
-      const dx = point.x - containerPoint.x;
-      const dy = point.y - containerPoint.y;
-      const distance = dx * dx + dy * dy;
-      if (distance <= nearestDistance) {
-        nearestDistance = distance;
-        nearestIndex = index;
-      }
+    const marker = state.pointLayer?.hitTest(event.containerPoint);
+    if (!marker?.indices?.length) return;
+
+    if (marker.indices.length > 1 && state.map.getZoom() < 20) {
+      const nextZoom = Math.min(20, state.map.getZoom() + 2);
+      const center = state.map.containerPointToLatLng(marker.point);
+      state.map.setView(center, nextZoom, {
+        animate: !window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      });
+      elements.answer.textContent = `ขยายบริเวณที่รวม ${NUMBER.format(marker.indices.length)} รายการแล้ว — หมุดจะรวมต่อเมื่ออยู่ใกล้กัน เพื่อไม่ให้สัญลักษณ์ซ้อน`;
+      return;
     }
-    if (nearestIndex !== null) selectRecord(nearestIndex, { moveMap: false });
+
+    const current = marker.indices.indexOf(state.selectedIndex);
+    const nextIndex = marker.indices[(current + 1) % marker.indices.length];
+    selectRecord(nextIndex, { moveMap: false });
+    if (marker.indices.length > 1) {
+      const position = marker.indices.indexOf(nextIndex) + 1;
+      const scope = marker.sameCoordinate ? "ตำแหน่งเดียวกัน" : "บริเวณใกล้กันบนหน้าจอ";
+      elements.answer.textContent = `${scope} มี ${NUMBER.format(marker.indices.length)} รายการ · กำลังดู ${NUMBER.format(position)} จาก ${NUMBER.format(marker.indices.length)} · คลิกหมุดซ้ำเพื่อดูรายการถัดไป`;
+    }
   };
 
   const fitFilteredResults = () => {
@@ -919,9 +1171,9 @@
   };
 
   const BASEMAP_DISCLOSURES = {
-    none: "พื้นหลังปิดอยู่ จึงยังไม่ส่งพื้นที่ที่ดูออกไปภายนอก เลือกถนน (OpenStreetMap) หรือดาวเทียม (Esri World Imagery) เมื่อต้องการเปรียบเทียบ · ภาพถ่ายอาจต่างช่วงเวลาและความละเอียด ไม่ใช่หลักฐานสิทธิหรือแนวเขต · ระดับแปลงแสดงเป็นจุดอ้างอิง เพราะ CSV ไม่มีรูปแปลง",
-    streets: "พื้นหลังถนนจาก OpenStreetMap เปิดอยู่ ผู้ให้บริการอาจได้รับ IP และพื้นที่แผนที่ที่เปิดดู แต่เว็บไม่ส่งเลขที่บ้าน รหัสทะเบียน หรือไฟล์ CSV · ระดับแปลงยังแสดงเป็นจุดอ้างอิง เพราะ CSV ไม่มีรูปแปลง",
-    satellite: "ภาพถ่ายดาวเทียม Esri World Imagery เปิดอยู่ ผู้ให้บริการอาจได้รับ IP และพื้นที่แผนที่ที่เปิดดู แต่เว็บไม่ส่งเลขที่บ้าน รหัสทะเบียน หรือไฟล์ CSV · ภาพอาจมาจากหลายช่วงเวลาและหลายแหล่ง ใช้เปรียบเทียบบริบท ไม่ใช่หลักฐานสิทธิ ความสดของข้อมูล หรือแนวเขต"
+    none: "พื้นหลังปิดอยู่ จึงยังไม่ส่งพื้นที่ที่ดูออกไปภายนอก เลือกถนน (OpenStreetMap) หรือดาวเทียม (Esri World Imagery) เมื่อต้องการเปรียบเทียบ · หมุดตัวเลขรวมรายการใกล้กันบนหน้าจอเพื่อไม่ให้สัญลักษณ์ซ้อน จึงไม่ได้แปลว่าทุกรายการใช้พิกัดเดียวกัน · ภาพถ่ายอาจต่างช่วงเวลาและความละเอียด ไม่ใช่หลักฐานสิทธิหรือแนวเขต · ระดับแปลงแสดงเป็นจุดอ้างอิง เพราะ CSV ไม่มีรูปแปลง",
+    streets: "พื้นหลังถนนจาก OpenStreetMap เปิดอยู่ ผู้ให้บริการอาจได้รับ IP และพื้นที่แผนที่ที่เปิดดู แต่เว็บไม่ส่งเลขที่บ้าน รหัสทะเบียน หรือไฟล์ CSV · หมุดตัวเลขรวมรายการใกล้กันบนหน้าจอเพื่อไม่ให้สัญลักษณ์ซ้อน จึงไม่ได้แปลว่าทุกรายการใช้พิกัดเดียวกัน · ระดับแปลงยังแสดงเป็นจุดอ้างอิง เพราะ CSV ไม่มีรูปแปลง",
+    satellite: "ภาพถ่ายดาวเทียม Esri World Imagery เปิดอยู่ ผู้ให้บริการอาจได้รับ IP และพื้นที่แผนที่ที่เปิดดู แต่เว็บไม่ส่งเลขที่บ้าน รหัสทะเบียน หรือไฟล์ CSV · หมุดตัวเลขรวมรายการใกล้กันบนหน้าจอเพื่อไม่ให้สัญลักษณ์ซ้อน จึงไม่ได้แปลว่าทุกรายการใช้พิกัดเดียวกัน · ภาพอาจมาจากหลายช่วงเวลาและหลายแหล่ง ใช้เปรียบเทียบบริบท ไม่ใช่หลักฐานสิทธิ ความสดของข้อมูล หรือแนวเขต"
   };
 
   const createBasemapLayer = (mode) => {
@@ -1225,6 +1477,22 @@
     if (window.matchMedia("(min-width: 768px)").matches && state.rows.length) ensureMap();
     requestAnimationFrame(() => state.map?.invalidateSize());
   });
+
+  const refreshMapPalette = () => {
+    state.pointLayer?.redraw();
+    state.boundaryLayer?.setStyle(boundaryStyle);
+    const row = state.rows[state.selectedIndex];
+    if (!row) return;
+    const color = pointColor(row);
+    state.radiusLayer?.setStyle({ color, fillColor: color });
+    state.unknownRadiusLayer?.setStyle({ color });
+  };
+  new MutationObserver(refreshMapPalette).observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["data-theme"]
+  });
+  const colorScheme = window.matchMedia("(prefers-color-scheme: dark)");
+  if (typeof colorScheme.addEventListener === "function") colorScheme.addEventListener("change", refreshMapPalette);
 
   loadBoundaries();
   showOnly("gate");

@@ -1,0 +1,219 @@
+{
+  "schema_version": "1.0.0",
+  "manifest_id": "saensuk.citychat.public-assets.v3.2026-09-06",
+  "project": "CityChat Saensuk review desk",
+  "recorded_at": "2026-09-06",
+  "approval": {
+    "status": "approved_for_site_scoped_roles",
+    "approver": "Montri (owner/user)",
+    "date": "2026-09-06",
+    "basis": "owner-message:2026-09-06:use-citychat-logo-and-motif-on-saensuk-review-desk",
+    "permission_scope": "Public use on the Saensuk CityChat review desk in the exact approved roles and surfaces recorded below. No broader reuse or relicensing is inferred."
+  },
+  "cache": {
+    "strategy": "revision-bearing-filename",
+    "asset_revision": "v091",
+    "page_bundle_revision": "20260906-marker-brand",
+    "note": "The four public asset URLs carry v091 in their filenames; a byte change requires a new revision-bearing filename and a matching manifest update."
+  },
+  "source_set": {
+    "supplied_by": "Verified, owner-approved CityChat landing handoff",
+    "creator_or_rights_owner": "Not stated in the supplied handoff; this manifest records only the site-scoped owner approval above.",
+    "checksum_manifest": "PREPARED-SHA256SUMS.txt",
+    "attribution": "No on-page credit was supplied or required by the site-scoped approval. Do not infer a license for use outside the approved roles."
+  },
+  "assets": [
+    {
+      "asset_id": "citychat.identity.hero-lockup.light-surface.v091",
+      "approval_ref": "#/approval",
+      "supplied_by_ref": "#/source_set/supplied_by",
+      "credit_or_attribution_ref": "#/source_set/attribution",
+      "source": {
+        "handoff_path": "templates/citychat-landing/assets/citychat-lockup.png",
+        "immutable_ref": "sha256:a716ce59bdd2b0c3a3ea459c14800b07d0da77b1e474d24cf13ba201f34fa214",
+        "sha256": "a716ce59bdd2b0c3a3ea459c14800b07d0da77b1e474d24cf13ba201f34fa214"
+      },
+      "target": {
+        "public_path": "assets/brand/citychat-lockup-v091-light-surface.png",
+        "cache_revision": "v091",
+        "mime_type": "image/png",
+        "width_px": 494,
+        "height_px": 106,
+        "byte_length": 16512,
+        "sha256": "a716ce59bdd2b0c3a3ea459c14800b07d0da77b1e474d24cf13ba201f34fa214"
+      },
+      "transformation": {
+        "kind": "exact_copy",
+        "recipe": "Copy the hash-verified handoff PNG byte-for-byte; rename only the target file."
+      },
+      "approved_roles": ["identity.hero"],
+      "approved_surface_roles": ["light_surface"],
+      "approved_audiences": ["public_web"],
+      "prohibited_roles": [
+        "identity.secondary_logo",
+        "identity.compact_symbol",
+        "identity.favicon",
+        "identity.touch_icon",
+        "identity.maskable_icon",
+        "social_preview",
+        "social_avatar",
+        "evidence"
+      ],
+      "alt_or_text_equivalent": {
+        "th": "CityChat",
+        "en": "CityChat",
+        "integration": "Give the identity wrapper the accessible name CityChat and keep this child image alt empty so the name is announced once."
+      },
+      "review_notes": {
+        "privacy": "Brand artwork only; no person, location, credential, document, notification, or screen content.",
+        "background_people": "None.",
+        "document_or_screen": "None.",
+        "visual": "Transparent 494 x 106 RGBA canvas and exact source/target byte parity verified. Intended only for a light surface. Rendered responsive, minimum-size, and surface checks remain part of release QA."
+      }
+    },
+    {
+      "asset_id": "citychat.identity.hero-lockup.deep-surface.v091",
+      "approval_ref": "#/approval",
+      "supplied_by_ref": "#/source_set/supplied_by",
+      "credit_or_attribution_ref": "#/source_set/attribution",
+      "source": {
+        "handoff_path": "templates/citychat-landing/assets/citychat-lockup-dark.png",
+        "immutable_ref": "sha256:032bd864e187598f645d5adb1fadb99c15c9cb9cc0beb5af015203d0709bfa44",
+        "sha256": "032bd864e187598f645d5adb1fadb99c15c9cb9cc0beb5af015203d0709bfa44"
+      },
+      "target": {
+        "public_path": "assets/brand/citychat-lockup-v091-deep-surface.png",
+        "cache_revision": "v091",
+        "mime_type": "image/png",
+        "width_px": 494,
+        "height_px": 106,
+        "byte_length": 18461,
+        "sha256": "032bd864e187598f645d5adb1fadb99c15c9cb9cc0beb5af015203d0709bfa44"
+      },
+      "transformation": {
+        "kind": "exact_copy",
+        "recipe": "Copy the hash-verified handoff PNG byte-for-byte; rename only the target file."
+      },
+      "approved_roles": ["identity.hero"],
+      "approved_surface_roles": ["deep_surface"],
+      "approved_audiences": ["public_web"],
+      "prohibited_roles": [
+        "identity.secondary_logo",
+        "identity.compact_symbol",
+        "identity.favicon",
+        "identity.touch_icon",
+        "identity.maskable_icon",
+        "social_preview",
+        "social_avatar",
+        "evidence"
+      ],
+      "alt_or_text_equivalent": {
+        "th": "CityChat",
+        "en": "CityChat",
+        "integration": "Give the identity wrapper the accessible name CityChat and keep this child image alt empty so the name is announced once."
+      },
+      "review_notes": {
+        "privacy": "Brand artwork only; no person, location, credential, document, notification, or screen content.",
+        "background_people": "None.",
+        "document_or_screen": "None.",
+        "visual": "Transparent 494 x 106 RGBA canvas and exact source/target byte parity verified. Intended only for a deep CityChat surface. Rendered responsive, minimum-size, and surface checks remain part of release QA."
+      }
+    },
+    {
+      "asset_id": "citychat.conversation-motif.decorative.light.v091",
+      "approval_ref": "#/approval",
+      "supplied_by_ref": "#/source_set/supplied_by",
+      "credit_or_attribution_ref": "#/source_set/attribution",
+      "source": {
+        "handoff_path": "templates/citychat-landing/assets/conversation-motif.svg",
+        "immutable_ref": "sha256:fa67237428dc510cb4e7bc15e86e3764e9911db8a5e26787cb7d40291a284ca4",
+        "sha256": "fa67237428dc510cb4e7bc15e86e3764e9911db8a5e26787cb7d40291a284ca4"
+      },
+      "target": {
+        "public_path": "assets/brand/conversation-motif-v091-light.svg",
+        "cache_revision": "v091",
+        "mime_type": "image/svg+xml",
+        "width_px": 156,
+        "height_px": 127,
+        "byte_length": 3772,
+        "sha256": "55832f8d044919d0055584394e101501dec75a64b298f12360f14c31a41b70c6"
+      },
+      "transformation": {
+        "kind": "deterministic_derivative",
+        "recipe": "Remove the source SVG metadata element; preserve the 156 x 127 viewBox, paths, filter geometry, and all other drawing data; replace #00B783 with #007A58 and #00DFA0 with #007E79."
+      },
+      "approved_roles": ["conversation_motif.decorative"],
+      "approved_surface_roles": ["light_surface"],
+      "approved_audiences": ["public_web"],
+      "prohibited_roles": [
+        "identity",
+        "identity.secondary_logo",
+        "identity.favicon",
+        "identity.touch_icon",
+        "social_preview",
+        "social_avatar",
+        "informational_diagram",
+        "evidence"
+      ],
+      "alt_or_text_equivalent": {
+        "th": "",
+        "en": "",
+        "integration": "Decorative only: use an empty alt attribute and do not expose it as an identity mark or informational diagram."
+      },
+      "review_notes": {
+        "privacy": "Abstract conversation artwork only; no person, location, credential, document, notification, or screen content. Source provenance metadata was removed from the public derivative.",
+        "background_people": "None.",
+        "document_or_screen": "None.",
+        "visual": "Geometry and shadow filter retained; only the two product colors were remapped for the light surface. Rendered crop, collision, and contrast checks remain part of release QA."
+      }
+    },
+    {
+      "asset_id": "citychat.conversation-motif.decorative.dark.v091",
+      "approval_ref": "#/approval",
+      "supplied_by_ref": "#/source_set/supplied_by",
+      "credit_or_attribution_ref": "#/source_set/attribution",
+      "source": {
+        "handoff_path": "templates/citychat-landing/assets/conversation-motif.svg",
+        "immutable_ref": "sha256:fa67237428dc510cb4e7bc15e86e3764e9911db8a5e26787cb7d40291a284ca4",
+        "sha256": "fa67237428dc510cb4e7bc15e86e3764e9911db8a5e26787cb7d40291a284ca4"
+      },
+      "target": {
+        "public_path": "assets/brand/conversation-motif-v091-dark.svg",
+        "cache_revision": "v091",
+        "mime_type": "image/svg+xml",
+        "width_px": 156,
+        "height_px": 127,
+        "byte_length": 3772,
+        "sha256": "74a28f779621f25770b79b26cce6787c9f3c192a6b55b1664ecb402d4da0360f"
+      },
+      "transformation": {
+        "kind": "deterministic_derivative",
+        "recipe": "Remove the source SVG metadata element; preserve the 156 x 127 viewBox, paths, filter geometry, and all other drawing data; replace #00B783 with #3BD19B and #00DFA0 with #3BD3CB."
+      },
+      "approved_roles": ["conversation_motif.decorative"],
+      "approved_surface_roles": ["dark_surface"],
+      "approved_audiences": ["public_web"],
+      "prohibited_roles": [
+        "identity",
+        "identity.secondary_logo",
+        "identity.favicon",
+        "identity.touch_icon",
+        "social_preview",
+        "social_avatar",
+        "informational_diagram",
+        "evidence"
+      ],
+      "alt_or_text_equivalent": {
+        "th": "",
+        "en": "",
+        "integration": "Decorative only: use an empty alt attribute and do not expose it as an identity mark or informational diagram."
+      },
+      "review_notes": {
+        "privacy": "Abstract conversation artwork only; no person, location, credential, document, notification, or screen content. Source provenance metadata was removed from the public derivative.",
+        "background_people": "None.",
+        "document_or_screen": "None.",
+        "visual": "Geometry and shadow filter retained; only the two product colors were remapped for the dark surface. Rendered crop, collision, and contrast checks remain part of release QA."
+      }
+    }
+  ]
+}

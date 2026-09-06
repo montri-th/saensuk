@@ -1,0 +1,71 @@
+artifact: saensuk-house-geocode-review-desk
+artifact_release: "v3-2026-09-06"
+audience: [municipal_officer, municipal_executive]
+locale: [th]
+
+lds:
+  release: "0.9.1"
+  authoring: "0.9.1-r8"
+  machine: "v0.9.1-mp7"
+  colorSet: "color-srgb-05"
+  package_validation: "passed 5,394 checks before implementation"
+
+addon:
+  release: "0.9.1"
+  doc: "project-source:CityChat-DS-Addon-v0.9.1-normative.md"
+  doc_sha256: "6956ee39bb0e83036efd9ef730bd0200e97e1facf3f39ca2195a5da7de65d3e3"
+  reference_css: "verified-handoff:templates/citychat-landing/citychat.css"
+  reference_css_sha256: "58749c3a88290019175d3e568a047f92bc552f38298943df4e7f7bbdcfab0e16"
+  conformance_scope: "CC-SURF-01 and CityChat identity/motif roles used by this focused review desk"
+
+surface:
+  gradient_token: "--product-citychat-gradient"
+  foreground_contract: "--on-product-citychat*"
+  canvas_heading_token: "--citychat-heading"
+  theme_behavior: "light theme uses deep product field; dark theme uses light product field"
+
+identity:
+  asset_manifest: "governance/assets.json"
+  hero_lockup: "exact verified bytes, surface-selected, no carrier, filter, or crop"
+  conversation_motif: "decorative governed derivative, surface-selected, empty alt"
+  prohibited_roles: [favicon, touch_icon, compact_logo, secondary_logo, social_preview, evidence]
+
+nav:
+  preset: "focused-review-desk existing header"
+  applicability: "The cross-property CityChat landing r7 navigation and bookmark rail are outside this operational tool release."
+  controls: "44px minimum targets; menu closes with Escape and outside click"
+
+motion:
+  contract: "no new reveal, parallax, carousel, or looping animation"
+  reducedMotion: "final_state"
+  noJavaScript: "aggregate narrative remains visible; interactive review desk explains its requirement"
+
+icons:
+  interface_glyphs: "No new font glyphs introduced."
+  map_symbols: "component-local analytical shapes: cross, split hexagon, triangle, numbered group, selection ring"
+
+content:
+  source_snapshot: "master table v3, 2026-09-05"
+  source_sha256: "15b897a48bdd14cf8c6ca71bcd560bf800102480a6ad7e5d35b433b85837bb4e"
+  records: 42524
+  positioned_records: 39056
+  field_verified_records: 0
+  truth_boundary: "Position coverage is not accuracy; imagery and boundaries are supporting context, not verification or legal evidence."
+
+qa:
+  tested_at: "2026-09-06"
+  light_lockup_and_motif: "passed rendered desktop and mobile review"
+  dark_lockup_and_motif: "passed rendered desktop review"
+  marker_collision: "passed z13/z16/z18/z19/z20 with zero center pairs under 36px; minimum 40.2px"
+  marker_interaction: "cluster zoom and maximum-zoom record cycling passed"
+  marker_redraw: "median 6.6–19.3ms across tested zooms"
+  responsive: "passed 320, 360, 390, 768, 1024, 1180, and 1440 CSS px"
+  text_scaling: "passed Thai 130% and 200% reflow without horizontal overflow"
+  accessibility: "keyboard selection, focus retention, reduced motion, live status, and redundant color/shape legend passed"
+  privacy: "0 restricted-field matches in tracked public files; no third-party request before explicit map opt-in"
+  external_maps: "Street View and Google Maps URLs contain selected coordinates only and open after explicit action"
+  open_manual_gate: "Physical iPhone/Safari behavior is not yet tested; responsive browser emulation passed."
+
+claim:
+  statement: "Strictly applies the approved v0.9.1 rules within the recorded component scope; it does not claim to be the CityChat public landing-page template."
+  owner_basis: "owner-message:2026-09-06:use-citychat-logo-and-motif-on-saensuk-review-desk"
