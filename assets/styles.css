@@ -96,27 +96,80 @@ svg {
   min-width: 0;
   min-height: 44px;
   align-items: center;
-  gap: var(--space-3);
+  gap: 14px;
   color: var(--text-primary);
   text-decoration: none;
 }
 
+.landometer-nav-identity {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.landometer-nav-symbol {
+  width: 54px;
+  height: 54px;
+  flex: 0 0 54px;
+  object-fit: contain;
+}
+
 .landometer-name {
   font-family: "Arvo", Georgia, serif;
-  font-size: 20px;
+  color: #757575;
+  font-size: 23px;
   font-weight: 700;
-  line-height: 1.2;
+  letter-spacing: -0.02em;
+  line-height: 1.02;
+  white-space: nowrap;
 }
 
 .brand-divider {
-  width: 1px;
-  height: 24px;
-  background: var(--border-emphasis);
+  flex: 0 0 auto;
+  color: var(--text-metadata);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 15px;
+  line-height: 1;
+}
+
+.nav-citychat-lockup {
+  display: inline-flex;
+  width: 140px;
+  flex: 0 0 auto;
+  align-items: center;
+}
+
+.nav-citychat-lockup img {
+  width: 100%;
+  height: auto;
+}
+
+.nav-citychat-lockup-deep-surface {
+  display: none;
+}
+
+:root[data-theme="dark"] .nav-citychat-lockup-light-surface {
+  display: none;
+}
+
+:root[data-theme="dark"] .nav-citychat-lockup-deep-surface {
+  display: block;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .nav-citychat-lockup-light-surface {
+    display: none;
+  }
+
+  :root:not([data-theme="light"]) .nav-citychat-lockup-deep-surface {
+    display: block;
+  }
 }
 
 .product-name {
-  color: var(--citychat-primary);
-  font-size: 0.875rem;
+  color: var(--text-metadata);
+  font-size: 0.8125rem;
   font-weight: 600;
   white-space: nowrap;
 }
@@ -1688,6 +1741,13 @@ tbody th {
   }
 }
 
+@media (max-width: 840px) {
+  .landometer-name,
+  .product-name {
+    display: none;
+  }
+}
+
 @media (max-width: 720px) {
   .nav-panel:not([hidden]) {
     align-items: stretch;
@@ -1765,12 +1825,17 @@ tbody th {
     gap: var(--space-3);
   }
 
-  .product-name {
-    font-size: 0.8125rem;
+  .brand-link {
+    gap: var(--space-2);
   }
 
-  .product-place {
-    display: none;
+  .nav-citychat-lockup {
+    width: 116px;
+  }
+
+  .menu-toggle {
+    padding-right: var(--space-4);
+    padding-left: var(--space-4);
   }
 
   .js .nav-panel {
@@ -1885,6 +1950,26 @@ tbody th {
   }
 }
 
+@media (max-width: 420px) {
+  .header-inner {
+    gap: var(--space-2);
+  }
+
+  .landometer-nav-identity,
+  .brand-divider {
+    display: none;
+  }
+
+  .nav-citychat-lockup {
+    width: clamp(84px, 30vw, 116px);
+  }
+
+  .menu-toggle {
+    padding-right: var(--space-2);
+    padding-left: var(--space-2);
+  }
+}
+
 @media (max-width: 480px) {
   .brand-divider {
     display: none;
@@ -1896,16 +1981,8 @@ tbody th {
 }
 
 @media (max-width: 360px) {
-  .landometer-name {
-    font-size: 18px;
-  }
-
-  .product-name {
-    max-width: 80px;
-  }
-
   .menu-toggle {
-    padding-inline: var(--space-4);
+    padding-inline: var(--space-2);
   }
 
   .theme-options {
@@ -1983,6 +2060,14 @@ tbody th {
   }
 
   .citychat-lockup-light-surface {
+    display: none !important;
+  }
+
+  .nav-citychat-lockup-light-surface {
+    display: block !important;
+  }
+
+  .nav-citychat-lockup-deep-surface {
     display: none !important;
   }
 

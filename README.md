@@ -43,9 +43,9 @@ GitHub Pages project sites under `montri-th.github.io` share one browser origin.
 - Implementation plan v1 — 2026-09-04
 - Visual guidance: Landometer Design System v0.9.1 (`v0.9.1-mp7`) and the approved normative CityChat DS Add-on v0.9.1. This page does not claim artifact-level conformance.
 
-The hero uses the two exact, hash-verified CityChat horizontal lockups supplied by the governed handoff, selected for light or deep surfaces. Its Conversation Motif derivatives preserve the supplied geometry while mapping only the two motif colors to approved CityChat light/dark surface colors and removing embedded source metadata. These assets are approved here only for `identity.hero` and `conversation_motif.decorative`; they are not approved as favicons, compact or secondary logos, social previews, diagrams, or evidence. Full hashes, source bindings, transformations, alt guidance, and review gates are recorded in `governance/assets.json`.
+The hero and navbar use the two exact, hash-verified CityChat horizontal lockups supplied by the governed handoff, selected by the surface they actually sit on. The navbar also uses the exact Landometer symbol required by the CityChat Add-on. Its Conversation Motif derivatives preserve the supplied geometry while mapping only the two motif colors to approved CityChat light/dark surface colors and removing embedded source metadata.
 
-No favicon, app icon, or large-image social preview is declared because the approved CityChat assets do not carry those roles.
+The browser tab uses the exact hash-bound CityChat favicon bytes previously governed for that role and newly approved by the owner specifically for this Saensuk URL. It is not reused as a navbar, touch, maskable, search, social, or evidence asset. No app/touch icon or large-image social preview is declared. Full hashes, source bindings, role approvals, transformations, alt guidance, and review gates are recorded in `governance/assets.json`.
 
 Leaflet 1.9.4 is vendored locally under `assets/vendor/leaflet/` with its BSD-2-Clause license. The JavaScript and CSS hashes match the official Leaflet distribution.
 

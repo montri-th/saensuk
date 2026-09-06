@@ -1,0 +1,98 @@
+{
+  "schemaVersion": "1.0.0",
+  "manifestId": "saensuk-citychat-governed-raster-assets-v4-20260906",
+  "assets": [
+    {
+      "assetId": "citychat.identity.hero-lockup.light-surface.v091",
+      "path": "assets/brand/citychat-lockup-v091-light-surface.png",
+      "mediaType": "image/png",
+      "width": 494,
+      "height": 106,
+      "bytes": 16512,
+      "sha256": "a716ce59bdd2b0c3a3ea459c14800b07d0da77b1e474d24cf13ba201f34fa214",
+      "transparentCanvas": true,
+      "metadataStripped": true,
+      "suppliedBy": "Verified CityChat v0.9.1 landing handoff",
+      "approvalStatus": "approved",
+      "publicationBasis": "Owner-approved for the Saensuk CityChat hero on 2026-09-06 and extended to the navbar by owner request on 2026-09-06.",
+      "approvedRoles": ["identity.hero", "identity.header_nav"],
+      "prohibitedRoles": ["identity.compact_symbol", "identity.favicon", "identity.touch_icon", "identity.maskable_icon", "social_preview", "social_avatar", "evidence"],
+      "approvedSurfaces": ["light_surface"],
+      "ownerApproval": {
+        "status": "approved",
+        "approvedAt": "2026-09-06",
+        "scope": "Exact bytes on the Saensuk public review desk hero and light navbar surface only.",
+        "sourceRef": "owner-message:2026-09-06:use-citychat-logo-and-motif; owner-message:2026-09-06:add-favicon-and-logo-to-navbar"
+      }
+    },
+    {
+      "assetId": "citychat.identity.hero-lockup.deep-surface.v091",
+      "path": "assets/brand/citychat-lockup-v091-deep-surface.png",
+      "mediaType": "image/png",
+      "width": 494,
+      "height": 106,
+      "bytes": 18461,
+      "sha256": "032bd864e187598f645d5adb1fadb99c15c9cb9cc0beb5af015203d0709bfa44",
+      "transparentCanvas": true,
+      "metadataStripped": true,
+      "suppliedBy": "Verified CityChat v0.9.1 landing handoff",
+      "approvalStatus": "approved",
+      "publicationBasis": "Owner-approved for the Saensuk CityChat hero on 2026-09-06 and extended to the navbar by owner request on 2026-09-06.",
+      "approvedRoles": ["identity.hero", "identity.header_nav"],
+      "prohibitedRoles": ["identity.compact_symbol", "identity.favicon", "identity.touch_icon", "identity.maskable_icon", "social_preview", "social_avatar", "evidence"],
+      "approvedSurfaces": ["deep_surface"],
+      "ownerApproval": {
+        "status": "approved",
+        "approvedAt": "2026-09-06",
+        "scope": "Exact bytes on the Saensuk public review desk hero and deep navbar surface only.",
+        "sourceRef": "owner-message:2026-09-06:use-citychat-logo-and-motif; owner-message:2026-09-06:add-favicon-and-logo-to-navbar"
+      }
+    },
+    {
+      "assetId": "landometer.identity.nav-symbol.color.v091",
+      "path": "assets/brand/landometer-symbol-color-v091-990c90fa.png",
+      "mediaType": "image/png",
+      "width": 1601,
+      "height": 1601,
+      "bytes": 44732,
+      "sha256": "990c90fa03caf6386a182c9920b68c9e4434847b90942e95f9d5c7b91dbf6393",
+      "transparentCanvas": true,
+      "metadataStripped": true,
+      "suppliedBy": "Verified CityChat v0.9.1 landing handoff",
+      "approvalStatus": "approved",
+      "publicationBasis": "The CityChat Add-on specifies this exact symbol in the navbar; the owner requested the missing navbar logo on 2026-09-06.",
+      "approvedRoles": ["identity.header_nav.symbol"],
+      "prohibitedRoles": ["identity.favicon", "identity.touch_icon", "identity.maskable_icon", "social_preview", "social_avatar", "evidence"],
+      "approvedSurfaces": ["light_surface", "dark_surface"],
+      "ownerApproval": {
+        "status": "approved",
+        "approvedAt": "2026-09-06",
+        "scope": "Exact bytes at 54 CSS px in the Saensuk public review desk navbar only.",
+        "sourceRef": "owner-message:2026-09-06:add-favicon-and-logo-to-navbar"
+      }
+    },
+    {
+      "assetId": "citychat.identity.favicon.browser-tab.3b7439f6",
+      "path": "assets/brand/citychat-favicon-3b7439f6.png",
+      "mediaType": "image/png",
+      "width": 250,
+      "height": 265,
+      "bytes": 7315,
+      "sha256": "3b7439f689fa6172660375e073ce3cbcd967ee2766c9d962522f712468e3b58a",
+      "transparentCanvas": true,
+      "metadataStripped": true,
+      "suppliedBy": "Previously governed CityChat browser-tab identity asset",
+      "approvalStatus": "approved",
+      "publicationBasis": "The owner explicitly requested a favicon on the Saensuk CityChat site on 2026-09-06, rebinding these exact bytes to this URL and role.",
+      "approvedRoles": ["identity.favicon.browser_tab"],
+      "prohibitedRoles": ["identity.header_nav", "identity.compact_symbol", "identity.touch_icon", "identity.maskable_icon", "search_icon", "social_preview", "social_avatar", "evidence"],
+      "approvedSurfaces": ["browser_chrome_all_themes"],
+      "ownerApproval": {
+        "status": "approved",
+        "approvedAt": "2026-09-06",
+        "scope": "Exact bytes as the browser-tab favicon for https://montri-th.github.io/saensuk/ only.",
+        "sourceRef": "owner-message:2026-09-06:add-favicon-and-logo-to-navbar"
+      }
+    }
+  ]
+}

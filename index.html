@@ -9,6 +9,7 @@
   <meta name="theme-color" content="#1D4497">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: https://tile.openstreetmap.org https://services.arcgisonline.com; connect-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'">
+  <link rel="icon" type="image/png" href="assets/brand/citychat-favicon-3b7439f6.png">
   <link rel="canonical" href="https://montri-th.github.io/saensuk/">
   <meta property="og:type" content="website">
   <meta property="og:locale" content="th_TH">
@@ -24,7 +25,7 @@
   <link rel="preload" href="assets/fonts/bai-jamjuree-thai-400-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="assets/tokens.css?v=20260906-marker-brand">
   <link rel="stylesheet" href="assets/vendor/leaflet/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
-  <link rel="stylesheet" href="assets/styles.css?v=20260906-marker-brand">
+  <link rel="stylesheet" href="assets/styles.css?v=20260906-nav-identity">
   <link rel="stylesheet" href="assets/explorer.css?v=20260906-marker-brand">
   <script defer src="assets/vendor/leaflet/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
   <script defer src="assets/app.js"></script>
@@ -37,9 +38,16 @@
   <header class="site-header" data-header>
     <div class="header-inner">
       <a class="brand-link" href="#top" aria-current="page" aria-label="Landometer — CityChat แสนสุข หน้านี้">
-        <span class="landometer-name">Landometer</span>
-        <span class="brand-divider" aria-hidden="true"></span>
-        <span class="product-name">CityChat<span class="product-place"> · แสนสุข</span></span>
+        <span class="landometer-nav-identity" aria-hidden="true">
+          <img class="landometer-nav-symbol" src="assets/brand/landometer-symbol-color-v091-990c90fa.png" width="1601" height="1601" alt="">
+          <span class="landometer-name">Landometer</span>
+        </span>
+        <span class="brand-divider" aria-hidden="true">/</span>
+        <span class="nav-citychat-lockup" aria-hidden="true">
+          <img class="nav-citychat-lockup-light-surface" src="assets/brand/citychat-lockup-v091-light-surface.png" width="494" height="106" alt="">
+          <img class="nav-citychat-lockup-deep-surface" src="assets/brand/citychat-lockup-v091-deep-surface.png" width="494" height="106" alt="">
+        </span>
+        <span class="product-name">· แสนสุข</span>
       </a>
 
       <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav" hidden>

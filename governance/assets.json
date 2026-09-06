@@ -1,20 +1,46 @@
 {
   "schema_version": "1.0.0",
-  "manifest_id": "saensuk.citychat.public-assets.v3.2026-09-06",
+  "manifest_id": "saensuk.citychat.public-assets.v4.2026-09-06",
   "project": "CityChat Saensuk review desk",
   "recorded_at": "2026-09-06",
   "approval": {
     "status": "approved_for_site_scoped_roles",
     "approver": "Montri (owner/user)",
     "date": "2026-09-06",
-    "basis": "owner-message:2026-09-06:use-citychat-logo-and-motif-on-saensuk-review-desk",
-    "permission_scope": "Public use on the Saensuk CityChat review desk in the exact approved roles and surfaces recorded below. No broader reuse or relicensing is inferred."
+    "basis": "owner-message:2026-09-06:use-citychat-logo-and-motif-on-saensuk-review-desk; owner-message:2026-09-06:add-favicon-and-logo-to-navbar",
+    "permission_scope": "Public use on the Saensuk CityChat review desk in the exact approved hero, navbar identity, decorative motif, and browser-tab favicon roles and surfaces recorded below. No broader reuse or relicensing is inferred."
   },
+  "role_approvals": [
+    {
+      "approval_id": "SAENSUK-CC-ID-ROLE-APP-20260906-NAV-01",
+      "status": "approved",
+      "authority_basis": "owner-message:2026-09-06:add-favicon-and-logo-to-navbar",
+      "artifact_binding": "https://montri-th.github.io/saensuk/",
+      "role": "identity.header_nav",
+      "asset_ids": [
+        "landometer.identity.nav-symbol.color.v091",
+        "citychat.identity.hero-lockup.light-surface.v091",
+        "citychat.identity.hero-lockup.deep-surface.v091"
+      ],
+      "surface_mapping": "Landometer symbol is unchanged in both themes; CityChat light-surface lockup is used on a light navbar and the deep-surface lockup on a dark navbar.",
+      "transformation_policy": "Exact bytes only; no crop, recolor, filter, carrier, or animation."
+    },
+    {
+      "approval_id": "SAENSUK-CC-ID-ROLE-APP-20260906-FAVICON-01",
+      "status": "approved",
+      "authority_basis": "owner-message:2026-09-06:add-favicon-and-logo-to-navbar",
+      "artifact_binding": "https://montri-th.github.io/saensuk/",
+      "role": "identity.favicon.browser_tab",
+      "asset_ids": ["citychat.identity.favicon.browser-tab.3b7439f6"],
+      "surface_mapping": "Browser chrome in light, dark, and system appearance.",
+      "transformation_policy": "Copy the previously governed CityChat browser-tab favicon byte-for-byte; no crop, resize, recolor, filter, mask, or alternate role."
+    }
+  ],
   "cache": {
     "strategy": "revision-bearing-filename",
-    "asset_revision": "v091",
-    "page_bundle_revision": "20260906-building-only",
-    "note": "The four public asset URLs carry v091 in their filenames; a byte change requires a new revision-bearing filename and a matching manifest update."
+    "asset_revision": "v091-and-content-hash",
+    "page_bundle_revision": "20260906-building-only-and-nav-identity",
+    "note": "The six public brand asset URLs carry either v091 or an eight-character SHA-256 prefix. Navbar CSS uses revision 20260906-nav-identity; marker-grouping JavaScript uses revision 20260906-building-only. A byte change requires a new revision-bearing filename or query and a matching manifest update."
   },
   "source_set": {
     "supplied_by": "Verified, owner-approved CityChat landing handoff",
@@ -46,7 +72,7 @@
         "kind": "exact_copy",
         "recipe": "Copy the hash-verified handoff PNG byte-for-byte; rename only the target file."
       },
-      "approved_roles": ["identity.hero"],
+      "approved_roles": ["identity.hero", "identity.header_nav"],
       "approved_surface_roles": ["light_surface"],
       "approved_audiences": ["public_web"],
       "prohibited_roles": [
@@ -94,7 +120,7 @@
         "kind": "exact_copy",
         "recipe": "Copy the hash-verified handoff PNG byte-for-byte; rename only the target file."
       },
-      "approved_roles": ["identity.hero"],
+      "approved_roles": ["identity.hero", "identity.header_nav"],
       "approved_surface_roles": ["deep_surface"],
       "approved_audiences": ["public_web"],
       "prohibited_roles": [
@@ -213,6 +239,101 @@
         "background_people": "None.",
         "document_or_screen": "None.",
         "visual": "Geometry and shadow filter retained; only the two product colors were remapped for the dark surface. Rendered crop, collision, and contrast checks remain part of release QA."
+      }
+    },
+    {
+      "asset_id": "landometer.identity.nav-symbol.color.v091",
+      "approval_ref": "#/role_approvals/0",
+      "supplied_by": "Verified CityChat v0.9.1 landing handoff",
+      "credit_or_attribution_ref": "#/source_set/attribution",
+      "source": {
+        "handoff_path": "templates/citychat-landing/assets/landometer-symbol-color.png",
+        "immutable_ref": "sha256:990c90fa03caf6386a182c9920b68c9e4434847b90942e95f9d5c7b91dbf6393",
+        "sha256": "990c90fa03caf6386a182c9920b68c9e4434847b90942e95f9d5c7b91dbf6393"
+      },
+      "target": {
+        "public_path": "assets/brand/landometer-symbol-color-v091-990c90fa.png",
+        "cache_revision": "v091-990c90fa",
+        "mime_type": "image/png",
+        "width_px": 1601,
+        "height_px": 1601,
+        "byte_length": 44732,
+        "sha256": "990c90fa03caf6386a182c9920b68c9e4434847b90942e95f9d5c7b91dbf6393"
+      },
+      "transformation": {
+        "kind": "exact_copy",
+        "recipe": "Copy the hash-verified handoff PNG byte-for-byte; rename only the target file."
+      },
+      "approved_roles": ["identity.header_nav.symbol"],
+      "approved_surface_roles": ["light_surface", "dark_surface"],
+      "approved_audiences": ["public_web"],
+      "prohibited_roles": [
+        "identity.favicon",
+        "identity.touch_icon",
+        "identity.maskable_icon",
+        "social_preview",
+        "social_avatar",
+        "evidence"
+      ],
+      "alt_or_text_equivalent": {
+        "th": "Landometer",
+        "en": "Landometer",
+        "integration": "Keep the image alt empty inside the navbar identity link; its accessible name already contains Landometer and CityChat."
+      },
+      "review_notes": {
+        "privacy": "Brand artwork only; no person, location, credential, document, notification, or screen content.",
+        "background_people": "None.",
+        "document_or_screen": "None.",
+        "visual": "Transparent 1601 x 1601 RGBA canvas, exact source/target byte parity, and unchanged two-theme usage. Render at the Add-on-specified 54 CSS px without crop, recolor, filter, or carrier."
+      }
+    },
+    {
+      "asset_id": "citychat.identity.favicon.browser-tab.3b7439f6",
+      "approval_ref": "#/role_approvals/1",
+      "supplied_by": "Previously governed CityChat browser-tab identity asset, newly rebound by the owner to the Saensuk site",
+      "credit_or_attribution_ref": "#/source_set/attribution",
+      "source": {
+        "project_reference_path": "citychat_publish_repo/deployment/assets/identity/citychat-favicon-3b7439f6.png",
+        "source_version": "citychat-lockup.source.svg#image0_553_8896",
+        "immutable_ref": "sha256:3b7439f689fa6172660375e073ce3cbcd967ee2766c9d962522f712468e3b58a",
+        "sha256": "3b7439f689fa6172660375e073ce3cbcd967ee2766c9d962522f712468e3b58a"
+      },
+      "target": {
+        "public_path": "assets/brand/citychat-favicon-3b7439f6.png",
+        "cache_revision": "3b7439f6",
+        "mime_type": "image/png",
+        "width_px": 250,
+        "height_px": 265,
+        "byte_length": 7315,
+        "sha256": "3b7439f689fa6172660375e073ce3cbcd967ee2766c9d962522f712468e3b58a"
+      },
+      "transformation": {
+        "kind": "exact_copy",
+        "recipe": "Copy the previously governed PNG byte-for-byte; rename only the target path when needed."
+      },
+      "approved_roles": ["identity.favicon.browser_tab"],
+      "approved_surface_roles": ["browser_chrome_all_themes"],
+      "approved_audiences": ["public_web"],
+      "prohibited_roles": [
+        "identity.header_nav",
+        "identity.compact_symbol",
+        "identity.touch_icon",
+        "identity.maskable_icon",
+        "search_icon",
+        "social_preview",
+        "social_avatar",
+        "evidence"
+      ],
+      "alt_or_text_equivalent": {
+        "th": "",
+        "en": "",
+        "integration": "Browser metadata only; do not render as meaningful page content."
+      },
+      "review_notes": {
+        "privacy": "Brand artwork only; no person, location, credential, document, notification, or screen content.",
+        "background_people": "None.",
+        "document_or_screen": "None.",
+        "visual": "Transparent 250 x 265 RGBA browser-tab asset visually reviewed at source size. Cold- and warm-cache browser delivery remain release QA gates."
       }
     }
   ]

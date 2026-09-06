@@ -26,13 +26,17 @@ surface:
 
 identity:
   asset_manifest: "governance/assets.json"
+  raster_verification_manifest: "governance/image-assets.json"
   hero_lockup: "exact verified bytes, surface-selected, no carrier, filter, or crop"
+  navbar_identity: "exact Landometer symbol plus exact CityChat v0.9.1 surface-selected full lockup; owner-approved for this Saensuk navbar only"
+  favicon: "exact hash-bound CityChat browser-tab PNG; owner-approved for this Saensuk favicon role only"
   conversation_motif: "decorative governed derivative, surface-selected, empty alt"
-  prohibited_roles: [favicon, touch_icon, compact_logo, secondary_logo, social_preview, evidence]
+  prohibited_roles: [touch_icon, maskable_icon, standalone_compact_logo, social_preview, social_avatar, evidence]
 
 nav:
   preset: "focused-review-desk existing header"
   applicability: "The cross-property CityChat landing r7 navigation and bookmark rail are outside this operational tool release."
+  identity: "Landometer symbol at 54 CSS px and exact CityChat lockup; navbar variants follow the actual light or dark canvas surface."
   controls: "44px minimum targets; menu closes with Escape and outside click"
 
 motion:
@@ -56,6 +60,8 @@ qa:
   tested_at: "2026-09-06"
   light_lockup_and_motif: "passed rendered desktop and mobile review"
   dark_lockup_and_motif: "passed rendered desktop review"
+  navbar_identity: "passed light, explicit dark, system dark, 320–1440 CSS px, and 100/130/200% text-scale review; one surface-correct lockup remained visible and clear of the menu"
+  favicon: "passed local cold-cache and warm-cache delivery, image/png MIME, 250 x 265 dimensions, 7,315 bytes, exact SHA-256, and source visual review"
   marker_grouping: "proximity grouping removed; a numbered group now requires one exact coordinate plus condominium, office, or building-level semantics"
   marker_interaction: "ordinary coincident or sub-pixel points remain separate and cycle without a building badge; mixed same-coordinate records stay reachable; eligible-building groups zoom and cycle"
   marker_redraw: "synthetic 42,524-row grouping median 137.5ms; requires remeasurement with the controlled CSV"
@@ -64,7 +70,7 @@ qa:
   accessibility: "keyboard selection, focus retention, reduced motion, live status, and redundant color/shape legend passed"
   privacy: "0 restricted-field matches in tracked public files; no third-party request before explicit map opt-in"
   external_maps: "Street View and Google Maps URLs contain selected coordinates only and open after explicit action"
-  open_manual_gate: "Physical iPhone/Safari behavior is not yet tested; responsive browser emulation passed."
+  open_manual_gate: "Physical iPhone/Safari behavior is not yet tested; responsive browser emulation passed. Browser chrome may retain an older cached favicon after the live release even when origin bytes are correct."
 
 claim:
   statement: "Strictly applies the approved v0.9.1 rules within the recorded component scope; it does not claim to be the CityChat public landing-page template."
