@@ -17,7 +17,8 @@ The page accepts only the approved snapshot whose SHA-256 is `15b897a48bdd14cf8c
 ## Maps and outbound boundaries
 
 - The default map uses the same-origin community-boundary file and local CSV coordinates only; it makes no map-provider request.
-- The road basemap is an explicit opt-in. When enabled, visible tiles are requested from OpenStreetMap and the provider may receive the user's IP address and viewed area. Attribution remains visible.
+- Road and satellite basemaps are explicit opt-ins. The three-state control starts at `off`, can request road tiles from OpenStreetMap, or imagery tiles from Esri World Imagery. The selected provider may receive the user's IP address and viewed area; attribution remains visible.
+- Esri World Imagery can combine imagery from different dates, resolutions, and providers. It is context for comparison, not proof of current conditions, property rights, or legal boundaries.
 - Google Maps and Street View are opened only after an explicit click. Only the selected latitude/longitude is placed in the outgoing URL—never the house number, registration ID, parcel ID, note, or source filename. Google may still receive normal connection, IP, account, or session metadata.
 - Street View is enabled only for fine-grained parcel/building candidates without selected evidence-conflict flags. It is described as nearby imagery for review, not proof of a house location.
 - Community containment is a QA comparison and never overwrites the CSV's declared community.
@@ -42,7 +43,7 @@ Leaflet 1.9.4 is vendored locally under `assets/vendor/leaflet/` with its BSD-2-
 
 Serve the repository root with any static HTTP server, then open `index.html`. A local HTTP origin is required for the Web Worker and file verification workflow.
 
-The page loads without a third-party request. OpenStreetMap tiles and Google Maps/Street View become external only when the user explicitly chooses those actions.
+The page loads without a third-party request. OpenStreetMap or Esri World Imagery tiles and Google Maps/Street View become external only when the user explicitly chooses those actions.
 
 Run the synthetic parser checks with:
 

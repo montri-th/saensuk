@@ -126,7 +126,7 @@
     mapDisclosure: explorer.querySelector("[data-map-disclosure]"),
     fitResults: explorer.querySelector("[data-fit-results]"),
     toggleBoundaries: explorer.querySelector("[data-toggle-boundaries]"),
-    toggleTiles: explorer.querySelector("[data-toggle-tiles]"),
+    basemapButtons: [...explorer.querySelectorAll("[data-basemap]")],
     detailEmpty: explorer.querySelector("[data-detail-empty]"),
     detail: explorer.querySelector("[data-record-detail]"),
     detailId: explorer.querySelector("[data-detail-id]"),
@@ -168,8 +168,11 @@
     selectionMarker: null,
     radiusLayer: null,
     unknownRadiusLayer: null,
-    tileLayer: null,
-    tilesVisible: false,
+    basemap: "none",
+    basemapLayers: {
+      streets: null,
+      satellite: null
+    },
     searchTimer: null
   };
 
@@ -915,27 +918,52 @@
     elements.toggleBoundaries.textContent = state.boundariesVisible ? "ขอบเขตชุมชน" : "แสดงขอบเขตชุมชน";
   };
 
-  const toggleTiles = () => {
+  const BASEMAP_DISCLOSURES = {
+    none: "พื้นหลังปิดอยู่ จึงยังไม่ส่งพื้นที่ที่ดูออกไปภายนอก เลือกถนน (OpenStreetMap) หรือดาวเทียม (Esri World Imagery) เมื่อต้องการเปรียบเทียบ · ภาพถ่ายอาจต่างช่วงเวลาและความละเอียด ไม่ใช่หลักฐานสิทธิหรือแนวเขต · ระดับแปลงแสดงเป็นจุดอ้างอิง เพราะ CSV ไม่มีรูปแปลง",
+    streets: "พื้นหลังถนนจาก OpenStreetMap เปิดอยู่ ผู้ให้บริการอาจได้รับ IP และพื้นที่แผนที่ที่เปิดดู แต่เว็บไม่ส่งเลขที่บ้าน รหัสทะเบียน หรือไฟล์ CSV · ระดับแปลงยังแสดงเป็นจุดอ้างอิง เพราะ CSV ไม่มีรูปแปลง",
+    satellite: "ภาพถ่ายดาวเทียม Esri World Imagery เปิดอยู่ ผู้ให้บริการอาจได้รับ IP และพื้นที่แผนที่ที่เปิดดู แต่เว็บไม่ส่งเลขที่บ้าน รหัสทะเบียน หรือไฟล์ CSV · ภาพอาจมาจากหลายช่วงเวลาและหลายแหล่ง ใช้เปรียบเทียบบริบท ไม่ใช่หลักฐานสิทธิ ความสดของข้อมูล หรือแนวเขต"
+  };
+
+  const createBasemapLayer = (mode) => {
+    if (mode === "streets") {
+      return L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: 'พื้นหลังถนน © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap contributors</a>',
+        crossOrigin: false,
+        referrerPolicy: "no-referrer"
+      });
+    }
+    if (mode === "satellite") {
+      return L.tileLayer("https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
+        maxZoom: 20,
+        attribution: '<a href="https://www.arcgis.com/home/item.html?id=10df2279f9684e4a9f6a7f08febac2a9" target="_blank" rel="noreferrer">Esri World Imagery</a> · Source: Esri, Vantor, Earthstar Geographics, and the GIS User Community',
+        crossOrigin: false,
+        referrerPolicy: "no-referrer"
+      });
+    }
+    return null;
+  };
+
+  const setBasemap = (mode) => {
     ensureMap();
     if (!state.map) return;
-    state.tilesVisible = !state.tilesVisible;
-    if (state.tilesVisible) {
-      if (!state.tileLayer) {
-        state.tileLayer = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-          maxZoom: 19,
-          attribution: 'พื้นหลังถนน © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap contributors</a>',
-          crossOrigin: false
-        });
-      }
-      state.tileLayer.addTo(state.map);
-      state.tileLayer.bringToBack();
-      elements.mapDisclosure.textContent = "พื้นหลังถนนจาก OpenStreetMap เปิดอยู่ ผู้ให้บริการอาจได้รับ IP และพื้นที่แผนที่ที่เปิดดู แต่เว็บไม่ส่งเลขที่บ้าน รหัสทะเบียน หรือไฟล์ CSV · ระดับแปลงยังแสดงเป็นจุดอ้างอิง เพราะ CSV ไม่มีรูปแปลง";
-    } else {
-      if (state.tileLayer && state.map.hasLayer(state.tileLayer)) state.map.removeLayer(state.tileLayer);
-      elements.mapDisclosure.textContent = "พื้นหลังถนนปิดอยู่ จึงยังไม่ส่งพื้นที่ที่ดูออกไปภายนอก หากเปิด OpenStreetMap ผู้ให้บริการอาจได้รับ IP และพื้นที่ที่ดู · ระดับแปลงแสดงเป็นจุดอ้างอิง เพราะ CSV มีรหัสแปลงแต่ไม่มีรูปแปลง · ขอบเขตชุมชนใช้เพื่อสื่อสารและ QA ไม่ใช่แนวเขตทางกฎหมาย";
+
+    const nextMode = Object.prototype.hasOwnProperty.call(BASEMAP_DISCLOSURES, mode) ? mode : "none";
+    Object.entries(state.basemapLayers).forEach(([layerMode, layer]) => {
+      if (layerMode !== nextMode && layer && state.map.hasLayer(layer)) state.map.removeLayer(layer);
+    });
+
+    if (nextMode !== "none") {
+      if (!state.basemapLayers[nextMode]) state.basemapLayers[nextMode] = createBasemapLayer(nextMode);
+      state.basemapLayers[nextMode].addTo(state.map);
+      state.basemapLayers[nextMode].bringToBack();
     }
-    elements.toggleTiles.setAttribute("aria-pressed", String(state.tilesVisible));
-    elements.toggleTiles.textContent = state.tilesVisible ? "ปิดพื้นหลังถนน" : "เปิดพื้นหลังถนน";
+
+    state.basemap = nextMode;
+    elements.mapDisclosure.textContent = BASEMAP_DISCLOSURES[nextMode];
+    elements.basemapButtons.forEach((button) => {
+      button.setAttribute("aria-pressed", String(button.dataset.basemap === nextMode));
+    });
   };
 
   const openExternalMap = (mode) => {
@@ -1172,7 +1200,9 @@
   });
   elements.fitResults.addEventListener("click", fitFilteredResults);
   elements.toggleBoundaries.addEventListener("click", toggleBoundaries);
-  elements.toggleTiles.addEventListener("click", toggleTiles);
+  elements.basemapButtons.forEach((button) => {
+    button.addEventListener("click", () => setBasemap(button.dataset.basemap));
+  });
   elements.streetviewButton.addEventListener("click", () => openExternalMap("streetview"));
   elements.mapsButton.addEventListener("click", () => openExternalMap("map"));
   elements.reviewForm.addEventListener("submit", saveReview);

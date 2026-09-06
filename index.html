@@ -4,31 +4,31 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>โต๊ะตรวจตำแหน่งบ้าน | CityChat แสนสุข</title>
-  <meta name="description" content="เปิดตารางตำแหน่งทะเบียนบ้านแสนสุขจากเครื่องของคุณ ดูจุดและขอบเขตชุมชน ตรวจรายละเอียดรายรายการ และเปิด Street View อย่างรู้ข้อจำกัด">
+  <meta name="description" content="เปิดตารางตำแหน่งทะเบียนบ้านแสนสุขจากเครื่องของคุณ ดูจุดร่วมกับขอบเขตชุมชน แผนที่ถนน หรือภาพถ่ายดาวเทียม และเปิด Street View อย่างรู้ข้อจำกัด">
   <meta name="robots" content="index,follow">
   <meta name="theme-color" content="#1D4497">
   <meta name="referrer" content="strict-origin-when-cross-origin">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: https://tile.openstreetmap.org; connect-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: https://tile.openstreetmap.org https://services.arcgisonline.com; connect-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'">
   <link rel="canonical" href="https://montri-th.github.io/saensuk/">
   <meta property="og:type" content="website">
   <meta property="og:locale" content="th_TH">
   <meta property="og:site_name" content="CityChat · แสนสุข">
   <meta property="og:title" content="โต๊ะตรวจตำแหน่งบ้าน · CityChat แสนสุข">
-  <meta property="og:description" content="เปิดไฟล์ในเครื่อง เลือกรายการ ดูระดับตำแหน่งบนแผนที่ และบันทึกผลตรวจโดยไม่อัปโหลดตารางทะเบียนบ้าน">
+  <meta property="og:description" content="เปิดไฟล์ในเครื่อง เลือกรายการ แล้วเทียบตำแหน่งกับขอบเขตชุมชน แผนที่ถนน หรือภาพถ่ายดาวเทียม โดยไม่อัปโหลดตารางทะเบียนบ้าน">
   <meta property="og:url" content="https://montri-th.github.io/saensuk/">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="โต๊ะตรวจตำแหน่งบ้าน · CityChat แสนสุข">
-  <meta name="twitter:description" content="สำรวจตำแหน่งบ้านรายรายการจากไฟล์ในเครื่อง พร้อมขอบเขตชุมชนและทางออกไป Street View แบบตั้งใจเปิด">
+  <meta name="twitter:description" content="สำรวจตำแหน่งบ้านรายรายการจากไฟล์ในเครื่อง พร้อมขอบเขตชุมชน แผนที่ถนน ภาพถ่ายดาวเทียม และทางออกไป Street View แบบตั้งใจเปิด">
   <script src="assets/theme-init.js"></script>
   <link rel="preload" href="assets/fonts/ibm-plex-sans-thai-looped-thai-700-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/bai-jamjuree-thai-400-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="assets/tokens.css">
   <link rel="stylesheet" href="assets/vendor/leaflet/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
   <link rel="stylesheet" href="assets/styles.css">
-  <link rel="stylesheet" href="assets/explorer.css">
+  <link rel="stylesheet" href="assets/explorer.css?v=20260906-satellite">
   <script defer src="assets/vendor/leaflet/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
   <script defer src="assets/app.js"></script>
-  <script defer src="assets/record-explorer.js"></script>
+  <script defer src="assets/record-explorer.js?v=20260906-satellite"></script>
 </head>
 <body id="top">
   <a class="skip-link" href="#main">ข้ามไปยังเนื้อหาหลัก</a>
@@ -251,11 +251,16 @@
               <div class="map-actions">
                 <button type="button" class="quiet-button" data-fit-results>เห็นจุดที่กรอง</button>
                 <button type="button" class="quiet-button" aria-pressed="true" data-toggle-boundaries>ขอบเขตชุมชน</button>
-                <button type="button" class="map-tile-button" aria-pressed="false" data-toggle-tiles>เปิดพื้นหลังถนน</button>
               </div>
             </div>
             <div class="map-stage">
               <div id="record-map" class="record-map" role="region" aria-label="แผนที่เสริมสำหรับเลือกดูตำแหน่ง รายการทั้งหมดเข้าถึงได้จากคิวด้านข้าง"></div>
+              <div class="basemap-picker" role="group" aria-label="เลือกพื้นหลังแผนที่">
+                <span class="basemap-picker-label">พื้นหลัง</span>
+                <button type="button" class="map-tile-button" aria-pressed="true" data-basemap="none">ปิด</button>
+                <button type="button" class="map-tile-button" aria-pressed="false" data-basemap="streets">ถนน</button>
+                <button type="button" class="map-tile-button" aria-pressed="false" data-basemap="satellite">ดาวเทียม</button>
+              </div>
               <div class="map-loading" data-map-loading>กำลังเตรียมขอบเขตชุมชน…</div>
               <div class="map-legend" aria-label="คำอธิบายสีจุดบนแผนที่">
                 <span><i class="dot dot-specific"></i> แปลง/อาคาร</span>
@@ -263,7 +268,7 @@
                 <span><i class="dot dot-coarse"></i> ซอย/ชุมชน</span>
               </div>
             </div>
-            <p class="map-disclosure" data-map-disclosure>พื้นหลังถนนปิดอยู่ จึงยังไม่ส่งพื้นที่ที่ดูออกไปภายนอก หากเปิด OpenStreetMap ผู้ให้บริการอาจได้รับ IP และพื้นที่ที่ดู · ระดับแปลงแสดงเป็นจุดอ้างอิง เพราะ CSV มีรหัสแปลงแต่ไม่มีรูปแปลง · ขอบเขตชุมชนใช้เพื่อสื่อสารและ QA ไม่ใช่แนวเขตทางกฎหมาย</p>
+            <p class="map-disclosure" data-map-disclosure>พื้นหลังปิดอยู่ จึงยังไม่ส่งพื้นที่ที่ดูออกไปภายนอก เลือกถนน (OpenStreetMap) หรือดาวเทียม (Esri World Imagery) เมื่อต้องการเปรียบเทียบ · ภาพถ่ายอาจต่างช่วงเวลาและความละเอียด ไม่ใช่หลักฐานสิทธิหรือแนวเขต · ระดับแปลงแสดงเป็นจุดอ้างอิง เพราะ CSV ไม่มีรูปแปลง</p>
           </section>
 
           <aside class="detail-pane" id="detail-panel" role="tabpanel" aria-label="รายละเอียดรายการที่เลือก" data-panel="detail">
