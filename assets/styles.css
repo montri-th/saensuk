@@ -722,7 +722,7 @@ h3 {
   place-items: center;
   margin: 0 auto var(--space-4);
   border-radius: 50%;
-  background: conic-gradient(var(--citychat-primary) 0 91.84%, var(--surface-soft) 91.84% 100%);
+  background: conic-gradient(var(--citychat-primary) 0 94.62%, var(--surface-soft) 94.62% 100%);
 }
 
 .coverage-ring-center {
@@ -1967,6 +1967,10 @@ tbody th {
   .menu-toggle {
     padding-right: var(--space-2);
     padding-left: var(--space-2);
+  }
+
+  .readiness-figures {
+    grid-template-columns: 1fr;
   }
 }
 

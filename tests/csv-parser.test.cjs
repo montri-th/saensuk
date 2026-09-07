@@ -57,18 +57,20 @@ const syntheticPolicy = Object.freeze({
   maxDataRows: 3
 });
 
-test("production constants match the approved v3 contract", () => {
+test("production constants match the approved v6 snapshot contract", () => {
   assert.equal(parser.HEADERS.length, 22);
   assert.equal(parser.PRODUCTION_POLICY.expectedRowCount, 42524);
-  assert.equal(parser.PRODUCTION_POLICY.expectedSha256, "15b897a48bdd14cf8c6ca71bcd560bf800102480a6ad7e5d35b433b85837bb4e");
+  assert.equal(parser.PRODUCTION_POLICY.expectedSha256, "4f78161473f9f6398457c4810f45af43806ce2884e44f22e95dc2be92ae11a67");
+  assert.equal(parser.PRODUCTION_POLICY.expectedValidCoordinateCount, 40236);
+  assert.equal(parser.PRODUCTION_POLICY.expectedNoCoordinateCount, 2288);
   assert.deepEqual(parser.GEOM_DISTRIBUTION, {
-    parcel: 4916,
-    building: 7412,
-    cluster: 14265,
-    interpolated: 4542,
-    soi_road: 7566,
-    community: 355,
-    review: 3468
+    parcel: 12713,
+    building: 7151,
+    cluster: 10321,
+    interpolated: 2911,
+    soi_road: 7130,
+    community: 10,
+    review: 2288
   });
 });
 

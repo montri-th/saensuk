@@ -42,6 +42,7 @@
   if (guardedFileInput) guardedFileInput.disabled = false;
 
   const PAGE_SIZE = 30;
+  const SNAPSHOT_RELEASE = "v6";
   const NUMBER = new Intl.NumberFormat("th-TH");
   const BAD_STREETVIEW_FLAGS = [
     "large_parcel",
@@ -49,7 +50,11 @@
     "citymeter_far",
     "bl1_web_conflict",
     "condo_unit_matched_as_house",
-    "duplicate_registry_key"
+    "duplicate_registry_key",
+    "building_register_conflict",
+    "building_register_multi_site",
+    "anchor_contradicted",
+    "far_from_road"
   ];
 
   const GEOM_LABELS = Object.freeze({
@@ -74,6 +79,9 @@
     "plate-matches": "เห็นป้ายทะเบียนบ้านตรงกับรายการ",
     "plate-conflicts": "เห็นป้าย แต่เลขไม่ตรงกับรายการ",
     "plate-not-visible": "มองไม่เห็นหรืออ่านป้ายไม่ได้",
+    "building-context-matches": "บริบทอาคารสอดคล้องกับรายการ",
+    "building-context-conflicts": "บริบทอาคารไม่สอดคล้องกับรายการ",
+    "building-context-not-visible": "มองไม่เห็นหรือระบุอาคารไม่ได้",
     "no-imagery": "ไม่มีภาพถนนใช้ตรวจ",
     "field-visit": "ต้องส่งลงพื้นที่"
   });
@@ -86,13 +94,40 @@
     "table-review": "ตรวจจากข้อมูลในตาราง"
   });
 
-  const REVIEW_RESULTS_BY_SOURCE = Object.freeze({
-    "google-street-view": new Set(["plate-matches", "plate-conflicts", "plate-not-visible", "no-imagery", "field-visit"]),
-    "google-maps": new Set(["no-imagery", "field-visit"]),
-    "field-observation": new Set(["plate-matches", "plate-conflicts", "plate-not-visible", "field-visit"]),
-    "agency-evidence": new Set(["plate-matches", "plate-conflicts", "plate-not-visible", "field-visit"]),
-    "table-review": new Set(["field-visit"])
+  const REVIEW_RESULTS_BY_SCOPE = Object.freeze({
+    "house-plate": Object.freeze({
+      "google-street-view": new Set(["plate-matches", "plate-conflicts", "plate-not-visible", "no-imagery", "field-visit"]),
+      "google-maps": new Set(["no-imagery", "field-visit"]),
+      "field-observation": new Set(["plate-matches", "plate-conflicts", "plate-not-visible", "field-visit"]),
+      "agency-evidence": new Set(["plate-matches", "plate-conflicts", "plate-not-visible", "field-visit"]),
+      "table-review": new Set(["field-visit"])
+    }),
+    "building-context": Object.freeze({
+      "google-street-view": new Set(["building-context-matches", "building-context-conflicts", "building-context-not-visible", "no-imagery", "field-visit"]),
+      "google-maps": new Set(["no-imagery", "field-visit"]),
+      "field-observation": new Set(["building-context-matches", "building-context-conflicts", "building-context-not-visible", "field-visit"]),
+      "agency-evidence": new Set(["building-context-matches", "building-context-conflicts", "building-context-not-visible", "field-visit"]),
+      "table-review": new Set(["field-visit"])
+    })
   });
+
+  const STRONG_REVIEW_RESULTS = new Set([
+    "plate-matches",
+    "plate-conflicts",
+    "building-context-matches",
+    "building-context-conflicts"
+  ]);
+
+  const MULTI_UNIT_PLACE_TYPES = new Set([
+    "อาคารชุด",
+    "คอนโดมิเนียม",
+    "condominium",
+    "condo",
+    "สำนักงาน",
+    "อาคารสำนักงาน",
+    "office",
+    "office building"
+  ]);
 
   const FLAG_LABELS = Object.freeze({
     cluster_centroid: "ใช้จุดกลางกลุ่มบ้าน",
@@ -106,7 +141,39 @@
     bl1_web_conflict: "หลักฐานเว็บขัดกัน",
     bl1_web_agrees: "หลักฐานเว็บสอดคล้อง",
     condo_unit_matched_as_house: "ห้องชุดจับคู่แบบบ้าน",
-    duplicate_registry_key: "ที่อยู่ทะเบียนซ้ำ"
+    duplicate_registry_key: "ที่อยู่ทะเบียนซ้ำ",
+    desk_lookup_project: "รหัสโครงการจากการค้นโต๊ะทำงาน",
+    citymeter_name_matches_ltax_company: "ชื่อ CityMETER ตรงกับชื่อนิติบุคคลใน LTAX",
+    building_register_agrees: "ทะเบียนสิ่งปลูกสร้างตรงกับแปลงเดิม",
+    building_register_moved: "ทะเบียนสิ่งปลูกสร้างชี้ไปคนละแปลง",
+    building_register_conflict: "หลักฐานใหม่กับเดิมห่างกันเกิน 50 ม.",
+    building_register_multi_site: "บ้านเลขที่–ถนนชี้ได้หลายไซต์",
+    far_from_road: "จุดอยู่ห่างโครงข่ายถนนเกิน 50 ม.",
+    survey_row_kept: "คงผลสำรวจแม้ชุมชนหรือเพื่อนบ้านขัดกัน",
+    community_conflict: "หลักฐานชุมชนขัดกัน",
+    community_conflict_reestimated: "ประมาณใหม่เพราะหลักฐานชุมชนขัดกัน",
+    outside_community_polygon: "จุดอยู่นอกขอบเขตชุมชนที่ระบุ",
+    anchor_contradicted: "จุดอ้างอิงถูกหลักฐานอื่นคัดค้าน",
+    anchor_isolated: "จุดอ้างอิงอยู่โดดเดี่ยว",
+    estate_outlier: "จุดต่างจากกลุ่มโครงการ",
+    neighbours_other_community: "เพื่อนบ้านอ้างต่างชุมชน",
+    soi_mixes_communities: "ซอยเดียวมีหลายชุมชน",
+    owner_multi_parcel: "ที่อยู่เจ้าของเชื่อมได้หลายแปลง",
+    owner_major_holder: "แปลงของผู้ถือครองรายใหญ่",
+    house_on_institutional_land: "ตำแหน่งตกบนที่ดินสถาบัน",
+    snap_multi_house_parcel: "หลายบ้านใช้แปลงเดียวกัน",
+    snap_outside_community: "จุดประมาณอยู่นอกชุมชนที่ระบุ",
+    snap_landlord_block: "จุดประมาณอยู่ในกลุ่มแปลงผู้ถือครองเดียว",
+    soi_disambiguated_by_community: "ใช้ชุมชนช่วยแยกซอยที่กำกวม",
+    community_confirmed: "ขอบเขตชุมชนสอดคล้อง",
+    community_polygon_only: "อ้างอิงเฉพาะรูปชุมชน"
+  });
+
+  const CRITICAL_FLAG_CHIPS = Object.freeze({
+    building_register_conflict: "หลักฐานตำแหน่งขัดกันเกิน 50 ม.",
+    building_register_multi_site: "บ้านเลขที่–ถนนชี้ได้หลายไซต์",
+    far_from_road: "จุดห่างโครงข่ายถนนเกิน 50 ม.",
+    building_register_moved: "ทะเบียนสิ่งปลูกสร้างชี้ไปคนละแปลง"
   });
 
   const elements = {
@@ -131,6 +198,7 @@
     search: explorer.querySelector("[data-search]"),
     geomFilter: explorer.querySelector("[data-geom-filter]"),
     communityFilter: explorer.querySelector("[data-community-filter]"),
+    evidenceFilter: explorer.querySelector("[data-evidence-filter]"),
     reviewFilters: [...explorer.querySelectorAll("[data-review-filter]")],
     filteredCount: explorer.querySelector("[data-filtered-count]"),
     resultNote: explorer.querySelector("[data-result-note]"),
@@ -155,6 +223,9 @@
     mapsButton: explorer.querySelector("[data-google-map]"),
     streetviewNote: explorer.querySelector("[data-streetview-note]"),
     reviewForm: explorer.querySelector("[data-review-form]"),
+    reviewScopeNote: explorer.querySelector("[data-review-scope-note]"),
+    reviewResultLabel: explorer.querySelector("[data-review-result-label]"),
+    reviewNoteLabel: explorer.querySelector("[data-review-note-label]"),
     reviewSource: explorer.querySelector("[data-review-source]"),
     reviewResult: explorer.querySelector("[data-review-result]"),
     reviewNote: explorer.querySelector("[data-review-note]")
@@ -172,6 +243,7 @@
     filtered: [],
     selectedIndex: null,
     page: 0,
+    evidenceFilter: "",
     reviewFilter: "",
     reviews: new Map(),
     coordinateCounts: new Map(),
@@ -221,9 +293,37 @@
 
   const coordinateKey = (row) => markerGrouping.coordinateKey(row);
 
+  const splitFlags = (value) => new Set(
+    String(value || "").split(";").map((flag) => flag.trim()).filter(Boolean)
+  );
+
+  const verificationScope = (row) => {
+    const placeType = clean(row?.place_type, "", 80).toLocaleLowerCase("th-TH");
+    return row?.geom_level === "building" || MULTI_UNIT_PLACE_TYPES.has(placeType)
+      ? "building-context"
+      : "house-plate";
+  };
+
+  const allowedReviewResults = (evidenceSource, row) => {
+    const scope = verificationScope(row);
+    return REVIEW_RESULTS_BY_SCOPE[scope]?.[evidenceSource] || new Set();
+  };
+
+  const matchesEvidenceFilter = (row, filter) => {
+    if (!filter) return true;
+    const flags = splitFlags(row?.flags);
+    if (filter === "tier-a0") return row?.tier === "A0";
+    if (filter === "building-register-conflict") return flags.has("building_register_conflict");
+    if (filter === "building-register-multi-site") return flags.has("building_register_multi_site");
+    if (filter === "far-from-road") return flags.has("far_from_road");
+    if (filter === "source-needs-review") return row?.status === "needs-review";
+    if (filter === "no-coordinate") return !Number.isFinite(row?.lat) || !Number.isFinite(row?.lon);
+    return false;
+  };
+
   const hasBadStreetviewFlag = (row) => {
-    const flags = String(row.flags || "");
-    return BAD_STREETVIEW_FLAGS.some((flag) => flags.includes(flag));
+    const flags = splitFlags(row.flags);
+    return BAD_STREETVIEW_FLAGS.some((flag) => flags.has(flag));
   };
 
   const streetviewEligibility = (row) => {
@@ -243,6 +343,23 @@
       return { allowed: false, reason: "รายการนี้มีธงเตือนด้านหลักฐาน จึงปิดการตรวจป้ายจากจุดเดียว" };
     }
     return { allowed: true, reason: "" };
+  };
+
+  const externalMapUrl = (row, mode) => {
+    if (!row || !Number.isFinite(row.lat) || !Number.isFinite(row.lon)) return "";
+    if (mode === "streetview" && !streetviewEligibility(row).allowed) return "";
+    if (mode !== "streetview" && mode !== "map") return "";
+    const url = new URL(mode === "streetview"
+      ? "https://www.google.com/maps/@"
+      : "https://www.google.com/maps/search/");
+    url.searchParams.set("api", "1");
+    if (mode === "streetview") {
+      url.searchParams.set("map_action", "pano");
+      url.searchParams.set("viewpoint", `${Number(row.lat).toFixed(7)},${Number(row.lon).toFixed(7)}`);
+    } else {
+      url.searchParams.set("query", `${Number(row.lat).toFixed(7)},${Number(row.lon).toFixed(7)}`);
+    }
+    return url.toString();
   };
 
   const reviewPriority = (row) => {
@@ -267,7 +384,7 @@
     const total = Number(progress?.totalRows || 42524);
     const details = {
       reading: "กำลังอ่านไฟล์เข้าสู่หน่วยความจำชั่วคราว",
-      hashing: "กำลังตรวจลายนิ้วมือ เพื่อยืนยันว่าเป็นไฟล์ v3 ที่ตรงกับผลสรุป",
+      hashing: "กำลังตรวจลายนิ้วมือ เพื่อยืนยันว่าเป็นไฟล์ v6 ที่ตรงกับผลสรุป",
       decoding: "กำลังตรวจว่าไฟล์เป็น UTF-8 ที่สมบูรณ์",
       parsing: parsed > 0
         ? `ตรวจแล้ว ${NUMBER.format(parsed)} จาก ${NUMBER.format(total)} รายการ`
@@ -283,7 +400,7 @@
     showOnly("error");
     elements.alertTitle.textContent = "เปิดไฟล์นี้ไม่ได้";
     const rowHint = Number.isInteger(error?.rowNumber) ? ` (ใกล้แถวที่ ${NUMBER.format(error.rowNumber)})` : "";
-    elements.alertDetail.textContent = `${clean(error?.message, "ไฟล์ไม่ผ่านการตรวจรุ่นและโครงสร้าง", 220)}${rowHint} กรุณาเลือก master table v3 ฉบับวันที่ 5 ก.ย. 2569`;
+    elements.alertDetail.textContent = `${clean(error?.message, "ไฟล์ไม่ผ่านการตรวจรุ่นและโครงสร้าง", 220)}${rowHint} กรุณาเลือก master table v6 ฉบับวันที่ 7 ก.ย. 2569`;
     elements.alert.focus();
   };
 
@@ -318,6 +435,8 @@
     elements.search.value = "";
     elements.geomFilter.value = "";
     elements.communityFilter.replaceChildren(new Option("ทุกชุมชน", ""));
+    elements.evidenceFilter.value = "";
+    state.evidenceFilter = "";
     elements.reviewFilters.forEach((button) => button.setAttribute("aria-pressed", String(button.dataset.reviewFilter === "")));
     elements.reviewCount.textContent = "0";
     elements.exportButton.disabled = true;
@@ -342,7 +461,7 @@
     setParseProgress({ stage: "reading" });
 
     try {
-      state.worker = new Worker("assets/record-worker.js");
+      state.worker = new Worker("assets/record-worker.js?v=20260907-v6");
     } catch (_) {
       showError({ message: "เบราว์เซอร์นี้ไม่สามารถเปิดตัวอ่านไฟล์แบบแยกงานได้" });
       return;
@@ -375,7 +494,7 @@
 
   const prepareWorkspace = (rows, summary) => {
     if (!Array.isArray(rows) || rows.length !== 42524 || summary?.rowCount !== 42524) {
-      showError({ message: "ผลตรวจไฟล์ไม่ครบตามตารางหลัก v3" });
+      showError({ message: "ผลตรวจไฟล์ไม่ครบตามตารางหลัก v6" });
       return;
     }
 
@@ -396,8 +515,11 @@
         row.community,
         row.place_type,
         row.source_parcel_id,
+        row.tier,
+        row.method,
         row.status,
-        row.flags
+        row.flags,
+        formatFlags(row.flags)
       ].join(" ").toLocaleLowerCase("th-TH");
       state.searchIndex[index] = searchable;
 
@@ -424,7 +546,12 @@
     elements.communityFilter.replaceChildren(...options);
     elements.datasetRows.textContent = NUMBER.format(summary.rowCount);
     state.page = 0;
+    elements.evidenceFilter.value = "";
+    state.evidenceFilter = "";
     state.reviewFilter = "";
+    elements.reviewFilters.forEach((button) => {
+      button.setAttribute("aria-pressed", String(button.dataset.reviewFilter === ""));
+    });
     updateReviewSummary();
     showOnly("workspace");
     applyFilters({ selectFirst: true });
@@ -442,12 +569,14 @@
     const query = elements.search.value.trim().toLocaleLowerCase("th-TH");
     const geometry = elements.geomFilter.value;
     const community = elements.communityFilter.value;
+    const evidenceFilter = state.evidenceFilter;
 
     state.filtered = state.baseOrder.filter((index) => {
       const row = state.rows[index];
       if (query && !state.searchIndex[index].includes(query)) return false;
       if (geometry && row.geom_level !== geometry) return false;
       if (community && row.community !== community) return false;
+      if (!matchesEvidenceFilter(row, evidenceFilter)) return false;
       const reviewed = state.reviews.has(index);
       if (state.reviewFilter === "pending" && reviewed) return false;
       if (state.reviewFilter === "reviewed" && !reviewed) return false;
@@ -571,18 +700,31 @@
   };
 
   const syncReviewResultOptions = (preferredResult = elements.reviewResult.value) => {
-    const allowed = REVIEW_RESULTS_BY_SOURCE[elements.reviewSource.value] || new Set();
+    const row = state.rows[state.selectedIndex];
+    const scope = verificationScope(row);
+    const allowed = allowedReviewResults(elements.reviewSource.value, row);
     [...elements.reviewResult.options].forEach((option) => {
-      option.disabled = Boolean(option.value) && !allowed.has(option.value);
+      const optionScope = option.dataset.reviewScope || "";
+      const wrongScope = Boolean(optionScope) && optionScope !== scope;
+      option.hidden = wrongScope;
+      option.disabled = Boolean(option.value) && (wrongScope || !allowed.has(option.value));
     });
     elements.reviewResult.value = allowed.has(preferredResult) ? preferredResult : "";
   };
 
   const formatFlags = (value) => {
-    const flags = String(value || "").split(";").map((item) => item.trim()).filter(Boolean);
+    const flags = [...splitFlags(value)];
     if (!flags.length) return "ไม่พบธงเตือนเพิ่มเติม";
     return flags.map((flag) => {
-      const key = flag.includes("=") ? flag.slice(0, flag.indexOf("=")) : flag;
+      const separator = flag.indexOf("=");
+      const key = separator >= 0 ? flag.slice(0, separator) : flag;
+      const parameter = separator >= 0
+        ? clean(flag.slice(separator + 1), "", 40).replace(/[^0-9A-Za-z._-]/g, "").slice(0, 32)
+        : "";
+      if (/^community_disambiguated\(\d+\)$/.test(key)) return "ใช้ลำดับขอบเขตช่วยแยกชุมชนที่กำกวม";
+      if (key === "desk_lookup_project") {
+        return parameter ? `${FLAG_LABELS[key]}: ${parameter}` : FLAG_LABELS[key];
+      }
       return FLAG_LABELS[key] || key;
     }).join(" · ");
   };
@@ -636,9 +778,16 @@
 
     elements.detailChips.replaceChildren();
     appendChip(geometryLabel(row.geom_level), ["parcel", "building"].includes(row.geom_level) ? "truth-chip-specific" : "");
-    appendChip(statusLabel(row.status), row.status === "needs-review" ? "truth-chip-warning" : "");
-    if (row.tier) appendChip(`Tier ${clean(row.tier)}`);
+    appendChip(statusLabel(row.status), ["needs-review", "building-lookup-pending"].includes(row.status) ? "truth-chip-warning" : "");
+    if (row.tier === "A0") {
+      appendChip("A0 · สำรวจเทศบาลผูกถึงแปลง", "truth-chip-specific");
+      appendChip("A0 ยังไม่ตรวจหน้างาน", "truth-chip-warning");
+    } else if (row.tier) appendChip(`Tier ${clean(row.tier)}`);
     if (row.radius_m === 0) appendChip("รัศมี 0 ไม่ได้แปลว่าแม่นยำ", "truth-chip-warning");
+    const rowFlags = splitFlags(row.flags);
+    Object.entries(CRITICAL_FLAG_CHIPS).forEach(([flag, label]) => {
+      if (rowFlags.has(flag)) appendChip(label, "truth-chip-warning");
+    });
     const review = state.reviews.get(state.selectedIndex);
     if (review) appendChip(REVIEW_LABELS[review.result] || "มีบันทึกร่าง", "truth-chip-specific");
     if (review?.evidenceSource) appendChip(EVIDENCE_SOURCE_LABELS[review.evidenceSource] || clean(review.evidenceSource));
@@ -663,7 +812,7 @@
     appendField("ละติจูด", row.lat === null ? "ไม่มีพิกัด" : Number(row.lat).toFixed(7), { data: true });
     appendField("ลองจิจูด", row.lon === null ? "ไม่มีพิกัด" : Number(row.lon).toFixed(7), { data: true });
     appendField("ระดับตำแหน่ง", geometryLabel(row.geom_level));
-    appendField("วิธี", row.method, { data: true });
+    appendField("วิธี", row.method === "A0" ? "A0 · ทะเบียนสิ่งปลูกสร้างเทศบาลผูกบ้านเลขที่กับแปลง" : row.method, { data: true });
     appendField("รัศมีต้นทาง", row.radius_m === null ? "ไม่มีค่า" : `${NUMBER.format(row.radius_m)} เมตร`, { data: true });
     appendField("ใช้พิกัดนี้ร่วมกัน", coordinateKey(row) ? `${NUMBER.format(state.coordinateCounts.get(coordinateKey(row)) || 1)} รายการ` : "ไม่มีพิกัด");
     appendField("รหัสแปลงต้นทาง", row.source_parcel_id, { data: true });
@@ -681,6 +830,16 @@
       ? "ลิงก์มีพิกัดที่เลือกโดยไม่ใส่เลขที่บ้านหรือรหัสทะเบียน Google ยังอาจได้รับ IP ข้อมูลการเชื่อมต่อ และข้อมูลบัญชีหรือเซสชันตามปกติ ภาพถนนเป็นหลักฐานประกอบ ไม่ใช่การยืนยันตำแหน่งโดยลำพัง"
       : `${eligibility.reason} หากเปิด Google Maps ลิงก์จะมีพิกัดที่เลือก และ Google อาจได้รับ IP ข้อมูลการเชื่อมต่อ และข้อมูลบัญชีหรือเซสชันตามปกติ`;
 
+    const scope = verificationScope(row);
+    if (scope === "building-context") {
+      elements.reviewScopeNote.textContent = "รายการนี้เป็นอาคารหรือห้องชุด จึงบันทึกได้เฉพาะบริบทของอาคาร ไม่ใช้ผลว่าเห็นป้ายทะเบียนบ้านรายห้องตรงหรือขัดกัน";
+      elements.reviewResultLabel.textContent = "ผลที่พบเกี่ยวกับอาคาร";
+      elements.reviewNoteLabel.textContent = "เหตุผล/บันทึก (จำเป็นเมื่อระบุว่าบริบทอาคารตรงหรือขัดกัน · ไม่เกิน 500 ตัวอักษร)";
+    } else {
+      elements.reviewScopeNote.textContent = "รายการนี้บันทึกผลจากป้ายทะเบียนบ้านได้เมื่อหลักฐานที่เลือกแสดงป้ายหรือมาจากการสำรวจจริง";
+      elements.reviewResultLabel.textContent = "ผลที่พบเกี่ยวกับป้ายทะเบียนบ้าน";
+      elements.reviewNoteLabel.textContent = "เหตุผล/บันทึก (จำเป็นเมื่อระบุว่าป้ายตรงหรือขัดกัน · ไม่เกิน 500 ตัวอักษร)";
+    }
     elements.reviewSource.value = review?.evidenceSource || "";
     syncReviewResultOptions(review?.result || "");
     elements.reviewNote.value = review?.note || "";
@@ -1166,19 +1325,9 @@
 
   const openExternalMap = (mode) => {
     const row = state.rows[state.selectedIndex];
-    if (!row || !Number.isFinite(row.lat) || !Number.isFinite(row.lon)) return;
-    if (mode === "streetview" && !streetviewEligibility(row).allowed) return;
-    const url = new URL(mode === "streetview"
-      ? "https://www.google.com/maps/@"
-      : "https://www.google.com/maps/search/");
-    url.searchParams.set("api", "1");
-    if (mode === "streetview") {
-      url.searchParams.set("map_action", "pano");
-      url.searchParams.set("viewpoint", `${Number(row.lat).toFixed(7)},${Number(row.lon).toFixed(7)}`);
-    } else {
-      url.searchParams.set("query", `${Number(row.lat).toFixed(7)},${Number(row.lon).toFixed(7)}`);
-    }
-    const opened = window.open(url.toString(), "_blank", "noopener,noreferrer");
+    const href = externalMapUrl(row, mode);
+    if (!href) return;
+    const opened = window.open(href, "_blank", "noopener,noreferrer");
     if (opened) opened.opener = null;
   };
 
@@ -1211,18 +1360,19 @@
         elements.reviewResult.reportValidity();
         return;
       }
-      if (!REVIEW_RESULTS_BY_SOURCE[evidenceSource]?.has(result)) {
+      if (!allowedReviewResults(evidenceSource, row).has(result)) {
         elements.reviewResult.setCustomValidity("ผลที่เลือกไม่สอดคล้องกับแหล่งหลักฐาน กรุณาเลือกผลที่เปิดใช้งาน");
         elements.reviewResult.reportValidity();
         return;
       }
-      if (["plate-matches", "plate-conflicts"].includes(result) && !note) {
-        elements.reviewNote.setCustomValidity("กรุณาบันทึกเหตุผลหรือสิ่งที่เห็น เมื่อระบุว่าป้ายตรงหรือขัดกัน");
+      if (STRONG_REVIEW_RESULTS.has(result) && !note) {
+        elements.reviewNote.setCustomValidity("กรุณาบันทึกเหตุผลหรือสิ่งที่เห็น เมื่อระบุว่าหลักฐานตรงหรือขัดกัน");
         elements.reviewNote.reportValidity();
         return;
       }
       state.reviews.set(state.selectedIndex, {
         index: state.selectedIndex,
+        verificationScope: verificationScope(row),
         evidenceSource,
         result,
         note,
@@ -1252,12 +1402,21 @@
       "lat",
       "lon",
       "geom_level",
+      "source_parcel_id",
       "source_status",
+      "source_tier",
+      "source_method",
+      "source_radius_m",
+      "source_flags",
+      "snapshot_release",
       "review_status",
+      "verification_scope",
       "evidence_source",
       "review_result",
       "review_note",
       "reviewed_at",
+      "streetview_url",
+      "google_maps_url",
       "source_sha256"
     ];
     const lines = [headers.map(csvCell).join(",")];
@@ -1272,12 +1431,21 @@
           row.lat,
           row.lon,
           row.geom_level,
+          row.source_parcel_id,
           row.status,
+          row.tier,
+          row.method,
+          row.radius_m,
+          row.flags,
+          SNAPSHOT_RELEASE,
           "draft-unverified",
+          review.verificationScope || verificationScope(row),
           review.evidenceSource,
           review.result,
           review.note,
           review.reviewedAt,
+          externalMapUrl(row, "streetview"),
+          externalMapUrl(row, "map"),
           state.summary?.sha256 || ""
         ].map(csvCell).join(","));
       });
@@ -1285,7 +1453,7 @@
     const href = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
     anchor.href = href;
-    anchor.download = "citychat-saensuk-review-draft-v3.csv";
+    anchor.download = "citychat-saensuk-review-draft-v6.csv";
     anchor.rel = "noopener";
     anchor.click();
     setTimeout(() => URL.revokeObjectURL(href), 1000);
@@ -1368,6 +1536,11 @@
     applyFilters({ selectFirst: true });
   });
   elements.communityFilter.addEventListener("change", () => {
+    state.page = 0;
+    applyFilters({ selectFirst: true });
+  });
+  elements.evidenceFilter.addEventListener("change", () => {
+    state.evidenceFilter = elements.evidenceFilter.value;
     state.page = 0;
     applyFilters({ selectFirst: true });
   });

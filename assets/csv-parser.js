@@ -27,20 +27,20 @@
   ]);
 
   const GEOM_DISTRIBUTION = Object.freeze({
-    parcel: 4916,
-    building: 7412,
-    cluster: 14265,
-    interpolated: 4542,
-    soi_road: 7566,
-    community: 355,
-    review: 3468
+    parcel: 12713,
+    building: 7151,
+    cluster: 10321,
+    interpolated: 2911,
+    soi_road: 7130,
+    community: 10,
+    review: 2288
   });
 
   const PRODUCTION_POLICY = Object.freeze({
-    expectedSha256: "15b897a48bdd14cf8c6ca71bcd560bf800102480a6ad7e5d35b433b85837bb4e",
+    expectedSha256: "4f78161473f9f6398457c4810f45af43806ce2884e44f22e95dc2be92ae11a67",
     expectedRowCount: 42524,
-    expectedValidCoordinateCount: 39056,
-    expectedNoCoordinateCount: 3468,
+    expectedValidCoordinateCount: 40236,
+    expectedNoCoordinateCount: 2288,
     expectedGeomDistribution: GEOM_DISTRIBUTION,
     expectedVersion: "1",
     maxBytes: 20 * 1024 * 1024,
@@ -141,7 +141,7 @@
 
     for (let index = 0; index < HEADERS.length; index += 1) {
       if (header[index] !== HEADERS[index]) {
-        fail("HEADER_ORDER", "ชื่อหรือลำดับคอลัมน์ไม่ตรงกับตารางหลัก v3");
+        fail("HEADER_ORDER", "ชื่อหรือลำดับคอลัมน์ไม่ตรงกับตารางหลัก v6");
       }
     }
   }
@@ -293,7 +293,7 @@
       fail("MISSING_HEADER", "ไม่พบหัวตาราง CSV");
     }
 
-    // Header names and order are part of the signed v3 contract. Do not
+    // Header names and order are part of the approved v6 snapshot contract. Do not
     // normalize them: even otherwise harmless whitespace must fail closed.
     const header = parsedRows[0];
     validateHeader(header);
@@ -337,7 +337,7 @@
       });
 
       if (!Object.prototype.hasOwnProperty.call(geomCounts, row.geom_level)) {
-        fail("UNKNOWN_GEOM_LEVEL", "พบระดับตำแหน่งที่ไม่อยู่ในชุดข้อมูล v3", {
+        fail("UNKNOWN_GEOM_LEVEL", "พบระดับตำแหน่งที่ไม่อยู่ในชุดข้อมูล v6", {
           rowNumber,
           columnName: "geom_level"
         });
@@ -373,15 +373,15 @@
     }
 
     if (validCoordinateCount !== rules.expectedValidCoordinateCount) {
-      fail("COORDINATE_COUNT_MISMATCH", "จำนวนแถวที่มีพิกัดไม่ตรงกับตารางหลัก v3");
+      fail("COORDINATE_COUNT_MISMATCH", "จำนวนแถวที่มีพิกัดไม่ตรงกับตารางหลัก v6");
     }
     if (noCoordinateCount !== rules.expectedNoCoordinateCount) {
-      fail("NO_COORDINATE_COUNT_MISMATCH", "จำนวนแถวที่ไม่มีพิกัดไม่ตรงกับตารางหลัก v3");
+      fail("NO_COORDINATE_COUNT_MISMATCH", "จำนวนแถวที่ไม่มีพิกัดไม่ตรงกับตารางหลัก v6");
     }
 
     for (const [level, expected] of Object.entries(rules.expectedGeomDistribution)) {
       if (geomCounts[level] !== expected) {
-        fail("GEOM_DISTRIBUTION_MISMATCH", "การกระจายระดับตำแหน่งไม่ตรงกับตารางหลัก v3");
+        fail("GEOM_DISTRIBUTION_MISMATCH", "การกระจายระดับตำแหน่งไม่ตรงกับตารางหลัก v6");
       }
     }
 
@@ -421,7 +421,7 @@
     const checksum = await sha256Hex(bytes);
     emitProgress(onProgress, { stage: "hashing", completed: bytes.byteLength, total: bytes.byteLength });
     if (checksum !== PRODUCTION_POLICY.expectedSha256) {
-      fail("CHECKSUM_MISMATCH", "ไฟล์ไม่ตรงกับตารางหลัก v3 ฉบับที่อนุมัติ");
+      fail("CHECKSUM_MISMATCH", "ไฟล์ไม่ตรงกับตารางหลัก v6 ฉบับวันที่ 7 ก.ย. 2569");
     }
 
     emitProgress(onProgress, { stage: "decoding", completed: 0, total: bytes.byteLength });

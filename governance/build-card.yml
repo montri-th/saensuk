@@ -1,5 +1,5 @@
 artifact: saensuk-house-geocode-review-desk
-artifact_release: "v4-2026-09-06"
+artifact_release: "v6-2026-09-07"
 audience: [municipal_officer, municipal_executive]
 locale: [th]
 
@@ -49,22 +49,28 @@ icons:
   map_symbols: "component-local analytical shapes: cross, split hexagon, triangle, same-coordinate eligible-building group, selection ring"
 
 content:
-  source_snapshot: "master table v3, 2026-09-05"
-  source_sha256: "15b897a48bdd14cf8c6ca71bcd560bf800102480a6ad7e5d35b433b85837bb4e"
+  source_snapshot: "master table v6, 2026-09-07; rules 1.6.0"
+  source_sha256: "4f78161473f9f6398457c4810f45af43806ce2884e44f22e95dc2be92ae11a67"
   records: 42524
-  positioned_records: 39056
+  positioned_records: 40236
+  parcel_or_building_records: 19864
+  municipal_building_survey_a0_records: 10114
+  visual_review_list_records: 5788
   field_verified_records: 0
-  truth_boundary: "Position coverage is not accuracy; imagery and boundaries are supporting context, not verification or legal evidence."
+  truth_boundary: "Position coverage is not accuracy. A0 links a municipal building-survey house number to a parcel, not to a facade, entrance, or visible house plate; imagery, roads, and community boundaries are supporting context, not verification or legal evidence."
 
 qa:
-  tested_at: "2026-09-06"
+  tested_at: "2026-09-07"
   light_lockup_and_motif: "passed rendered desktop and mobile review"
   dark_lockup_and_motif: "passed rendered desktop review"
   navbar_identity: "passed light, explicit dark, system dark, 320–1440 CSS px, and 100/130/200% text-scale review; one surface-correct lockup remained visible and clear of the menu"
   favicon: "passed local cold-cache and warm-cache delivery, image/png MIME, 250 x 265 dimensions, 7,315 bytes, exact SHA-256, and source visual review"
   marker_grouping: "proximity grouping removed; a numbered group now requires one exact coordinate plus condominium, office, or building-level semantics"
   marker_interaction: "ordinary coincident or sub-pixel points remain separate and cycle without a building badge; mixed same-coordinate records stay reachable; eligible-building groups zoom and cycle"
-  marker_redraw: "synthetic 42,524-row grouping median 137.5ms; requires remeasurement with the controlled CSV"
+  marker_redraw: "controlled v6 CSV reached the interactive 42,524-row workspace in under 1 second (594 ms observed in the final local desktop run); the canvas point overlay rendered and marker-grouping tests passed"
+  evidence_queues: "passed exact v6 counts for A0, municipal-register conflict, multi-site register match, far-from-road, source needs-review, and missing-coordinate filters; queues are explicitly overlapping"
+  review_scope: "passed row-aware review semantics: building and condominium rows cannot claim an individual house-plate match or conflict, while building-context observations remain available"
+  export_contract: "passed draft-unverified status, formula hardening, v6 snapshot and source-hash provenance, parcel and verification-scope fields, official Google URLs, and Street View blanking for ineligible rows"
   responsive: "passed 320, 360, 390, 768, 1024, 1180, and 1440 CSS px"
   text_scaling: "passed Thai 130% and 200% reflow without horizontal overflow"
   accessibility: "keyboard selection, focus retention, reduced motion, live status, and redundant color/shape legend passed"

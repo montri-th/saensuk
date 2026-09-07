@@ -7,14 +7,15 @@ The published repository contains the public interface, aggregate figures, and c
 ## Local-data review desk
 
 - An officer explicitly selects the approved master-table CSV with the browser's native file picker.
-- A Web Worker verifies the exact SHA-256, UTF-8 encoding, ordered 22-column schema, 42,524 rows, coordinate counts, and seven-level geometry distribution before showing any record.
+- A Web Worker verifies the exact v6 SHA-256, UTF-8 encoding, ordered 22-column schema, 42,524 rows, coordinate counts, and seven-level geometry distribution before showing any record.
 - Records, indexes, selections, and review drafts remain in tab memory. They are not written to `localStorage`, `sessionStorage`, IndexedDB, a service worker, the page URL, or analytics, and are cleared on reload/close.
 - The list is paginated at 30 records. A canvas layer renders filtered points without creating tens of thousands of DOM markers.
-- Ordinary household records are never grouped merely because their coordinates are close. A numbered marker is created only for records that share the exact data coordinate and are explicitly typed as `อาคารชุด`, typed as `สำนักงาน`, or classified at `geom_level=building`. The current v3 schema has no `matched_building_id`, so neither proximity nor a shared parcel ID is treated as proof of one building, and the interface describes the evidence as a shared building-level coordinate rather than a verified physical-building match.
+- Ordinary household records are never grouped merely because their coordinates are close. A numbered marker is created only for records that share the exact data coordinate and are explicitly typed as `อาคารชุด`, typed as `สำนักงาน`, or classified at `geom_level=building`. The current v6 schema has no `matched_building_id`, so neither proximity nor a shared parcel ID—including A0 rows—is treated as proof of one building, and the interface describes the evidence as a shared building-level coordinate rather than a verified physical-building match.
 - Ordinary records that reuse an approximate cluster, street, or community coordinate remain separate records. Repeated clicks on the same or visually indistinguishable point cycle those records without relabelling the point as a building. Marker meaning is redundant by color and shape: green cross for parcel/building-level points, blue diagonally split hexagon for estimated points, yellow triangle for coarse points, and a neutral numbered circle only for eligible building records at one data coordinate. The selected record keeps its category shape and gains a static double ring.
-- Every saved review requires an evidence source; strong plate-match/conflict results also require a note. The explicit local export keeps every row marked `draft-unverified` and defends spreadsheet cells beginning with `=`, `+`, `-`, or `@`. The export remains sensitive working data.
+- Six overlapping v6 evidence queues expose A0 parcel linkage, municipal-register coordinate conflicts, multi-site register matches, far-from-road flags, source review status, and missing coordinates without implying that every queued row has the same priority.
+- Every saved review requires an evidence source; strong plate-match/conflict results also require a note. Building and condominium rows can record only building-context observations—not a claim that an individual unit's house plate matched. The explicit local export keeps every row marked `draft-unverified`, includes v6 provenance, parcel linkage, verification scope, and official Google map URLs, leaves Street View blank when a row is ineligible, and defends spreadsheet cells beginning with `=`, `+`, `-`, or `@`. The export remains sensitive working data.
 
-The page accepts only the approved snapshot whose SHA-256 is `15b897a48bdd14cf8c6ca71bcd560bf800102480a6ad7e5d35b433b85837bb4e`. A future dataset must update the contract and published aggregate narrative together.
+The page accepts only the approved v6 snapshot whose SHA-256 is `4f78161473f9f6398457c4810f45af43806ce2884e44f22e95dc2be92ae11a67`. The row-level `version` column remains `1`; the v6 release identity is bound by the filename, hash, processing evidence, and aggregate contract. A future dataset must update that contract and the published narrative together.
 
 ## Private Google Sheet connection
 
@@ -37,11 +38,13 @@ GitHub Pages project sites under `montri-th.github.io` share one browser origin.
 
 ## Snapshot
 
-- Master table v3 — 2026-09-05
-- Steps 0–3 run report v3 — 2026-09-05
-- Pipeline v3 / rules 1.2.0 — 2026-09-05
+- Master table v6 — 2026-09-07 — 42,524 rows, 40,236 with coordinates, 2,288 intentionally without coordinates
+- Municipal registers run report v6 — 2026-09-07
+- Pipeline v6 / rules 1.6.0 — 2026-09-07
 - Implementation plan v1 — 2026-09-04
 - Visual guidance: Landometer Design System v0.9.1 (`v0.9.1-mp7`) and the approved normative CityChat DS Add-on v0.9.1. This page does not claim artifact-level conformance.
+
+The v6 summary adds municipal building-survey evidence (A0: 10,114 registry rows), official condominium-name matching as aggregate evidence (47 of 65 groups covering 6,315 rows), and road-distance QA. The master CSV does not contain the official condominium name or road geometry, so the review desk does not invent those record-level fields. All 42,524 rows remain unverified, pending, or queued for review; the raw master table is never bundled into this public repository.
 
 The hero and navbar use the two exact, hash-verified CityChat horizontal lockups supplied by the governed handoff, selected by the surface they actually sit on. The navbar also uses the exact Landometer symbol required by the CityChat Add-on. Its Conversation Motif derivatives preserve the supplied geometry while mapping only the two motif colors to approved CityChat light/dark surface colors and removing embedded source metadata.
 
@@ -58,5 +61,5 @@ The page loads without a third-party request. OpenStreetMap or Esri World Imager
 Run the synthetic parser checks with:
 
 ```sh
-node --test tests/csv-parser.test.cjs
+node --test tests/csv-parser.test.cjs tests/marker-grouping.test.cjs tests/v6-explorer-contract.test.cjs
 ```
