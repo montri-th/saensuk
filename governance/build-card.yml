@@ -1,5 +1,5 @@
 artifact: saensuk-house-geocode-review-desk
-artifact_release: "v6-2026-09-07"
+artifact_release: "v8-2026-09-08"
 audience: [municipal_officer, municipal_executive]
 locale: [th]
 
@@ -8,7 +8,10 @@ lds:
   authoring: "0.9.1-r8"
   machine: "v0.9.1-mp7"
   colorSet: "color-srgb-05"
-  package_validation: "passed 5,394 checks before implementation"
+  package_validation: "passed 5,394 checks before release implementation"
+  production_color_css: "assets/color-srgb-05.production.css"
+  production_color_css_sha256: "3bac2499df594bbf6b016b650ee7763f7ec093e33bc5f28239144e0677281d5c"
+  color_alias_contract: "artifact aliases resolve to the verified --ldm-* production variables; analytical and CityChat colors have no embedded fallback hex values"
 
 addon:
   release: "0.9.1"
@@ -23,6 +26,7 @@ surface:
   foreground_contract: "--on-product-citychat*"
   canvas_heading_token: "--citychat-heading"
   theme_behavior: "light theme uses deep product field; dark theme uses light product field"
+  analytical_color_contract: "three governed confidence anchors; A0 and A share the high anchor and are distinguished by an A0 centre mark; C is no-data"
 
 identity:
   asset_manifest: "governance/assets.json"
@@ -35,7 +39,7 @@ identity:
 
 nav:
   preset: "focused-review-desk existing header"
-  applicability: "The cross-property CityChat landing r7 navigation and bookmark rail are outside this operational tool release."
+  applicability: "The cross-property CityChat landing navigation and bookmark rail are outside this operational tool release."
   identity: "Landometer symbol at 54 CSS px and exact CityChat lockup; navbar variants follow the actual light or dark canvas surface."
   controls: "44px minimum targets; menu closes with Escape and outside click"
 
@@ -44,40 +48,55 @@ motion:
   reducedMotion: "final_state"
   noJavaScript: "aggregate narrative remains visible; interactive review desk explains its requirement"
 
-icons:
-  interface_glyphs: "No new font glyphs introduced."
-  map_symbols: "component-local analytical shapes: cross, split hexagon, triangle, same-coordinate eligible-building group, selection ring"
-
 content:
-  source_snapshot: "master table v6, 2026-09-07; rules 1.6.0"
-  source_sha256: "4f78161473f9f6398457c4810f45af43806ce2884e44f22e95dc2be92ae11a67"
+  source_snapshot: "house map display dataset v2, 2026-09-08; pipeline v8; rules 1.8.0"
+  source_sha256: "4f68b1c5a7f962a2ddc06e4e9f7bd6a9959e94c42bd65e2c94354153a04c19d5"
+  source_bytes: 14812722
+  registry_business_tags: "03CityChat__registrybusinesstags__v4__20260908.csv; 2,048 rows; 919,010 bytes; sha256 98359475255c98727cfa16cf92269f3d16b36bcea974a542c00312e02d967f5f"
+  ambiguous_business_addresses: "03CityChat__businessambiguousaddresses__v3__20260908.csv; 218 rows; 145,661 bytes; sha256 b7e10e4dbe9c333f788a8e542cde38e3ddaecd1709204c0052301d648b393117"
+  figures_display: "03CityChat__figuresdisplay__v2__20260908.json; 6,668 bytes; sha256 d1eccd5eeac475283381b0e4443afcafd6dd3242bd3e8c7814f8d87b24408ea6"
+  pipeline_run_id: "20260908T044243_f3b4ba_38e4d7_rules1.8.0"
   records: 42524
   positioned_records: 40236
+  no_coordinate_records: 2288
   parcel_or_building_records: 19864
   municipal_building_survey_a0_records: 10114
-  visual_review_list_records: 5788
-  field_verified_records: 0
-  truth_boundary: "Position coverage is not accuracy. A0 links a municipal building-survey house number to a parcel, not to a facade, entrance, or visible house plate; imagery, roads, and community boundaries are supporting context, not verification or legal evidence."
+  visual_review_list_records: 5646
+  visual_review_high_mid_low: [500, 2044, 3102]
+  frontage_records: 13960
+  frontage_named_from_address_records: 8036
+  frontage_municipal_layer_records: 9630
+  registry_rows_with_business_tags: 1379
+  business_registration_tags: 2048
+  field_verification: "figures value is null; no numeric verification or accuracy element is rendered"
+  official_municipality_boundary: "figures value is null; the optional 23-polygon layer is labelled community QA context only"
+  truth_boundary: "Position coverage is not accuracy. Frontage, imagery, registered-business addresses, roads, and community polygons are supporting context rather than field verification, operating-business proof, property rights, or legal boundaries."
+  source_discrepancies:
+    - "display review_score is blank while QA review list v5 carries scores; UI orders by priority and stable source order without inventing score"
+    - "work order says 526 high-priority rows in one clause; figures, display, and QA data agree on 500"
+    - "business_count counts registration-tag rows, not guaranteed distinct companies; business_names can contain more than three names"
+    - "registry business tags v4 has no pipeline_run_id column although the work order says every data file carries it; exact hash plus 100% join and aggregate parity with display v2 bind it to this delivery without inventing a field"
+
+privacy:
+  public_payload: "interface, aggregate facts, index-safe community polygons, and governed brand/design assets only"
+  local_only: "display CSV, household IDs, addresses, exact coordinates, company-address detail, and draft review notes"
+  data_lifecycle: "record data and drafts remain in tab memory; no service worker, analytics, URL state, IndexedDB, sessionStorage, or localStorage for record data"
+  outbound: "basemaps are opt-in; Google links are explicit and coordinate-only"
+  google_sheet_loading: "not implemented; requires owner-supplied OAuth configuration and a separately verified access design"
 
 qa:
-  tested_at: "2026-09-07"
-  light_lockup_and_motif: "passed rendered desktop and mobile review"
-  dark_lockup_and_motif: "passed rendered desktop review"
-  navbar_identity: "passed light, explicit dark, system dark, 320–1440 CSS px, and 100/130/200% text-scale review; one surface-correct lockup remained visible and clear of the menu"
-  favicon: "passed local cold-cache and warm-cache delivery, image/png MIME, 250 x 265 dimensions, 7,315 bytes, exact SHA-256, and source visual review"
-  marker_grouping: "proximity grouping removed; a numbered group now requires one exact coordinate plus condominium, office, or building-level semantics"
-  marker_interaction: "ordinary coincident or sub-pixel points remain separate and cycle without a building badge; mixed same-coordinate records stay reachable; eligible-building groups zoom and cycle"
-  marker_redraw: "controlled v6 CSV reached the interactive 42,524-row workspace in under 1 second (594 ms observed in the final local desktop run); the canvas point overlay rendered and marker-grouping tests passed"
-  evidence_queues: "passed exact v6 counts for A0, municipal-register conflict, multi-site register match, far-from-road, source needs-review, and missing-coordinate filters; queues are explicitly overlapping"
-  review_scope: "passed row-aware review semantics: building and condominium rows cannot claim an individual house-plate match or conflict, while building-context observations remain available"
-  export_contract: "passed draft-unverified status, formula hardening, v6 snapshot and source-hash provenance, parcel and verification-scope fields, official Google URLs, and Street View blanking for ineligible rows"
-  responsive: "passed 320, 360, 390, 768, 1024, 1180, and 1440 CSS px"
-  text_scaling: "passed Thai 130% and 200% reflow without horizontal overflow"
-  accessibility: "keyboard selection, focus retention, reduced motion, live status, and redundant color/shape legend passed"
-  privacy: "0 restricted-field matches in tracked public files; no third-party request before explicit map opt-in"
-  external_maps: "Street View and Google Maps URLs contain selected coordinates only and open after explicit action"
-  open_manual_gate: "Physical iPhone/Safari behavior is not yet tested; responsive browser emulation passed. Browser chrome may retain an older cached favicon after the live release even when origin bytes are correct."
+  tested_at: "2026-09-08 local pre-release; live verification pending deployment"
+  source_integrity: "display v2 exact hash/bytes, 29-column order, unique IDs, run ID, and all aggregate invariants passed"
+  parser_unit_contract: "28/28 local Node tests passed after shell integration"
+  responsive: "rendered checks passed at 320, 360, 390, 768, 1024, 1180, and 1440 CSS px; Thai 130% and 200% text/geometry stress checks had no horizontal overflow"
+  accessibility: "keyboard selection, mobile tabs, minimum 44px basemap targets, focus flow, reduced motion, live regions, labels, ARIA references, and light/dark/system states passed automated rendered checks"
+  privacy: "47 tracked files; no raw tabular files and no sampled household ID, company-name, or coordinate matches; record storage surfaces empty; no outbound request before opt-in"
+  external_maps: "Street View contract generates coordinates plus heading only when supplied; every rendered row has Street View and satellite actions when coordinates exist; Esri and OSM returned image tiles after explicit opt-in"
+  color_contrast: "CityChat light field with white: minimum 4.929:1; dark field with mineral ink: minimum 8.238:1"
+  local_browser: "Chrome rendered QA, map/cluster interaction, export, fail-closed replacement, embedded/opener safety, brand byte checks, and basemap network checks passed with zero console/page/CSP/failed-response errors"
+  live: "pending GitHub Pages provider success and byte attestation"
+  open_manual_gate: "Physical iPhone/Safari behavior is not yet tested; browser emulation cannot close this native-device gate."
 
 claim:
   statement: "Strictly applies the approved v0.9.1 rules within the recorded component scope; it does not claim to be the CityChat public landing-page template."
-  owner_basis: "owner-message:2026-09-06:use-citychat-logo-and-motif-on-saensuk-review-desk"
+  owner_basis: "owner-message:2026-09-08:replace-mixed-v7-files-with-correct-v8-set-and-republish"

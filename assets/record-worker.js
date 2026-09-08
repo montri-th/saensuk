@@ -1,6 +1,6 @@
 "use strict";
 
-importScripts("./csv-parser.js?v=20260907-v6");
+importScripts("./csv-parser.js?v=20260908-display-v2");
 
 let busy = false;
 

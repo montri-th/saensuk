@@ -79,7 +79,9 @@
     if (!themeColor) return;
     const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
     const isDark = choice === "dark" || (choice === "auto" && systemDark);
-    themeColor.setAttribute("content", isDark ? "#11191D" : "#1D4497");
+    const colorToken = isDark ? "--ldm-foundation-surface-canvas-dark" : "--ldm-brand-blue";
+    const resolvedColor = getComputedStyle(root).getPropertyValue(colorToken).trim();
+    if (resolvedColor) themeColor.setAttribute("content", resolvedColor);
   };
 
   const applyTheme = (choice) => {

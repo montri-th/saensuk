@@ -117,7 +117,7 @@ svg {
 
 .landometer-name {
   font-family: "Arvo", Georgia, serif;
-  color: #757575;
+  color: var(--text-muted);
   font-size: 23px;
   font-weight: 700;
   letter-spacing: -0.02em;
@@ -846,7 +846,8 @@ h3 {
 }
 
 .summary-unmapped {
-  background: var(--series-2);
+  background: var(--confidence-c);
+  color: var(--text-primary);
 }
 
 .summary-legend {
@@ -891,7 +892,8 @@ h3 {
 }
 
 .swatch-unmapped {
-  background: var(--series-2);
+  background: var(--confidence-c);
+  color: var(--text-primary);
 }
 
 .audience-view {
@@ -1379,6 +1381,14 @@ tbody th {
   margin-bottom: var(--space-8);
 }
 
+.readiness-system .readiness-figures {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.readiness-system .readiness-figures strong {
+  font-size: clamp(2rem, 4.5vw, 3.25rem);
+}
+
 .readiness-figures p {
   margin: 0;
 }
@@ -1610,6 +1620,12 @@ tbody th {
 
 .source-list dd {
   margin: 0;
+}
+
+.source-list .source-run-id {
+  overflow-wrap: anywhere;
+  font-family: var(--font-data);
+  font-size: 0.8125rem;
 }
 
 .limitations ul {
@@ -1969,7 +1985,8 @@ tbody th {
     padding-left: var(--space-2);
   }
 
-  .readiness-figures {
+  .readiness-figures,
+  .readiness-system .readiness-figures {
     grid-template-columns: 1fr;
   }
 }
@@ -1994,7 +2011,8 @@ tbody th {
     grid-template-columns: 1fr;
   }
 
-  .readiness-figures {
+  .readiness-figures,
+  .readiness-system .readiness-figures {
     grid-template-columns: 1fr;
   }
 }

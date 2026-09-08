@@ -3,27 +3,34 @@
 
   const HEADERS = Object.freeze([
     "house_reg_id",
-    "subdistrict_sheet",
     "house_no",
     "trok",
     "soi",
     "road",
     "community",
     "place_type",
-    "side",
     "lat",
     "lon",
-    "geom_level",
-    "tier",
-    "method",
     "radius_m",
-    "source_parcel_id",
+    "tier",
+    "confidence_band",
+    "method",
     "status",
-    "flags",
-    "verified_by",
-    "verified_at",
-    "field_result",
-    "version"
+    "geom_level",
+    "frontage_heading",
+    "frontage_road",
+    "frontage_road_layer",
+    "frontage_road_source",
+    "dist_named_soi_m",
+    "soi_check",
+    "business_count",
+    "business_names",
+    "business_status",
+    "business_match_confidence",
+    "review_priority",
+    "review_score",
+    "review_flags",
+    "pipeline_run_id"
   ]);
 
   const GEOM_DISTRIBUTION = Object.freeze({
@@ -36,13 +43,38 @@
     review: 2288
   });
 
+  const CONFIDENCE_DISTRIBUTION = Object.freeze({
+    "A0 สำรวจสิ่งปลูกสร้างของเทศบาล": 10114,
+    "A จับคู่จากที่อยู่เจ้าของ": 1855,
+    "B จับคู่แบบมีเงื่อนไข": 744,
+    "C ยังไม่มีพิกัด ต้องตรวจ": 2288,
+    "D ค่าประมาณกลุ่ม": 27523
+  });
+
+  const REVIEW_PRIORITY_DISTRIBUTION = Object.freeze({
+    "สูง": 500,
+    "กลาง": 2044,
+    "ต่ำ": 3102
+  });
+
+  const PIPELINE_RUN_ID = "20260908T044243_f3b4ba_38e4d7_rules1.8.0";
+  const FRONTAGE_LAYERS = new Set(["", "municipal", "osm"]);
+  const FRONTAGE_SOURCES = new Set(["", "road+soi", "road_name", "nearest"]);
+
   const PRODUCTION_POLICY = Object.freeze({
-    expectedSha256: "4f78161473f9f6398457c4810f45af43806ce2884e44f22e95dc2be92ae11a67",
+    expectedSha256: "4f68b1c5a7f962a2ddc06e4e9f7bd6a9959e94c42bd65e2c94354153a04c19d5",
     expectedRowCount: 42524,
     expectedValidCoordinateCount: 40236,
     expectedNoCoordinateCount: 2288,
     expectedGeomDistribution: GEOM_DISTRIBUTION,
-    expectedVersion: "1",
+    expectedConfidenceDistribution: CONFIDENCE_DISTRIBUTION,
+    expectedReviewPriorityDistribution: REVIEW_PRIORITY_DISTRIBUTION,
+    expectedBusinessRowCount: 1379,
+    expectedBusinessTagCount: 2048,
+    expectedFrontageHeadingCount: 13960,
+    expectedNamedFrontageCount: 8036,
+    expectedMunicipalFrontageCount: 9630,
+    expectedPipelineRunId: PIPELINE_RUN_ID,
     maxBytes: 20 * 1024 * 1024,
     maxCellChars: 4096,
     maxRowChars: 32768,
@@ -141,7 +173,7 @@
 
     for (let index = 0; index < HEADERS.length; index += 1) {
       if (header[index] !== HEADERS[index]) {
-        fail("HEADER_ORDER", "ชื่อหรือลำดับคอลัมน์ไม่ตรงกับตารางหลัก v6");
+        fail("HEADER_ORDER", "ชื่อหรือลำดับคอลัมน์ไม่ตรงกับชุดข้อมูลสำหรับหน้าแผนที่");
       }
     }
   }
@@ -284,6 +316,8 @@
   function normalizePolicy(policy) {
     const candidate = { ...PRODUCTION_POLICY, ...(policy || {}) };
     candidate.expectedGeomDistribution = Object.freeze({ ...(candidate.expectedGeomDistribution || {}) });
+    candidate.expectedConfidenceDistribution = Object.freeze({ ...(candidate.expectedConfidenceDistribution || {}) });
+    candidate.expectedReviewPriorityDistribution = Object.freeze({ ...(candidate.expectedReviewPriorityDistribution || {}) });
     return candidate;
   }
 
@@ -293,7 +327,7 @@
       fail("MISSING_HEADER", "ไม่พบหัวตาราง CSV");
     }
 
-    // Header names and order are part of the approved v6 snapshot contract. Do not
+    // Header names and order are part of the approved display-dataset contract. Do not
     // normalize them: even otherwise harmless whitespace must fail closed.
     const header = parsedRows[0];
     validateHeader(header);
@@ -305,9 +339,19 @@
 
     const geomCounts = Object.create(null);
     for (const key of Object.keys(rules.expectedGeomDistribution)) geomCounts[key] = 0;
+    const confidenceCounts = Object.create(null);
+    for (const key of Object.keys(rules.expectedConfidenceDistribution)) confidenceCounts[key] = 0;
+    const reviewPriorityCounts = Object.create(null);
+    for (const key of Object.keys(rules.expectedReviewPriorityDistribution)) reviewPriorityCounts[key] = 0;
 
     let validCoordinateCount = 0;
     let noCoordinateCount = 0;
+    let businessRowCount = 0;
+    let businessTagCount = 0;
+    let frontageHeadingCount = 0;
+    let namedFrontageCount = 0;
+    let municipalFrontageCount = 0;
+    const houseIds = new Set();
     const rows = new Array(dataRows.length);
 
     for (let rowIndex = 0; rowIndex < dataRows.length; rowIndex += 1) {
@@ -335,14 +379,107 @@
         min: 0,
         max: rules.maxRadiusM
       });
+      if ((radius === null) !== (lat === null)) {
+        fail("RADIUS_COORDINATE_CONFLICT", "รัศมีต้องมีเมื่อมีพิกัด และเว้นว่างเมื่อยังไม่มีพิกัด", {
+          rowNumber,
+          columnName: "radius_m"
+        });
+      }
+
+      const frontageHeading = numberOrNull(row.frontage_heading, "frontage_heading", rowNumber, {
+        min: 0,
+        max: 360
+      });
+      if (frontageHeading !== null && lat === null) {
+        fail("HEADING_WITHOUT_COORDINATE", "ทิศหน้าบ้านใช้ได้เฉพาะแถวที่มีพิกัด", {
+          rowNumber,
+          columnName: "frontage_heading"
+        });
+      }
+      if (!FRONTAGE_LAYERS.has(row.frontage_road_layer) || !FRONTAGE_SOURCES.has(row.frontage_road_source)) {
+        fail("UNKNOWN_FRONTAGE_SOURCE", "พบแหล่งแนวถนนหรือวิธีเลือกแนวถนนที่ไม่รองรับ", {
+          rowNumber,
+          columnName: "frontage_road_source"
+        });
+      }
+      const hasFrontageMetadata = Boolean(row.frontage_road_layer || row.frontage_road_source);
+      if ((frontageHeading !== null) !== hasFrontageMetadata || (frontageHeading !== null && (!row.frontage_road_layer || !row.frontage_road_source))) {
+        fail("FRONTAGE_METADATA_CONFLICT", "ทิศหน้าบ้านและข้อมูลแนวถนนต้องมีพร้อมกันหรือเว้นว่างพร้อมกัน", {
+          rowNumber,
+          columnName: "frontage_heading"
+        });
+      }
+      if (frontageHeading !== null) frontageHeadingCount += 1;
+      if (["road+soi", "road_name"].includes(row.frontage_road_source)) namedFrontageCount += 1;
+      if (row.frontage_road_layer === "municipal") municipalFrontageCount += 1;
+
+      const distNamedSoiM = numberOrNull(row.dist_named_soi_m, "dist_named_soi_m", rowNumber, {
+        min: 0,
+        max: rules.maxRadiusM
+      });
+
+      const businessCount = numberOrNull(row.business_count, "business_count", rowNumber, {
+        min: 0,
+        max: 100000
+      });
+      if (!Number.isInteger(businessCount)) {
+        fail("INVALID_INTEGER", "คอลัมน์ business_count ต้องเป็นจำนวนเต็ม", {
+          rowNumber,
+          columnName: "business_count"
+        });
+      }
+      const hasBusinessDetails = Boolean(row.business_names || row.business_status || row.business_match_confidence);
+      if ((businessCount > 0) !== hasBusinessDetails) {
+        fail("BUSINESS_FIELDS_CONFLICT", "จำนวนกิจการไม่สอดคล้องกับรายละเอียดกิจการ", {
+          rowNumber,
+          columnName: "business_count"
+        });
+      }
+      if (businessCount > 0 && (!row.business_names || !row.business_status || !row.business_match_confidence)) {
+        fail("MISSING_BUSINESS_DETAIL", "แถวที่มีกิจการต้องมีชื่อ สถานะ และระดับการจับคู่", {
+          rowNumber,
+          columnName: "business_names"
+        });
+      }
+      if (businessCount > 0) businessRowCount += 1;
+      businessTagCount += businessCount;
+
+      const reviewScore = numberOrNull(row.review_score, "review_score", rowNumber, {
+        min: 0,
+        max: 100000
+      });
+      if (reviewScore !== null && row.review_priority === "") {
+        fail("REVIEW_SCORE_CONFLICT", "คะแนนจัดคิวต้องอ้างถึงแถวที่มีลำดับการตรวจ", {
+          rowNumber,
+          columnName: "review_score"
+        });
+      }
 
       if (!Object.prototype.hasOwnProperty.call(geomCounts, row.geom_level)) {
-        fail("UNKNOWN_GEOM_LEVEL", "พบระดับตำแหน่งที่ไม่อยู่ในชุดข้อมูล v6", {
+        fail("UNKNOWN_GEOM_LEVEL", "พบระดับตำแหน่งที่ไม่อยู่ในชุดข้อมูลสำหรับหน้าแผนที่", {
           rowNumber,
           columnName: "geom_level"
         });
       }
       geomCounts[row.geom_level] += 1;
+
+      if (!Object.prototype.hasOwnProperty.call(confidenceCounts, row.confidence_band)) {
+        fail("UNKNOWN_CONFIDENCE_BAND", "พบชั้นความเชื่อมั่นที่ไม่อยู่ในชุดข้อมูลสำหรับหน้าแผนที่", {
+          rowNumber,
+          columnName: "confidence_band"
+        });
+      }
+      confidenceCounts[row.confidence_band] += 1;
+
+      if (row.review_priority) {
+        if (!Object.prototype.hasOwnProperty.call(reviewPriorityCounts, row.review_priority)) {
+          fail("UNKNOWN_REVIEW_PRIORITY", "พบลำดับการตรวจที่ไม่รองรับ", {
+            rowNumber,
+            columnName: "review_priority"
+          });
+        }
+        reviewPriorityCounts[row.review_priority] += 1;
+      }
 
       if ((row.geom_level === "review") !== (lat === null)) {
         fail("GEOM_COORDINATE_CONFLICT", "ระดับตำแหน่งไม่สอดคล้องกับการมีหรือไม่มีพิกัด", {
@@ -351,16 +488,28 @@
         });
       }
 
-      if (rules.expectedVersion !== null && row.version !== rules.expectedVersion) {
-        fail("VERSION_MISMATCH", "ค่า version ไม่ตรงกับรุ่นข้อมูลที่กำหนด", {
+      if (rules.expectedPipelineRunId !== null && row.pipeline_run_id !== rules.expectedPipelineRunId) {
+        fail("PIPELINE_RUN_MISMATCH", "รหัสรอบประมวลผลไม่ตรงกับชุดข้อมูลที่กำหนด", {
           rowNumber,
-          columnName: "version"
+          columnName: "pipeline_run_id"
         });
       }
+
+      if (!row.house_reg_id || houseIds.has(row.house_reg_id)) {
+        fail("HOUSE_ID_CONFLICT", "รหัสประจำบ้านต้องมีค่าและไม่ซ้ำกัน", {
+          rowNumber,
+          columnName: "house_reg_id"
+        });
+      }
+      houseIds.add(row.house_reg_id);
 
       row.lat = lat;
       row.lon = lon;
       row.radius_m = radius;
+      row.frontage_heading = frontageHeading;
+      row.dist_named_soi_m = distNamedSoiM;
+      row.business_count = businessCount;
+      row.review_score = reviewScore;
       rows[rowIndex] = row;
 
       if ((rowIndex + 1) % 2048 === 0 || rowIndex + 1 === dataRows.length) {
@@ -373,16 +522,42 @@
     }
 
     if (validCoordinateCount !== rules.expectedValidCoordinateCount) {
-      fail("COORDINATE_COUNT_MISMATCH", "จำนวนแถวที่มีพิกัดไม่ตรงกับตารางหลัก v6");
+      fail("COORDINATE_COUNT_MISMATCH", "จำนวนแถวที่มีพิกัดไม่ตรงกับชุดข้อมูลสำหรับหน้าแผนที่");
     }
     if (noCoordinateCount !== rules.expectedNoCoordinateCount) {
-      fail("NO_COORDINATE_COUNT_MISMATCH", "จำนวนแถวที่ไม่มีพิกัดไม่ตรงกับตารางหลัก v6");
+      fail("NO_COORDINATE_COUNT_MISMATCH", "จำนวนแถวที่ไม่มีพิกัดไม่ตรงกับชุดข้อมูลสำหรับหน้าแผนที่");
     }
 
     for (const [level, expected] of Object.entries(rules.expectedGeomDistribution)) {
       if (geomCounts[level] !== expected) {
-        fail("GEOM_DISTRIBUTION_MISMATCH", "การกระจายระดับตำแหน่งไม่ตรงกับตารางหลัก v6");
+        fail("GEOM_DISTRIBUTION_MISMATCH", "การกระจายระดับตำแหน่งไม่ตรงกับชุดข้อมูลสำหรับหน้าแผนที่");
       }
+    }
+
+    for (const [band, expected] of Object.entries(rules.expectedConfidenceDistribution)) {
+      if (confidenceCounts[band] !== expected) {
+        fail("CONFIDENCE_DISTRIBUTION_MISMATCH", "การกระจายชั้นความเชื่อมั่นไม่ตรงกับชุดข้อมูลสำหรับหน้าแผนที่");
+      }
+    }
+    for (const [priority, expected] of Object.entries(rules.expectedReviewPriorityDistribution)) {
+      if (reviewPriorityCounts[priority] !== expected) {
+        fail("REVIEW_PRIORITY_DISTRIBUTION_MISMATCH", "จำนวนรายการตามลำดับการตรวจไม่ตรงกับชุดข้อมูลสำหรับหน้าแผนที่");
+      }
+    }
+    if (rules.expectedBusinessRowCount !== null && businessRowCount !== rules.expectedBusinessRowCount) {
+      fail("BUSINESS_ROW_COUNT_MISMATCH", "จำนวนแถวที่มีกิจการไม่ตรงกับชุดข้อมูลสำหรับหน้าแผนที่");
+    }
+    if (rules.expectedBusinessTagCount !== null && businessTagCount !== rules.expectedBusinessTagCount) {
+      fail("BUSINESS_TAG_COUNT_MISMATCH", "จำนวนป้ายกิจการไม่ตรงกับชุดข้อมูลสำหรับหน้าแผนที่");
+    }
+    if (rules.expectedFrontageHeadingCount !== null && frontageHeadingCount !== rules.expectedFrontageHeadingCount) {
+      fail("FRONTAGE_HEADING_COUNT_MISMATCH", "จำนวนแถวที่มีทิศหน้าบ้านไม่ตรงกับชุดข้อมูลสำหรับหน้าแผนที่");
+    }
+    if (rules.expectedNamedFrontageCount !== null && namedFrontageCount !== rules.expectedNamedFrontageCount) {
+      fail("NAMED_FRONTAGE_COUNT_MISMATCH", "จำนวนแถวที่จับคู่แนวถนนจากชื่อไม่ตรงกับชุดข้อมูลสำหรับหน้าแผนที่");
+    }
+    if (rules.expectedMunicipalFrontageCount !== null && municipalFrontageCount !== rules.expectedMunicipalFrontageCount) {
+      fail("MUNICIPAL_FRONTAGE_COUNT_MISMATCH", "จำนวนแถวที่ใช้แนวถนนเทศบาลไม่ตรงกับชุดข้อมูลสำหรับหน้าแผนที่");
     }
 
     return {
@@ -392,7 +567,15 @@
         columnCount: HEADERS.length,
         validCoordinateCount,
         noCoordinateCount,
-        geomDistribution: { ...geomCounts }
+        geomDistribution: { ...geomCounts },
+        confidenceDistribution: { ...confidenceCounts },
+        reviewPriorityDistribution: { ...reviewPriorityCounts },
+        businessRowCount,
+        businessTagCount,
+        frontageHeadingCount,
+        namedFrontageCount,
+        municipalFrontageCount,
+        pipelineRunId: rules.expectedPipelineRunId
       }
     };
   }
@@ -421,7 +604,7 @@
     const checksum = await sha256Hex(bytes);
     emitProgress(onProgress, { stage: "hashing", completed: bytes.byteLength, total: bytes.byteLength });
     if (checksum !== PRODUCTION_POLICY.expectedSha256) {
-      fail("CHECKSUM_MISMATCH", "ไฟล์ไม่ตรงกับตารางหลัก v6 ฉบับวันที่ 7 ก.ย. 2569");
+      fail("CHECKSUM_MISMATCH", "ไฟล์ไม่ตรงกับชุดข้อมูลหน้าแผนที่ฉบับวันที่ 8 ก.ย. 2569");
     }
 
     emitProgress(onProgress, { stage: "decoding", completed: 0, total: bytes.byteLength });
@@ -456,6 +639,9 @@
   const api = Object.freeze({
     HEADERS,
     GEOM_DISTRIBUTION,
+    CONFIDENCE_DISTRIBUTION,
+    REVIEW_PRIORITY_DISTRIBUTION,
+    PIPELINE_RUN_ID,
     PRODUCTION_POLICY,
     CsvValidationError,
     sanitizeText,

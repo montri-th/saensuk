@@ -31,7 +31,7 @@
           "inLanguage": "th",
           "applicationCategory": "BusinessApplication",
           "isAccessibleForFree": true,
-          "description": "เครื่องมืออ่าน master table v6 ในเบราว์เซอร์ เพื่อสำรวจตำแหน่งทะเบียนบ้านแสนสุขโดยไม่อัปโหลดตารางไปยังเว็บไซต์"
+          "description": "เครื่องมืออ่านชุดข้อมูลแผนที่ v2 จากกระบวนการ v8 ในเบราว์เซอร์ เพื่อสำรวจตำแหน่งทะเบียนบ้านแสนสุขโดยไม่อัปโหลดตารางไปยังเว็บไซต์"
         }
       ]
     }
@@ -39,14 +39,15 @@
   <script src="assets/theme-init.js"></script>
   <link rel="preload" href="assets/fonts/ibm-plex-sans-thai-looped-thai-700-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/bai-jamjuree-thai-400-normal.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="assets/tokens.css?v=20260906-marker-brand">
+  <link rel="stylesheet" href="assets/color-srgb-05.production.css?v=3bac2499">
+  <link rel="stylesheet" href="assets/tokens.css?v=20260908-v8">
   <link rel="stylesheet" href="assets/vendor/leaflet/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
-  <link rel="stylesheet" href="assets/styles.css?v=20260907-v6">
-  <link rel="stylesheet" href="assets/explorer.css?v=20260907-v6">
+  <link rel="stylesheet" href="assets/styles.css?v=20260908-v8">
+  <link rel="stylesheet" href="assets/explorer.css?v=20260908-v8">
   <script defer src="assets/vendor/leaflet/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
-  <script defer src="assets/app.js?v=20260907-v6"></script>
+  <script defer src="assets/app.js?v=20260908-v8"></script>
   <script defer src="assets/marker-grouping.js?v=20260906-building-only"></script>
-  <script defer src="assets/record-explorer.js?v=20260907-v6"></script>
+  <script defer src="assets/record-explorer.js?v=20260908-v8"></script>
 </head>
 <body id="top">
   <a class="skip-link" href="#main">ข้ามไปยังเนื้อหาหลัก</a>
@@ -98,12 +99,12 @@
             <img class="citychat-lockup-deep-surface" src="assets/brand/citychat-lockup-v091-deep-surface.png" width="494" height="106" alt="">
             <img class="citychat-lockup-light-surface" src="assets/brand/citychat-lockup-v091-light-surface.png" width="494" height="106" alt="">
           </div>
-          <p class="eyebrow eyebrow-on-deep">CityChat Review Desk · ผล v6 · 7 ก.ย. 2569</p>
+          <p class="eyebrow eyebrow-on-deep">CityChat Review Desk · ผลรอบ v8 · 8 ก.ย. 2569</p>
           <h1 id="hero-title">เปิดตาราง<br>แล้วตรวจทีละบ้าน</h1>
-          <p class="hero-lead" data-primary-answer>เลือกไฟล์ master table v6 จากเครื่องของคุณ แล้วสำรวจ <strong>42,524 รายการ</strong> บนแผนที่ รอบนี้เพิ่มหลักฐานจากทะเบียนสิ่งปลูกสร้าง ห้องชุด และโครงข่ายถนน เพื่อช่วยถามและตรวจแต่ละจุดได้ตรงขึ้น</p>
-          <p class="hero-signal" aria-label="94.6 เปอร์เซ็นต์มีตำแหน่งตั้งต้น แต่ยังไม่มีจุดที่ผ่านการตรวจภาคสนาม">
+          <p class="hero-lead" data-primary-answer>เลือกชุดข้อมูลแผนที่ v2 จากเครื่องของคุณ แล้วสำรวจ <strong>42,524 รายการ</strong> รอบ v8 เพิ่มทิศหน้าถนน ชื่อแนวถนน ข้อมูลที่อยู่จดทะเบียนของกิจการ และลำดับคิว เพื่อพาเจ้าหน้าที่จากภาพรวมไปสู่รายการที่ควรตรวจจริง</p>
+          <p class="hero-signal" aria-label="94.6 เปอร์เซ็นต์มีตำแหน่งตั้งต้น และ 5,646 รายการอยู่ในบัญชีตรวจ">
             <span><strong>94.6%</strong> มีตำแหน่งตั้งต้น</span>
-            <span class="hero-signal-warning"><strong>0</strong> ตรวจภาคสนาม</span>
+            <span class="hero-signal-warning"><strong>5,646</strong> อยู่ในบัญชีตรวจ</span>
           </p>
           <div class="hero-actions">
             <a class="button button-primary" href="#explorer" data-action-id="open-review-desk">เริ่มตรวจบนแผนที่</a>
@@ -121,11 +122,11 @@
             <h2>จากหนึ่งแถว<br>สู่สิ่งที่ควรตรวจต่อ</h2>
           </div>
           <ol class="hero-review-steps">
-            <li><span>1</span><p><strong>เลือกตาราง</strong> ระบบตรวจว่าเป็น master table v6 ที่ตรงกัน</p></li>
-            <li><span>2</span><p><strong>คลิกบ้านหรือจุด</strong> เห็นระดับ รัศมี และขอบเขตชุมชน</p></li>
-            <li><span>3</span><p><strong>ดูหลักฐานประกอบ</strong> เปิดภาพถนนเมื่อจุดละเอียดพอ แล้วเก็บร่างผลตรวจ</p></li>
+            <li><span>1</span><p><strong>เลือกชุดข้อมูล</strong> ระบบตรวจไฟล์แสดงผล v2 ของรอบ v8 ก่อนเปิด</p></li>
+            <li><span>2</span><p><strong>คลิกบ้านหรือจุด</strong> เห็นระดับ ความเชื่อมั่น ถนน กิจการ และคิวตรวจ</p></li>
+            <li><span>3</span><p><strong>ดูหลักฐานประกอบ</strong> เปิดภาพถนนตามทิศที่มี แล้วเก็บร่างผลตรวจ</p></li>
           </ol>
-          <label class="hero-file-button" for="record-file" role="button" tabindex="0" data-file-label>เลือก master table v6 จากเครื่อง</label>
+          <label class="hero-file-button" for="record-file" role="button" tabindex="0" data-file-label>เลือกชุดข้อมูลแผนที่ v2 จากเครื่อง</label>
           <p class="hero-local-note">ไฟล์ไม่ถูกอัปโหลด · ข้อมูลหายเมื่อปิดหรือรีโหลดแท็บ</p>
         </div>
       </div>
@@ -136,7 +137,7 @@
         <p class="truth-mark" aria-hidden="true">≠</p>
         <div>
           <h2 id="truth-banner-title">มีตำแหน่ง ไม่ได้แปลว่า ยืนยันถูกต้องแล้ว</h2>
-          <p>ตัวเลข 94.6% คือความครอบคลุมของตำแหน่งตั้งต้น ไม่ใช่คะแนนความแม่นยำ แม้ชั้น A0 จะมาจากการสำรวจสิ่งปลูกสร้างของเทศบาล ทุกจุดยังต้องผ่านการตรวจตามระดับของหลักฐาน</p>
+          <p>ตัวเลข 94.6% คือความครอบคลุมของตำแหน่งตั้งต้น ไม่ใช่คะแนนความแม่นยำ ตำแหน่งทุกแถวยังไม่ผ่านการยืนยันภาคสนามในชุดผลรอบนี้ ทิศหน้าถนน ชื่อกิจการ และสีความเชื่อมั่นล้วนเป็นตัวช่วยจัดคิว ไม่ใช่คำยืนยันจากการเห็นป้ายบ้านจริง</p>
         </div>
       </div>
     </aside>
@@ -147,14 +148,14 @@
           <p class="eyebrow">CityChat Review Desk</p>
           <h2 id="explorer-title">เลือกหนึ่งรายการ<br>แล้วถามแผนที่ให้ถูกคำถาม</h2>
         </div>
-        <p>ดูว่าจุดนี้รู้ถึงระดับไหน อยู่ในชุมชนใด มีรัศมีคลาดเคลื่อนเท่าไร และควรตรวจจากภาพถนนหรือส่งลงพื้นที่ต่อ</p>
+        <p>ดูระดับและรัศมีของจุด แนวถนนที่ใช้ประกอบ ชื่อกิจการจากที่อยู่จดทะเบียน และเหตุผลที่รายการถูกจัดเข้าคิว ก่อนเลือกว่าจะตรวจจากภาพถนนหรือส่งลงพื้นที่</p>
       </div>
 
       <div class="local-data-banner" role="note">
         <span class="local-data-icon" aria-hidden="true">⌂</span>
         <div>
           <strong>ตารางทะเบียนอยู่ในเบราว์เซอร์นี้เท่านั้น</strong>
-          <p>เว็บไม่อัปโหลดหรือบันทึกไฟล์และผลตรวจ เมื่อรีโหลดหรือปิดแท็บ ข้อมูลรายบ้านจะถูกล้าง · เพื่อความปลอดภัย ให้เปิดจาก montri-th.github.io/saensuk/ โดยตรง ไม่ใช้หน้าที่ฝังเว็บนี้</p>
+          <p>เว็บไม่อัปโหลดหรือบันทึกไฟล์และผลตรวจ เมื่อรีโหลดหรือปิดแท็บ ข้อมูลรายบ้านจะถูกล้าง · แผนที่พื้นหลังปิดไว้ก่อน และจะส่งเฉพาะบริเวณที่กำลังดูไปยังผู้ให้บริการเมื่อคุณเลือกเปิดเอง</p>
         </div>
       </div>
 
@@ -168,17 +169,17 @@
       <div class="file-gate" data-file-gate>
         <div class="file-gate-copy">
           <p class="file-gate-step">01 · เปิดโต๊ะตรวจ</p>
-          <h3>เลือก master table v6</h3>
+          <h3>เลือกชุดข้อมูลแผนที่ v2</h3>
           <p>ระบบจะตรวจรุ่น จำนวนแถว โครงสร้าง และลายนิ้วมือไฟล์ก่อนแสดงผล เพื่อไม่ผสมผลคนละรอบ</p>
           <label class="file-button" for="record-file" role="button" tabindex="0" data-file-label>เลือกไฟล์ CSV จากเครื่อง</label>
-          <input id="record-file" class="native-file-input" type="file" accept=".csv,text/csv" data-file-input disabled>
-          <p class="file-requirement">รองรับเฉพาะไฟล์ UTF-8 รุ่น v6 วันที่ 7 ก.ย. 2569 · ไม่ส่งไฟล์ขึ้นเซิร์ฟเวอร์</p>
+          <input id="record-file" class="native-file-input" type="file" accept=".csv,text/csv" aria-describedby="file-requirement" data-file-input disabled>
+          <p class="file-requirement" id="file-requirement">ไฟล์ที่รองรับ: <span class="file-name">03CityChat__housemapdisplaydataset__v2__20260908.csv</span> · UTF-8 · ไม่ส่งไฟล์ขึ้นเซิร์ฟเวอร์</p>
         </div>
         <div class="file-gate-proof" aria-label="เงื่อนไขไฟล์ที่ระบบจะตรวจ">
-          <p><span>รุ่นที่คาดไว้</span><strong>v6</strong></p>
+          <p><span>รุ่นที่คาดไว้</span><strong>ชุดแสดงผล v2 · รอบ v8</strong></p>
           <p><span>จำนวนรายการ</span><strong>42,524</strong></p>
-          <p><span>คอลัมน์</span><strong>22</strong></p>
-          <p><span>ผลภาคสนามในต้นฉบับ</span><strong>0</strong></p>
+          <p><span>คอลัมน์</span><strong>29</strong></p>
+          <p class="file-gate-run"><span>รหัสรอบ</span><strong>20260908T044243_<wbr>f3b4ba_<wbr>38e4d7_<wbr>rules1.8.0</strong></p>
         </div>
       </div>
 
@@ -201,7 +202,7 @@
           <div class="dataset-identity">
             <span class="local-badge">อ่านในเครื่อง</span>
             <div>
-              <strong>master table v6 · 7 ก.ย. 2569</strong>
+              <strong>ชุดข้อมูลแผนที่ v2 · รอบ v8 · 8 ก.ย. 2569</strong>
               <p><span data-dataset-rows>42,524</span> รายการ · ตรวจไฟล์ผ่านแล้ว</p>
             </div>
           </div>
@@ -230,48 +231,104 @@
                 <p class="pane-kicker">คิวตรวจ</p>
                 <h3 id="queue-title">รายการทะเบียนบ้าน</h3>
               </div>
-              <span class="count-pill" data-filtered-count>42,524</span>
+              <span class="count-pill" data-filtered-count>—</span>
             </div>
 
             <div class="queue-filters">
               <label class="field field-search">
                 <span>ค้นหารายการ</span>
-                <input type="search" data-search autocomplete="off" spellcheck="false" placeholder="เลขที่บ้าน ชุมชน ถนน หรือรหัส">
+                <input type="search" data-search autocomplete="off" spellcheck="false" placeholder="เลขที่บ้าน ถนน ชุมชน ชื่อกิจการ หรือรหัส">
               </label>
               <div class="filter-row">
                 <label class="field">
-                  <span>ระดับตำแหน่ง</span>
-                  <select data-geom-filter>
-                    <option value="">ทุกระดับ</option>
-                    <option value="parcel">ระดับแปลง</option>
-                    <option value="building">ระดับอาคาร</option>
-                    <option value="cluster">ระดับกลุ่มบ้าน</option>
-                    <option value="interpolated">แทรกระหว่างเพื่อนบ้าน</option>
-                    <option value="soi_road">ระดับซอย/ถนน</option>
-                    <option value="community">ระดับชุมชน</option>
-                    <option value="review">งดเดา—รอคนตรวจ</option>
+                  <span>ลำดับคิวตรวจ</span>
+                  <select data-priority-filter>
+                    <option value="">ทุกลำดับ</option>
+                    <option value="สูง" selected>สูง · 500 รายการ</option>
+                    <option value="กลาง">กลาง · 2,044 รายการ</option>
+                    <option value="ต่ำ">ต่ำ · 3,102 รายการ</option>
                   </select>
                 </label>
                 <label class="field">
-                  <span>ชุมชน</span>
-                  <select data-community-filter>
-                    <option value="">ทุกชุมชน</option>
+                  <span>ที่อยู่จดทะเบียนกิจการ</span>
+                  <select data-business-filter>
+                    <option value="">ทั้งหมด</option>
+                    <option value="with-business">มีชื่อกิจการ</option>
+                    <option value="without-business">ไม่มีชื่อกิจการ</option>
                   </select>
                 </label>
               </div>
-              <label class="field evidence-queue-filter">
-                <span>หลักฐานและคิวงาน v6</span>
-                <select data-evidence-filter>
-                  <option value="">ทุกหลักฐานและคิว</option>
-                  <option value="tier-a0">A0 · สำรวจเทศบาลผูกถึงแปลง (10,114)</option>
-                  <option value="building-register-conflict">หลักฐานใหม่กับเดิมห่างเกิน 50 ม. (981)</option>
-                  <option value="building-register-multi-site">บ้านเลขที่–ถนนชี้ได้หลายไซต์ (3,122)</option>
-                  <option value="far-from-road">จุดห่างถนนเกิน 50 ม. (1,494)</option>
-                  <option value="source-needs-review">สถานะต้นทางต้องให้คนตรวจ (2,544)</option>
-                  <option value="no-coordinate">ยังไม่มีพิกัด (2,288)</option>
-                </select>
-                <small>คิวบางกลุ่มซ้อนกัน ตัวเลขจึงไม่ควรนำมาบวกเป็นยอดเดียว</small>
-              </label>
+              <p class="queue-default-note">เริ่มที่คิวสูง เพื่อให้รายการเร่งด่วนไม่จมหายในชุดใหญ่</p>
+
+              <details class="advanced-filters">
+                <summary>ตัวกรองละเอียด</summary>
+                <div class="advanced-filters-body">
+                  <div class="filter-row">
+                    <label class="field">
+                      <span>ระดับตำแหน่ง</span>
+                      <select data-geom-filter>
+                        <option value="">ทุกระดับ</option>
+                        <option value="parcel">ระดับแปลง</option>
+                        <option value="building">ระดับอาคาร</option>
+                        <option value="cluster">ระดับกลุ่มบ้าน</option>
+                        <option value="interpolated">แทรกระหว่างเพื่อนบ้าน</option>
+                        <option value="soi_road">ระดับซอย/ถนน</option>
+                        <option value="community">ระดับชุมชน</option>
+                        <option value="review">งดเดา—รอคนตรวจ</option>
+                      </select>
+                    </label>
+                    <label class="field">
+                      <span>ชุมชน</span>
+                      <select data-community-filter>
+                        <option value="">ทุกชุมชน</option>
+                      </select>
+                    </label>
+                  </div>
+                  <div class="filter-row filter-row-spaced">
+                    <label class="field">
+                      <span>ถนนในที่อยู่</span>
+                      <select data-road-filter>
+                        <option value="">ทุกถนน</option>
+                      </select>
+                    </label>
+                    <label class="field">
+                      <span>ประเภทสถานที่</span>
+                      <select data-place-filter>
+                        <option value="">ทุกประเภท</option>
+                      </select>
+                    </label>
+                  </div>
+                  <label class="field confidence-filter">
+                    <span>ชั้นความเชื่อมั่น</span>
+                    <select data-confidence-filter>
+                      <option value="">ทุกชั้น</option>
+                      <option value="A0 สำรวจสิ่งปลูกสร้างของเทศบาล">A0 · สำรวจสิ่งปลูกสร้างเทศบาล</option>
+                      <option value="A จับคู่จากที่อยู่เจ้าของ">A · จับคู่จากที่อยู่เจ้าของ</option>
+                      <option value="B จับคู่แบบมีเงื่อนไข">B · จับคู่แบบมีเงื่อนไข</option>
+                      <option value="C ยังไม่มีพิกัด ต้องตรวจ">C · ยังไม่มีพิกัด ต้องตรวจ</option>
+                      <option value="D ค่าประมาณกลุ่ม">D · ค่าประมาณกลุ่ม</option>
+                    </select>
+                  </label>
+                  <label class="field evidence-queue-filter">
+                    <span>ธงตรวจเฉพาะ</span>
+                    <select data-evidence-filter>
+                      <option value="">ทุกธง</option>
+                      <option value="tier-a0">A0 · สำรวจเทศบาลผูกถึงแปลง</option>
+                      <option value="nearer-to-another-soi">จุดอยู่ใกล้ซอยอื่นมากกว่า (777)</option>
+                      <option value="far-from-named-soi">จุดห่างจากซอยที่ระบุ (973)</option>
+                      <option value="source-needs-review">สถานะต้นทางต้องให้คนตรวจ</option>
+                      <option value="no-coordinate">ยังไม่มีพิกัด (2,288)</option>
+                    </select>
+                    <small>คิวบางกลุ่มซ้อนกัน ตัวเลขจึงไม่ควรนำมาบวกเป็นยอดเดียว</small>
+                  </label>
+                </div>
+              </details>
+              <dl class="filter-facets" aria-label="จำนวนรายการภายใต้ตัวกรองปัจจุบัน">
+                <div><dt>มีพิกัด</dt><dd data-filtered-with-coordinate>—</dd></div>
+                <div class="filter-facet-no-data"><dt>ไม่มีพิกัด</dt><dd data-filtered-without-coordinate>—</dd></div>
+                <div><dt>มีกิจการ</dt><dd data-filtered-business>—</dd></div>
+                <div><dt>อยู่ในคิวตรวจ</dt><dd data-filtered-review>—</dd></div>
+              </dl>
               <div class="review-tabs" role="group" aria-label="กรองตามร่างที่บันทึกในแท็บนี้">
                 <button type="button" aria-pressed="true" data-review-filter="">ทั้งหมด</button>
                 <button type="button" aria-pressed="false" data-review-filter="pending">ยังไม่มีร่าง</button>
@@ -308,18 +365,25 @@
                 <button type="button" class="map-tile-button" aria-pressed="false" data-basemap="satellite">ดาวเทียม</button>
               </div>
               <div class="map-loading" data-map-loading>กำลังเตรียมขอบเขตชุมชน…</div>
-              <div class="map-legend" aria-label="คำอธิบายระดับและรูปทรงจุดบนแผนที่">
+              <div class="map-legend" role="note" aria-label="คำอธิบายสีความเชื่อมั่นและรูปทรงจุดบนแผนที่">
+                <span class="legend-heading">สี = ความเชื่อมั่น · A0 ใช้สีเดียวกับ A และมีจุดวงเล็กด้านใน</span>
+                <span><i class="confidence-swatch confidence-a0" aria-hidden="true"></i>A0 · สำรวจเทศบาล 10,114</span>
+                <span><i class="confidence-swatch confidence-a" aria-hidden="true"></i>A · จากที่อยู่เจ้าของ 1,855</span>
+                <span><i class="confidence-swatch confidence-b" aria-hidden="true"></i>B · จับคู่มีเงื่อนไข 744</span>
+                <span><i class="confidence-swatch confidence-d" aria-hidden="true"></i>D · ค่าประมาณกลุ่ม 27,523</span>
+                <span><i class="confidence-swatch confidence-c" aria-hidden="true"></i>C · ไม่มีพิกัด 2,288</span>
+                <span class="legend-heading">รูปทรง = ระดับตำแหน่ง</span>
                 <span>
                   <svg class="legend-symbol" viewBox="0 0 24 24" aria-hidden="true">
                     <path class="legend-halo" d="M9 2h6v7h7v6h-7v7H9v-7H2V9h7Z"></path>
-                    <path class="legend-core legend-specific" d="M9 2h6v7h7v6h-7v7H9v-7H2V9h7Z"></path>
+                    <path class="legend-core legend-shape" d="M9 2h6v7h7v6h-7v7H9v-7H2V9h7Z"></path>
                   </svg>
                   แปลง/อาคาร
                 </span>
                 <span>
                   <svg class="legend-symbol" viewBox="0 0 24 24" aria-hidden="true">
                     <path class="legend-halo" d="M12 2 21 7v10l-9 5-9-5V7Z"></path>
-                    <path class="legend-core legend-estimated" d="M12 2 21 7v10l-9 5-9-5V7Z"></path>
+                    <path class="legend-core legend-shape" d="M12 2 21 7v10l-9 5-9-5V7Z"></path>
                     <path class="legend-detail-halo" d="m5 18 14-12"></path>
                     <path class="legend-detail" d="m5 18 14-12"></path>
                   </svg>
@@ -328,7 +392,7 @@
                 <span>
                   <svg class="legend-symbol" viewBox="0 0 24 24" aria-hidden="true">
                     <path class="legend-halo" d="m12 2 10 20H2Z"></path>
-                    <path class="legend-core legend-coarse" d="m12 2 10 20H2Z"></path>
+                    <path class="legend-core legend-shape" d="m12 2 10 20H2Z"></path>
                   </svg>
                   ซอย/ชุมชน
                 </span>
@@ -336,14 +400,14 @@
                 <span><i class="legend-selected" aria-hidden="true"></i> รายการที่เลือก</span>
               </div>
             </div>
-            <p class="map-disclosure" data-map-disclosure>พื้นหลังปิดอยู่ จึงยังไม่ส่งพื้นที่ที่ดูออกไปภายนอก เลือกถนน (OpenStreetMap) หรือดาวเทียม (Esri World Imagery) เมื่อต้องการเปรียบเทียบ · ทะเบียนคนละหลังไม่ถูกรวมเพราะอยู่ใกล้กัน หมุดตัวเลขใช้เฉพาะอาคารชุด สำนักงาน หรือรายการพิกัดระดับอาคารที่ใช้พิกัดเดียวกันในข้อมูล · ภาพถ่ายอาจต่างช่วงเวลาและความละเอียด ไม่ใช่หลักฐานสิทธิหรือแนวเขต · ระดับแปลงแสดงเป็นจุดอ้างอิง เพราะ CSV ไม่มีรูปแปลง</p>
+            <p class="map-disclosure" data-map-disclosure>พื้นหลังปิดอยู่ จึงยังไม่ส่งพื้นที่ที่ดูออกไปภายนอก เลือกถนน (OpenStreetMap) หรือดาวเทียม (Esri World Imagery) เมื่อต้องการเปรียบเทียบ · สีหมุดบอกชั้นความเชื่อมั่น โดย A0 ใช้สีเดียวกับ A และมีจุดวงเล็กด้านใน ส่วนรูปทรงบอกระดับตำแหน่ง · ทิศหน้าถนนใช้เฉพาะแถวที่มีค่าและเป็นเพียงมุมเริ่มดูภาพ · ภาพถ่ายอาจต่างช่วงเวลาและความละเอียด ไม่ใช่หลักฐานสิทธิ แนวเขต หรือการยืนยันป้ายบ้าน</p>
           </section>
 
           <aside class="detail-pane" id="detail-panel" role="tabpanel" aria-label="รายละเอียดรายการที่เลือก" data-panel="detail">
             <div class="detail-empty" data-detail-empty>
               <span aria-hidden="true">↖</span>
               <h3 id="detail-title">เลือกรายการเพื่อเริ่มตรวจ</h3>
-              <p>รายละเอียด เลขที่บ้าน ระดับตำแหน่ง รัศมี และคำแนะนำจะปรากฏตรงนี้</p>
+              <p>รายละเอียดที่อยู่ ระดับและความเชื่อมั่น ถนน กิจการจากที่อยู่จดทะเบียน และเหตุผลเข้าคิวจะปรากฏตรงนี้</p>
             </div>
 
             <div class="record-detail" data-record-detail hidden>
@@ -360,7 +424,7 @@
               <div class="external-action">
                 <button type="button" class="streetview-button" data-streetview>เปิด Street View ดูบริบท ↗</button>
                 <button type="button" class="maps-button" data-google-map>เปิด Google Maps ดูบริเวณ ↗</button>
-                <p data-streetview-note>ลิงก์มีพิกัดที่เลือกโดยไม่ใส่เลขที่บ้านหรือรหัสทะเบียน Google ยังอาจได้รับ IP ข้อมูลการเชื่อมต่อ และข้อมูลบัญชีหรือเซสชันตามปกติ ภาพถนนเป็นหลักฐานประกอบ ไม่ใช่การยืนยันตำแหน่งโดยลำพัง</p>
+                <p data-streetview-note>ลิงก์ส่งเฉพาะพิกัดและทิศหน้าถนนเมื่อรายการนั้นมีค่า โดยไม่ใส่เลขที่บ้านหรือรหัสทะเบียน Google ยังอาจได้รับ IP และข้อมูลเซสชันตามปกติ ภาพถนนเป็นหลักฐานประกอบ ไม่ใช่การยืนยันตำแหน่งโดยลำพัง</p>
               </div>
 
               <form class="review-form" data-review-form>
@@ -415,8 +479,8 @@
     <section class="section" id="results" aria-labelledby="results-title">
       <div class="section-heading">
         <p class="eyebrow">ตอนนี้เราอยู่ตรงไหน?</p>
-        <h2 id="results-title">หลักฐานเทศบาลทำให้เห็นชัดขึ้น<br>ทั้งจุดที่ใช่และจุดที่ขัดกัน</h2>
-        <p>v6 ผูกบ้านเลขที่กับแปลงจากการสำรวจสิ่งปลูกสร้างโดยตรง เพิ่มตำแหน่งระดับแปลงอย่างมาก พร้อมเปิดเผยกรณีที่วิธีเดิมชี้คนละแปลงให้เห็นเป็นคิวตรวจ</p>
+        <h2 id="results-title">รอบ v8 พาจุดเข้าหาถนน<br>และพาคนไปหารายการที่ควรตรวจ</h2>
+        <p>ตำแหน่งตั้งต้นยังครอบคลุมเท่าเดิม แต่ชั้นถนนเทศบาลช่วยจัดทิศมุมมอง เรียกชื่อแนวถนน และตั้งธงข้อขัดแย้งได้ละเอียดขึ้น พร้อมชั้นที่อยู่จดทะเบียนกิจการสำหรับใช้ประกอบการตรวจ</p>
       </div>
 
       <div class="coverage-layout">
@@ -432,19 +496,19 @@
 
         <div class="metric-grid">
           <article class="metric-card">
-            <p class="metric-kicker">ละเอียดระดับแปลงหรืออาคาร</p>
-            <p class="metric-value">19,864</p>
-            <p class="metric-meta">46.7% ของทั้งหมด · ยังไม่ใช่การยืนยันภาคสนาม</p>
+            <p class="metric-kicker">แถวที่วางจุดอ้างอิงเข้าหาหน้าถนน</p>
+            <p class="metric-value">13,960</p>
+            <p class="metric-meta">ใช้ช่วยเปิดภาพไปทางแนวถนน ไม่ได้หมายถึงพบประตูหรือป้ายบ้านแล้ว</p>
           </article>
           <article class="metric-card">
-            <p class="metric-kicker">ชั้น A0 จากสำรวจสิ่งปลูกสร้างเทศบาล</p>
-            <p class="metric-value">10,114</p>
-            <p class="metric-meta">23.8% ของทุกแถว · ผูกบ้านเลขที่กับแปลง แต่ยังเป็นผลต้นแบบ</p>
+            <p class="metric-kicker">แถวที่เรียกชื่อแนวถนนจากที่อยู่ได้</p>
+            <p class="metric-value">8,036</p>
+            <p class="metric-meta">57.6% ของแถวที่มีจุดหน้าถนน · ใช้เป็นเบาะแสประกอบ ไม่ใช่คำตัดสินซอย</p>
           </article>
           <article class="metric-card metric-card-emphasis">
-            <p class="metric-kicker">บันทึกผลภาคสนามแล้ว</p>
-            <p class="metric-value">0</p>
-            <p class="metric-meta">จึงยังใช้ชั้นข้อมูลนี้เป็นพิกัดยืนยันรายบ้านไม่ได้</p>
+            <p class="metric-kicker">บ้านที่มีที่อยู่จดทะเบียนกิจการ</p>
+            <p class="metric-value">1,379</p>
+            <p class="metric-meta">รวม 2,048 ป้ายกำกับกิจการ · ไม่ได้ยืนยันว่ากิจการยังเปิดอยู่ ณ จุดนั้น</p>
           </article>
         </div>
       </div>
@@ -476,15 +540,15 @@
         </div>
 
         <div class="audience-panel" id="panel-executive" role="tabpanel" tabindex="0" aria-labelledby="tab-executive">
-          <p class="panel-question">คำถามสำคัญไม่ใช่ “หมุดครบหรือยัง?” แต่คือ “เราพร้อมใช้แต่ละระดับทำอะไร?”</p>
+          <p class="panel-question">คำถามสำคัญไม่ใช่ “หมุดครบหรือยัง?” แต่คือ “รายการไหนควรใช้เวลาเจ้าหน้าที่ตรวจเป็นลำดับแรก?”</p>
           <div class="panel-columns">
             <div>
               <p class="panel-label">ใช้ตัดสินใจได้ตอนนี้</p>
-              <p>ใช้ทะเบียนสิ่งปลูกสร้างเป็นฐานจัดคิวตรวจ ขอให้เติมรหัสประจำบ้านเพื่อแก้คีย์หลายไซต์ และนำชื่ออาคารชุดทางการไปตรวจ desk lookup รอบต่อไป</p>
+              <p>ใช้คิวสูง 500 รายการนำงาน ตรวจ 43 คีย์ที่ชื่อซอยกับแนวถนนไม่สอดคล้อง และรับข้อเสนอผู้สมัครที่ยังไม่มีพิกัด 72 รายการไปเตรียมค้นจากเอกสารและฐานข้อมูลในรอบถัดไป โดยไม่ปะปนกับงานดู Street View</p>
             </div>
             <div>
               <p class="panel-label">ยังไม่ควรประกาศ</p>
-              <p>ยังไม่ควรเรียกชั้นนี้ว่า “พิกัดบ้านที่ยืนยันแล้ว” หรือใช้ตัดสินสิทธิ์ แจ้งเหตุฉุกเฉิน และชี้จุดรายหลังโดยอัตโนมัติ</p>
+              <p>ยังไม่ควรเรียกชั้นนี้ว่า “พิกัดบ้านที่ยืนยันแล้ว” และชื่อกิจการจากทะเบียนก็ไม่ใช่หลักฐานว่ากิจการยังเปิดอยู่หรืออยู่หน้าบ้านนั้นจริง</p>
             </div>
           </div>
         </div>
@@ -494,11 +558,11 @@
           <div class="panel-columns">
             <div>
               <p class="panel-label">คิวเปิดทันที</p>
-              <p>เริ่มจากรายการตรวจระดับสูง 526 แถว โดยเฉพาะจุดที่ทะเบียนสิ่งปลูกสร้างขัดกับวิธีเดิม จุดห่างถนน และคีย์บ้านเลขที่ที่ชี้ได้หลายไซต์</p>
+              <p>เริ่มจากรายการตรวจระดับสูง 500 แถว แล้วใช้ตัวกรองถนน ความเชื่อมั่น กิจการ และเหตุผลการตรวจเพื่อลดคิวให้ตรงงานที่รับผิดชอบ</p>
             </div>
             <div>
               <p class="panel-label">หลักการแสดงผล</p>
-              <p>จุดประมาณต้องเห็นเป็นวงหรือพื้นที่ ระดับชุมชนต้องไม่กลายเป็นหมุดบ้าน และรายการรอตรวจต้องแยกจากศูนย์อย่างชัดเจน</p>
+              <p>อ่านข้อความ “จุดอ้างอิงหน้าถนน” ตามตัวอักษร: มันช่วยเลือกทิศดูภาพ แต่ยังไม่ใช่ตำแหน่งประตู ป้ายทะเบียนบ้าน หรือแนวเขตสิทธิ</p>
             </div>
           </div>
         </div>
@@ -575,7 +639,7 @@
         <summary>ดูตัวเลขทั้ง 7 ระดับในตาราง</summary>
         <div class="table-scroll">
           <table>
-            <caption>ระดับตำแหน่งจากตารางหลัก v6 ลงวันที่ 7 กันยายน 2569</caption>
+            <caption>ระดับตำแหน่งจากชุดข้อมูลแผนที่ v2 ของผลรอบ v8 ลงวันที่ 8 กันยายน 2569</caption>
             <thead>
               <tr><th scope="col">ระดับตำแหน่ง</th><th scope="col">รายการ</th><th scope="col">สัดส่วน</th><th scope="col">วิธีอ่าน</th></tr>
             </thead>
@@ -632,7 +696,7 @@
           <summary>ดูค่าทั้งสองมุมในตาราง</summary>
           <div class="table-scroll">
             <table>
-              <caption>บางแสนบนซึ่งมีจำนวนรายการยังไม่มีจุดสูงสุด และ 4 ชุมชนที่มีสัดส่วนครอบคลุมต่ำสุดจากผล v6</caption>
+              <caption>บางแสนบนซึ่งมีจำนวนรายการยังไม่มีจุดสูงสุด และ 4 ชุมชนที่มีสัดส่วนครอบคลุมต่ำสุดจากผลรอบ v8</caption>
               <thead><tr><th scope="col">ชุมชน</th><th scope="col">ยังไม่มีจุด</th><th scope="col">มีจุดแล้ว</th></tr></thead>
               <tbody>
                 <tr><th scope="row">บางแสนบน</th><td>328 รายการ</td><td>94.21%</td></tr>
@@ -661,54 +725,53 @@
         </li>
         <li>
           <span class="step-number">1</span>
-          <div><h3>เชื่อมหลักฐานเดิมอย่างระมัดระวัง</h3><p>เทียบทะเบียนกับรูปแปลง LTAX 30,110 แปลง ที่อยู่เจ้าของ ชื่ออาคาร และ CityMETER พร้อมคงธงเมื่อหลายแหล่งให้คำตอบต่างกัน</p></div>
+          <div><h3>เชื่อมหลักฐานเดิมอย่างระมัดระวัง</h3><p>เทียบทะเบียนกับ LTAX ทะเบียนสิ่งปลูกสร้าง ห้องชุด และ CityMETER พร้อมคงระดับ รัศมี และธงเมื่อหลายแหล่งให้คำตอบต่างกัน</p></div>
         </li>
         <li>
           <span class="step-number">2</span>
-          <div><h3>เพิ่มชั้น A0 จากการสำรวจเทศบาล</h3><p>เมื่อถนนและบ้านเลขที่ชี้ไปไซต์เดียว รายการสิ่งปลูกสร้างจะผูกแถวทะเบียนกับแปลงโดยตรง ได้ 10,114 แถว แต่ยังไม่ถือว่าตรวจหน้าบ้านแล้ว</p></div>
+          <div><h3>วางจุดอ้างอิงเข้าหาหน้าถนน</h3><p>รอบ v8 เพิ่มทิศหน้าถนนให้ 13,960 แถว และเรียกชื่อแนวถนนจากที่อยู่ได้ 8,036 แถว เพื่อช่วยตั้งมุมตรวจ โดยไม่อ้างว่าจุดนั้นคือประตูบ้าน</p></div>
         </li>
         <li>
           <span class="step-number">3</span>
-          <div><h3>ตรวจไขว้และหยุดเมื่อยังไม่พอ</h3><p>ใช้ทะเบียนห้องชุด ขอบเขตชุมชน และระยะถึงถนนช่วยตั้งธง ส่วนกลุ่มบ้านที่เหลือยังมีรัศมี และงดพิกัด 2,288 แถวเมื่อคำตอบยังไม่ชัด</p></div>
+          <div><h3>ตรวจไขว้กับถนนเทศบาลแล้วตั้งคิว</h3><p>ใช้แนวถนนเทศบาลประกอบ 9,630 แถว พบ 43 คีย์ที่ชื่อซอยไม่สอดคล้อง และ 973 แถวที่ห่างจากซอยที่ระบุ รายงานยังเสนอผู้สมัครที่ไม่มีพิกัด 72 รายการไว้ทำงานรอบถัดไป</p></div>
         </li>
       </ol>
 
       <article class="corroboration-card">
         <div class="corroboration-copy">
-          <p class="eyebrow eyebrow-on-deep">สิ่งที่ v6 ทำให้วัดได้เป็นครั้งแรก</p>
-          <h3>เห็นทั้งจุดที่วิธีเดิมทำได้ดี<br>และจุดที่ต้องทบทวน</h3>
-          <p>ทะเบียนสิ่งปลูกสร้างผูกบ้านเลขที่กับแปลงโดยตรง จึงใช้ตรวจไขว้ผลเดิมได้ แต่ความสอดคล้องของฐานข้อมูลยังไม่เท่ากับการเห็นป้ายบ้านจริง</p>
+          <p class="eyebrow eyebrow-on-deep">สิ่งที่รอบ v8 เพิ่มให้โต๊ะตรวจ</p>
+          <h3>ถนนไม่ใช่แค่พื้นหลัง<br>แต่เป็นหลักฐานที่อ่านย้อนกลับได้</h3>
+          <p>การขยับจุดและตั้งทิศอ้างอิงทำตามชั้นถนนที่บันทึกไว้ในข้อมูล จึงช่วยให้ผู้ตรวจรู้ว่าควรหันไปทางไหนและเห็นกรณีที่ข้อมูลขัดกัน โดยยังไม่แทนการตรวจของคน</p>
         </div>
         <div class="corroboration-stats">
-          <div><strong>10,114</strong><span>แถวชั้น A0 จากการสำรวจสิ่งปลูกสร้างของเทศบาล</span></div>
-          <div><strong>2,109</strong><span>จาก 3,497 แถวที่ตรวจไขว้แล้วตรงกันทั้งแปลง หรือ 60%</span></div>
-          <div><strong>981</strong><span>แถวที่หลักฐานใหม่กับวิธีเดิมห่างกันเกิน 50 ม. ต้องตรวจต่อ</span></div>
+          <div><strong>13,960</strong><span>แถวที่มีจุดอ้างอิงและทิศเข้าหาหน้าถนน</span></div>
+          <div><strong>9,630</strong><span>แถวที่ใช้แนวถนนเทศบาลประกอบการกำหนดทิศ</span></div>
+          <div><strong>8,036</strong><span>แถวที่เชื่อมชื่อถนนในที่อยู่กับชื่อแนวถนนได้</span></div>
         </div>
       </article>
     </section>
 
     <section class="section" id="readiness" aria-labelledby="readiness-title">
       <div class="section-heading">
-        <p class="eyebrow">ระบบพร้อม ≠ พื้นที่ยืนยันแล้ว</p>
-        <h2 id="readiness-title">ผ่านการทดสอบวิธีทำงาน<br>แต่ยังต้องพิสูจน์กับโลกจริง</h2>
+        <p class="eyebrow">จัดคิวได้ ≠ ยืนยันกับโลกจริงแล้ว</p>
+        <h2 id="readiness-title">รอบนี้บอกว่า “ควรตรวจอะไร”<br>ไม่บอกว่า “ถูกต้องแล้วกี่เปอร์เซ็นต์”</h2>
+        <p>หน้าเว็บจึงแสดงเฉพาะตัวเลขที่มีผลจริงในชุดสรุป และไม่เติมค่าความแม่นยำหรือผลตรวจภาคสนามขึ้นมาเอง</p>
       </div>
 
       <div class="readiness-comparison">
         <article class="readiness-card readiness-system">
-          <p class="readiness-label">ตามรายงานกระบวนการ v6</p>
+          <p class="readiness-label">บัญชีตรวจจากผลรอบ v8</p>
           <div class="readiness-figures">
-            <p><strong>118</strong><span>ชุดทดสอบผ่าน</span></p>
-            <p><strong>14</strong><span>เงื่อนไขตรวจรับผ่าน</span></p>
+            <p><strong>500</strong><span>ลำดับสูง</span></p>
+            <p><strong>2,044</strong><span>ลำดับกลาง</span></p>
+            <p><strong>3,102</strong><span>ลำดับต่ำ</span></p>
           </div>
-          <p>รายงานต้นทางบันทึกผลผ่านไว้ 118 ชุดทดสอบและ 14 เงื่อนไขตรวจรับ ตัวเลขนี้ไม่ได้บอกว่าหมุดตรงกับบ้านจริงทุกหลัง และหน้าเว็บนี้ไม่ได้รันทดสอบของ pipeline ซ้ำ</p>
+          <p>รวม 5,646 รายการ แต่ละแถวมีลำดับและเหตุผลตรวจ เพื่อให้เจ้าหน้าที่เริ่มจากคิวสูงแล้วกรองต่อได้ โดยหน้าเว็บไม่อ้างว่าเรียงตามคะแนนที่ชุดแสดงผลไม่ได้ส่งมา</p>
         </article>
         <article class="readiness-card readiness-field">
-          <p class="readiness-label">พื้นที่ยังรอหลักฐาน</p>
-          <div class="readiness-figures">
-            <p><strong>0</strong><span>รายการที่บันทึกผลภาคสนาม</span></p>
-            <p><strong>5,788</strong><span>รายการในบัญชีตรวจด้วยสายตา</span></p>
-          </div>
-          <p>รายการตรวจแบ่งเป็นระดับสูง 526 กลาง 2,084 และต่ำ 3,178 แถว แต่ยังไม่มีแถวใดบันทึกผลยืนยันจากภาคสนาม</p>
+          <p class="readiness-label">สิ่งที่ต้องเก็บเพิ่ม</p>
+          <h3>หลักฐานจากภาพ เอกสาร หรือการลงพื้นที่</h3>
+          <p>ชุดสรุปรอบนี้ไม่ได้รายงานคะแนนความแม่นยำจากตัวอย่างอิสระ จึงต้องบันทึกแหล่งหลักฐาน ผู้ตรวจ และผลทุกครั้งก่อนยกระดับสถานะรายการ</p>
         </article>
       </div>
     </section>
@@ -724,35 +787,35 @@
         <article class="decision-card">
           <span class="decision-number">01</span>
           <div>
-            <p class="decision-tag">แก้คีย์ที่คุ้มที่สุด</p>
-            <h3>เติม “รหัสประจำบ้าน” ในทะเบียนสิ่งปลูกสร้าง</h3>
-            <p>ช่องนี้ยังว่างทั้งไฟล์ หากเติมได้จะมีคีย์ตรงมาช่วยจับคู่รายทะเบียน และลดความกำกวมใน 3,122 แถวที่บ้านเลขที่กับถนนยังชี้ไปได้หลายไซต์</p>
+            <p class="decision-tag">แก้ข้อขัดแย้งของถนนก่อน</p>
+            <h3>ตรวจ 43 คีย์ที่ชื่อซอยไม่สอดคล้อง</h3>
+            <p>ใช้แนวถนนเทศบาล ชื่อถนนในที่อยู่ และภาพถนนดูร่วมกัน ส่วนผู้สมัครที่ยังไม่มีพิกัด 72 รายการเป็นข้อเสนอรวมจากรายงานสำหรับค้นจากเอกสารและฐานข้อมูลรอบถัดไป ยังไม่ใช่ตัวกรองรายแถวในหน้าเว็บนี้</p>
           </div>
-          <p class="decision-outcome"><span>ผลที่ต้องได้</span> ลดความกำกวมจากบ้านเลขที่ซ้ำข้ามซอย</p>
+          <p class="decision-outcome"><span>ผลที่ต้องได้</span> เหตุผลเลือกถนนและซอยที่ตรวจย้อนกลับได้</p>
         </article>
         <article class="decision-card">
           <span class="decision-number">02</span>
           <div>
-            <p class="decision-tag">ยืนยันอาคารชุดด้วยชื่อทางการ</p>
-            <h3>นำชื่อ 47 กลุ่มกลับเข้า desk lookup</h3>
-            <p>ทะเบียนห้องชุดระบุชื่อทางการได้ 47 จาก 65 กลุ่ม ครอบคลุม 6,315 แถว แต่ master table นี้ยังไม่มีช่องชื่ออาคาร จึงต้องรันกระบวนการจับคู่รอบถัดไปก่อนแสดงรายรายการ</p>
+            <p class="decision-tag">ใช้ชั้นกิจการอย่างระมัดระวัง</p>
+            <h3>ตรวจ 1,379 บ้านที่มีที่อยู่จดทะเบียนกิจการ</h3>
+            <p>ป้ายกำกับกิจการ 2,048 รายการช่วยค้นชื่อและบริบทได้ แต่เป็น “ที่อยู่จดทะเบียน” ไม่ใช่หลักฐานว่ากิจการยังดำเนินงานหรือมีป้ายอยู่ ณ ตำแหน่งนั้น</p>
           </div>
-          <p class="decision-outcome"><span>ผลที่ต้องได้</span> ยืนยันหรือแก้พิกัดอาคารด้วยชื่อที่อ้างอิงทะเบียนได้</p>
+          <p class="decision-outcome"><span>ผลที่ต้องได้</span> แยกข้อเท็จจริงในทะเบียนออกจากสิ่งที่เห็นหน้างาน</p>
         </article>
         <article class="decision-card">
           <span class="decision-number">03</span>
           <div>
             <p class="decision-tag">เปลี่ยนธงให้เป็นผลตรวจ</p>
-            <h3>เริ่มจากคิวระดับสูง 526 แถว</h3>
-            <p>ตรวจกรณีแปลงข้ามซอย ชุมชนขัดกัน ทะเบียนสิ่งปลูกสร้างย้ายจุด และจุดห่างถนน แล้วบันทึกผลตรวจด้วยสายตาเพื่อส่งกลับเข้าสู่รอบประมวลผลถัดไป</p>
+            <h3>เริ่มจากคิวระดับสูง 500 แถว</h3>
+            <p>ใช้ Street View เฉพาะแถวที่มีพิกัดและทิศเหมาะสม ตรวจ 973 แถวที่ห่างจากซอยตามที่อยู่ และส่งกรณีที่ภาพไม่พอไปหาเอกสารหรือลงพื้นที่</p>
           </div>
           <p class="decision-outcome"><span>ผลที่ต้องได้</span> ทุกคำตัดสินมีผู้ตรวจ วันที่ และหลักฐานย้อนกลับได้</p>
         </article>
       </div>
 
       <aside class="queue-summary" aria-label="ภาพรวมคิวงานถัดไป">
-        <div><span>บัญชีตรวจด้วยสายตาทั้งหมด</span><strong>5,788</strong><small>13.6%</small></div>
-        <div><span>คิวตรวจระดับสูง</span><strong>526</strong><small>1.2%</small></div>
+        <div><span>บัญชีตรวจทั้งหมด</span><strong>5,646</strong><small>13.3%</small></div>
+        <div><span>คิวตรวจระดับสูง</span><strong>500</strong><small>1.2%</small></div>
         <div><span>รายการที่ระบบยังงดพิกัด</span><strong>2,288</strong><small>5.4%</small></div>
       </aside>
       <p class="queue-caveat">สามตัวเลขนี้ตอบคนละคำถามและอาจซ้อนกัน ห้ามบวกเป็นยอดเดียว อีกทั้งเป็นจำนวนแถวทะเบียน ไม่ใช่จำนวนจุดหรือจำนวนครั้งที่ต้องลงพื้นที่</p>
@@ -799,19 +862,23 @@
         <div>
           <h3>ผลรอบนี้</h3>
           <dl class="source-list">
-            <div><dt>ตารางหลัก</dt><dd>รุ่น v6 · 7 ก.ย. 2569</dd></div>
-            <div><dt>รายงานประมวลผล</dt><dd>ทะเบียนสิ่งปลูกสร้าง ห้องชุด และโครงข่ายถนน · รุ่น v6 · 7 ก.ย. 2569</dd></div>
-            <div><dt>กติกาประมวลผล</dt><dd>รุ่น 1.6.0</dd></div>
+            <div><dt>ชุดข้อมูลหน้าแผนที่</dt><dd>ชุดแสดงผล v2 · 42,524 แถว · 8 ก.ย. 2569</dd></div>
+            <div><dt>รายงานประมวลผล</dt><dd>ทะเบียนเทศบาลและโครงข่ายถนนเทศบาล · รอบ v8 · 8 ก.ย. 2569</dd></div>
+            <div><dt>ที่มาของตำแหน่ง</dt><dd>ทะเบียนบ้าน ทม.แสนสุข · LTAX แปลงที่ดิน · ทะเบียนสิ่งปลูกสร้าง และทะเบียนถนนของเทศบาล</dd></div>
+            <div><dt>ที่มาของชื่อกิจการ</dt><dd>ชั้นป้ายกำกับกิจการ v4 จากทะเบียนผู้จด VAT (ภ.พ.20) กรมสรรพากร และทะเบียนนิติบุคคล DBD · สกัด 8 ก.ย. 2569</dd></div>
+            <div><dt>กติกาประมวลผล</dt><dd>รุ่น 1.8.0</dd></div>
+            <div><dt>รหัสรอบ</dt><dd class="source-run-id">20260908T044243_<wbr>f3b4ba_<wbr>38e4d7_<wbr>rules1.8.0</dd></div>
             <div><dt>แผนดำเนินงาน</dt><dd>Implementation plan v1 · 4 ก.ย. 2569</dd></div>
-            <div><dt>ขอบเขตชุมชน</dt><dd>ไฟล์ GeoJSON ที่ผู้ใช้จัดเตรียม · 23 ชุมชน · ใช้เพื่อสื่อสารและ QA ไม่ใช่แนวเขตทางกฎหมาย</dd></div>
+            <div><dt>ขอบเขตชุมชนประกอบ</dt><dd>GeoJSON ที่ผู้ใช้จัดเตรียม · 23 ชุมชน · ใช้สื่อสารและตรวจคุณภาพ ไม่อ้างว่าเป็นแนวเขตทางการหรือแนวเขตสิทธิ</dd></div>
           </dl>
         </div>
         <div>
-          <h3>หลักฐานใหม่ใน v6</h3>
+          <h3>ชั้นข้อมูลที่เพิ่มใน v8</h3>
           <dl class="source-list">
-            <div><dt>รายการสิ่งปลูกสร้าง</dt><dd>14,577 แถว · 12,294 คู่บ้านเลขที่–แปลงที่ใช้จับคู่ได้</dd></div>
-            <div><dt>ทะเบียนห้องชุด</dt><dd>14,786 แถว · ใช้ระบุชื่อทางการได้ 47 จาก 65 กลุ่มทะเบียน</dd></div>
-            <div><dt>โครงข่ายถนน</dt><dd>ใช้ตรวจระยะถึงถนนและตั้งธง 1,494 แถว ไม่ใช้ตัดสินซอย</dd></div>
+            <div><dt>จุดอ้างอิงหน้าถนน</dt><dd>13,960 แถว · 8,036 แถวเชื่อมชื่อถนนในที่อยู่กับแนวถนนได้</dd></div>
+            <div><dt>โครงข่ายถนนเทศบาล</dt><dd>20 ถนน · ใช้ประกอบทิศ 9,630 แถว · ตั้งธงห่างจากซอยที่ระบุ 973 แถว</dd></div>
+            <div><dt>ที่อยู่จดทะเบียนกิจการ</dt><dd>2,048 ป้ายกำกับบน 1,379 บ้าน · ใช้เป็นเบาะแส ไม่ใช่หลักฐานการดำเนินกิจการปัจจุบัน</dd></div>
+            <div><dt>คิวข้อขัดแย้ง</dt><dd>43 คีย์ชื่อซอยไม่สอดคล้อง · รายงานเสนอผู้สมัครยังไม่มีพิกัด 72 รายการสำหรับรอบถัดไป ไม่ใช่ตัวกรองในชุดแสดงผล</dd></div>
           </dl>
         </div>
       </div>
@@ -819,13 +886,14 @@
       <details class="limitations">
         <summary>ข้อจำกัดที่ต้องรู้ก่อนนำตัวเลขไปใช้</summary>
         <ul>
-          <li>40,236 รายการที่มีจุด มีค่าพิกัดไม่ซ้ำ 11,484 คู่ เพราะแปลง อาคาร กลุ่มบ้าน ซอย และชุมชนอาจใช้จุดร่วมกันตามวิธีออกแบบ</li>
-          <li>1,886 แถวทะเบียนมีรัศมีมากกว่า 1 กิโลเมตร และหลายแถวใช้พิกัดร่วมกัน จึงต้องอ่านเป็นบริเวณ ไม่ใช่หน้าบ้านหรือจำนวนจุดไม่ซ้ำ</li>
-          <li>ชั้น A0 ผูกบ้านเลขที่กับแปลงจากการสำรวจเทศบาล แต่ไม่ได้ระบุตำแหน่งประตู อาคาร หรือป้ายทะเบียนบ้าน และยังไม่มีผลภาคสนาม</li>
-          <li>รายการสิ่งปลูกสร้างไม่มีซอย และรหัสประจำบ้านยังว่าง จึงยังมี 3,122 แถวที่คีย์เดียวชี้ได้หลายไซต์</li>
-          <li>เส้นถนนมีชื่อเพียง 17% ของส่วนที่อยู่ในกรอบแสนสุข จึงใช้เป็นตัวตรวจระยะ ไม่ใช่ผู้ตัดสินว่าบ้านอยู่ซอยใด</li>
+          <li>40,236 แถวมีตำแหน่งตั้งต้น ส่วน 2,288 แถวถูกเว้นพิกัดโดยตั้งใจ เพราะหลักฐานยังไม่พอหรือมีหลายคำตอบ</li>
+          <li>หลายทะเบียนอาจใช้พิกัดเดียวกันตามระดับแปลง อาคาร กลุ่มบ้าน ซอย หรือชุมชน จำนวนแถวจึงไม่เท่ากับจำนวนจุดไม่ซ้ำ</li>
+          <li>จุดอ้างอิงหน้าถนนและทิศมุมมองไม่ใช่ตำแหน่งประตู อาคาร ป้ายทะเบียนบ้าน หรือแนวเขตสิทธิ</li>
+          <li>กรณีชื่อซอยไม่สอดคล้อง จุดอยู่ใกล้ซอยอื่นมากกว่า หรือห่างจากซอยที่ระบุ เป็นธงสำหรับตรวจ ไม่ใช่หลักฐานว่าข้อมูลทะเบียนหรือชั้นถนนฝ่ายใดผิด</li>
+          <li>ชื่อกิจการหมายถึงที่อยู่จดทะเบียนที่จับคู่กับแถวบ้าน ไม่ยืนยันสถานะเปิด–ปิด ป้ายหน้าร้าน หรือผู้ครอบครองปัจจุบัน</li>
+          <li>ขอบเขตชุมชนที่แสดงเป็นชั้นประกอบจากไฟล์ที่ผู้ใช้ให้ ไม่ใช่ขอบเขตทางกฎหมายหรือขอบเขตแปลง</li>
           <li>ค่า “ยังไม่มีข้อมูล” ถูกแยกจากศูนย์ และกลุ่มที่หลักฐานไม่พอถูกเว้นพิกัดโดยตั้งใจ</li>
-          <li>ระบบผ่านการทดสอบทางเทคนิค แต่ทุกแถวยังคงมีสถานะที่ต้องตรวจหรือยืนยันต่อ</li>
+          <li>ตัวเลขบนหน้านี้เป็นผลสรุปจากรอบที่ระบุ ไม่ใช่คะแนนความแม่นยำจากตัวอย่างภาคสนามอิสระ</li>
         </ul>
       </details>
     </section>
@@ -838,7 +906,7 @@
         <p>CityChat · โต๊ะตรวจตำแหน่งทะเบียนบ้านเทศบาลเมืองแสนสุข</p>
       </div>
       <div class="footer-meta">
-        <p>ข้อมูลสรุป v6 ณ 7 กันยายน 2569</p>
+        <p>ข้อมูลสรุปผลรอบ v8 ณ 8 กันยายน 2569</p>
         <a href="https://github.com/montri-th/saensuk" rel="external">ดูหน้าโครงการบน GitHub</a>
       </div>
     </div>

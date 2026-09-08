@@ -1,3 +1,32 @@
+/* Landometer DS v0.9.1 confidence-scale projection for the CityChat map.
+   A0 and A share the strongest governed anchor; A0 carries a redundant inner mark.
+   C uses the governed no-data state and is never plotted as a coordinate. */
+:root {
+  --confidence-a0: var(--ldm-scale-confidence-light-anchor-3);
+  --confidence-a: var(--ldm-scale-confidence-light-anchor-3);
+  --confidence-b: var(--ldm-scale-confidence-light-anchor-2);
+  --confidence-c: var(--ldm-data-state-no-data-light);
+  --confidence-d: var(--ldm-scale-confidence-light-anchor-1);
+}
+
+:root[data-theme="dark"] {
+  --confidence-a0: var(--ldm-scale-confidence-dark-anchor-3);
+  --confidence-a: var(--ldm-scale-confidence-dark-anchor-3);
+  --confidence-b: var(--ldm-scale-confidence-dark-anchor-2);
+  --confidence-c: var(--ldm-data-state-no-data-dark);
+  --confidence-d: var(--ldm-scale-confidence-dark-anchor-1);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --confidence-a0: var(--ldm-scale-confidence-dark-anchor-3);
+    --confidence-a: var(--ldm-scale-confidence-dark-anchor-3);
+    --confidence-b: var(--ldm-scale-confidence-dark-anchor-2);
+    --confidence-c: var(--ldm-data-state-no-data-dark);
+    --confidence-d: var(--ldm-scale-confidence-dark-anchor-1);
+  }
+}
+
 .hero-review-card {
   position: relative;
   display: flex;
@@ -6,10 +35,10 @@
   justify-content: space-between;
   gap: var(--space-6);
   padding: clamp(24px, 4vw, 48px);
-  border-color: rgb(255 255 255 / 72%);
+  border-color: color-mix(in srgb, var(--ldm-foundation-surface-raised-light) 72%, transparent);
   background: color-mix(in srgb, var(--surface-card) 96%, transparent);
   color: var(--text-primary);
-  box-shadow: 0 28px 70px rgb(17 25 29 / 24%);
+  box-shadow: 0 28px 70px color-mix(in srgb, var(--ldm-foundation-surface-canvas-dark) 24%, transparent);
 }
 
 .hero-review-card > :not(.conversation-motif) {
@@ -225,7 +254,7 @@
   background:
     linear-gradient(125deg, color-mix(in srgb, var(--surface-card) 95%, transparent), color-mix(in srgb, var(--surface-blue-tint) 88%, transparent)),
     var(--surface-card);
-  box-shadow: 0 24px 60px rgb(24 35 39 / 8%);
+  box-shadow: 0 24px 60px color-mix(in srgb, var(--ldm-foundation-text-primary-light) 8%, transparent);
 }
 
 .file-gate-copy {
@@ -294,6 +323,12 @@
   display: block;
 }
 
+.file-name {
+  overflow-wrap: anywhere;
+  font-family: var(--font-data);
+  font-size: 0.8125rem;
+}
+
 .file-gate-proof {
   display: grid;
   align-self: stretch;
@@ -328,6 +363,16 @@
   font-family: var(--font-data);
   font-size: 1.125rem;
   font-weight: 400;
+}
+
+.file-gate-proof .file-gate-run {
+  align-items: flex-start;
+}
+
+.file-gate-run strong {
+  max-width: 20ch;
+  overflow-wrap: anywhere;
+  text-align: right;
 }
 
 .parse-state,
@@ -396,16 +441,16 @@ html:not([data-top-level-safe="true"]) [data-file-label] {
   min-height: 100svh;
   place-items: center;
   padding: var(--space-6);
-  background: var(--deep-navy);
+  background: var(--ldm-foundation-surface-canvas-dark);
 }
 
 .embedding-blocked-card {
   width: min(100%, 680px);
   padding: clamp(28px, 7vw, 64px);
-  border: 1px solid rgb(255 255 255 / 24%);
+  border: 1px solid color-mix(in srgb, var(--ldm-foundation-surface-raised-light) 24%, transparent);
   border-radius: var(--radius-xl);
   background: var(--surface-card);
-  box-shadow: 0 30px 80px rgb(0 0 0 / 30%);
+  box-shadow: 0 30px 80px color-mix(in srgb, var(--ldm-foundation-surface-canvas-dark) 30%, transparent);
 }
 
 .embedding-blocked-card h1 {
@@ -425,7 +470,7 @@ html:not([data-top-level-safe="true"]) [data-file-label] {
   border: 1px solid var(--border-default);
   border-radius: var(--radius-xl);
   background: var(--surface-card);
-  box-shadow: 0 24px 60px rgb(24 35 39 / 10%);
+  box-shadow: 0 24px 60px color-mix(in srgb, var(--ldm-foundation-text-primary-light) 10%, transparent);
 }
 
 .dataset-bar {
@@ -672,7 +717,8 @@ html:not([data-top-level-safe="true"]) [data-file-label] {
   gap: var(--space-2);
 }
 
-.evidence-queue-filter {
+.filter-row-spaced,
+.confidence-filter {
   margin-top: var(--space-3);
 }
 
@@ -680,6 +726,108 @@ html:not([data-top-level-safe="true"]) [data-file-label] {
   color: var(--text-metadata);
   font-size: 0.6875rem;
   line-height: 1.45;
+}
+
+.queue-default-note {
+  margin: var(--space-1) 0 0;
+  color: var(--text-metadata);
+  font-size: 0.6875rem;
+  line-height: 1.45;
+}
+
+.advanced-filters {
+  margin-top: var(--space-3);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  background: var(--surface-raised);
+}
+
+.advanced-filters summary {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  color: var(--citychat-primary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  list-style: none;
+}
+
+.advanced-filters summary::-webkit-details-marker {
+  display: none;
+}
+
+.advanced-filters summary::after {
+  content: "+";
+  font-family: var(--font-data);
+  font-size: 1rem;
+}
+
+.advanced-filters[open] summary::after {
+  content: "−";
+}
+
+.advanced-filters summary:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.advanced-filters-body {
+  padding: 0 var(--space-3) var(--space-3);
+  border-top: 1px solid var(--border-hairline);
+}
+
+.advanced-filters-body > .filter-row:first-child {
+  margin-top: var(--space-3);
+}
+
+.evidence-queue-filter {
+  margin-top: var(--space-3);
+}
+
+.filter-facets {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+  margin: var(--space-3) 0 0;
+}
+
+.filter-facets > div {
+  min-width: 0;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-sm);
+  background: var(--surface-raised);
+}
+
+.filter-facets dt,
+.filter-facets dd {
+  margin: 0;
+}
+
+.filter-facets dt {
+  color: var(--text-metadata);
+  font-size: 0.6875rem;
+}
+
+.filter-facets dd {
+  margin-top: 2px;
+  color: var(--citychat-primary);
+  font-family: var(--font-data);
+  font-size: 0.9375rem;
+}
+
+.filter-facets .filter-facet-no-data {
+  border-color: var(--confidence-c);
+  background: var(--confidence-c);
+}
+
+.filter-facets .filter-facet-no-data dt,
+.filter-facets .filter-facet-no-data dd {
+  color: var(--text-primary);
 }
 
 .review-tabs {
@@ -722,6 +870,40 @@ html:not([data-top-level-safe="true"]) [data-file-label] {
 
 .record-item {
   border-bottom: 1px solid var(--border-hairline);
+}
+
+.record-quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding: 0 var(--space-4) var(--space-3) calc(var(--space-4) + 4px);
+}
+
+.record-quick-action {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-pill);
+  background: var(--surface-card);
+  color: var(--interaction-accent);
+  font: 600 0.78rem/1.2 var(--font-body);
+  padding: var(--space-2) var(--space-3);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.record-quick-action:hover:not([aria-disabled="true"]):not(:disabled) {
+  border-color: var(--interaction-accent);
+  background: var(--surface-blue-tint);
+}
+
+.record-quick-action[aria-disabled="true"],
+.record-quick-action:disabled {
+  border-color: var(--border-hairline);
+  color: var(--text-disabled);
+  cursor: not-allowed;
 }
 
 .record-button {
@@ -825,7 +1007,7 @@ html:not([data-top-level-safe="true"]) [data-file-label] {
   border: 1px solid var(--border-default);
   border-radius: var(--radius-pill);
   background: color-mix(in srgb, var(--surface-raised) 94%, transparent);
-  box-shadow: 0 12px 30px rgb(24 35 39 / 16%);
+  box-shadow: 0 12px 30px color-mix(in srgb, var(--ldm-foundation-text-primary-light) 16%, transparent);
   backdrop-filter: blur(12px);
 }
 
@@ -907,6 +1089,42 @@ html:not([data-top-level-safe="true"]) [data-file-label] {
   gap: 7px;
 }
 
+.map-legend .legend-heading {
+  flex-basis: 100%;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.confidence-swatch {
+  position: relative;
+  display: inline-block;
+  flex: 0 0 14px;
+  width: 14px;
+  height: 14px;
+  border: 1.5px solid var(--map-marker-stroke);
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--map-marker-halo);
+}
+
+.confidence-a0 { background: var(--confidence-a0); }
+.confidence-a { background: var(--confidence-a); }
+.confidence-b { background: var(--confidence-b); }
+.confidence-c { background: var(--confidence-c); }
+.confidence-d { background: var(--confidence-d); }
+
+.confidence-swatch.confidence-a0::after {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  border: 1px solid var(--map-marker-stroke);
+  border-radius: 50%;
+  background: var(--map-marker-halo);
+  content: "";
+  transform: translate(-50%, -50%);
+}
+
 .legend-symbol {
   flex: 0 0 18px;
   width: 18px;
@@ -930,6 +1148,7 @@ html:not([data-top-level-safe="true"]) [data-file-label] {
 .legend-specific { fill: var(--series-5); }
 .legend-estimated { fill: var(--series-7); }
 .legend-coarse { fill: var(--series-3); }
+.legend-shape { fill: var(--text-secondary); }
 
 .legend-detail-halo,
 .legend-detail {
@@ -1017,6 +1236,15 @@ html:not([data-top-level-safe="true"]) [data-file-label] {
 .selected-marker-specific { fill: var(--series-5); }
 .selected-marker-estimated { fill: var(--series-7); }
 .selected-marker-coarse { fill: var(--series-3); }
+.selected-marker-confidence-a0 .selected-marker-core { fill: var(--confidence-a0); }
+.selected-marker-confidence-a .selected-marker-core { fill: var(--confidence-a); }
+.selected-marker-confidence-b .selected-marker-core { fill: var(--confidence-b); }
+.selected-marker-confidence-c .selected-marker-core { fill: var(--confidence-c); }
+.selected-marker-confidence-d .selected-marker-core { fill: var(--confidence-d); }
+
+.selected-marker-confidence-a0 .selected-marker-core {
+  stroke-width: 3;
+}
 
 .selected-marker-detail-halo,
 .selected-marker-detail {
@@ -1045,7 +1273,7 @@ html:not([data-top-level-safe="true"]) [data-file-label] {
 }
 
 .leaflet-container {
-  color: #182327;
+  color: var(--ldm-foundation-text-primary-light);
   font-family: var(--font-body);
 }
 
@@ -1475,6 +1703,24 @@ html:not([data-top-level-safe="true"]) [data-file-label] {
   .map-stage,
   .record-map {
     min-height: 48dvh;
+  }
+
+  .map-legend {
+    right: var(--space-2);
+    bottom: 38px;
+    left: var(--space-2);
+    max-height: calc(100% - 84px);
+    gap: var(--space-1) var(--space-2);
+    padding: var(--space-2);
+    overflow-y: auto;
+    font-size: 0.6875rem;
+    line-height: 1.25;
+    overscroll-behavior: contain;
+    pointer-events: auto;
+  }
+
+  .map-legend > span:not(.legend-heading) {
+    flex: 1 1 128px;
   }
 
   .record-detail {

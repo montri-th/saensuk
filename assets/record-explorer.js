@@ -42,20 +42,18 @@
   if (guardedFileInput) guardedFileInput.disabled = false;
 
   const PAGE_SIZE = 30;
-  const SNAPSHOT_RELEASE = "v6";
+  const DATASET_CONTRACT = "housemapdisplaydataset";
   const NUMBER = new Intl.NumberFormat("th-TH");
-  const BAD_STREETVIEW_FLAGS = [
-    "large_parcel",
-    "shared_parcel_cross_soi",
-    "citymeter_far",
-    "bl1_web_conflict",
-    "condo_unit_matched_as_house",
-    "duplicate_registry_key",
-    "building_register_conflict",
-    "building_register_multi_site",
-    "anchor_contradicted",
-    "far_from_road"
-  ];
+
+  const CONFIDENCE_KEYS = Object.freeze({
+    "A0 สำรวจสิ่งปลูกสร้างของเทศบาล": "a0",
+    "A จับคู่จากที่อยู่เจ้าของ": "a",
+    "B จับคู่แบบมีเงื่อนไข": "b",
+    "C ยังไม่มีพิกัด ต้องตรวจ": "c",
+    "D ค่าประมาณกลุ่ม": "d"
+  });
+
+  const REVIEW_PRIORITY_RANK = Object.freeze({ "สูง": 0, "กลาง": 1, "ต่ำ": 2 });
 
   const GEOM_LABELS = Object.freeze({
     parcel: "ระดับแปลง",
@@ -73,6 +71,34 @@
     "needs-review": "ต้องให้คนตรวจ",
     "desk-lookup-unverified": "ค้นจากโต๊ะทำงาน—ยังไม่ยืนยัน",
     "building-lookup-pending": "รอค้นอาคาร"
+  });
+
+  const METHOD_LABELS = Object.freeze({
+    A0: "สำรวจสิ่งปลูกสร้างของเทศบาลผูกบ้านกับแปลง",
+    A1: "จับคู่ที่อยู่เจ้าของกับแปลงเดียวและชื่อถนนตรง",
+    A2: "จับคู่ที่อยู่เจ้าของกับแปลงเดียว โดยเพื่อนบ้านช่วยยืนยัน",
+    B2: "จับคู่ที่อยู่ที่ข้อมูลซอยไม่ครบ โดยถนนและเพื่อนบ้านช่วยยืนยัน",
+    B3: "จับคู่ที่อยู่ที่ข้อมูลซอยไม่ครบ โดยเพื่อนบ้านช่วยยืนยัน",
+    B4: "เลือกไซต์ของเจ้าของที่อยู่ใกล้บ้านอ้างอิง",
+    B5: "มีหลักฐานบางส่วนขัดกัน แต่เพื่อนบ้านช่วยยืนยัน",
+    B6: "แปลงผู้สมัครเดียวอยู่ในขอบเขตชุมชน",
+    B7: "เลือกไซต์เดียวที่อยู่ในขอบเขตชุมชน",
+    C1: "มีหลายแปลงผู้สมัครและยังเลือกไม่ได้",
+    C2: "ถนนหรือซอยขัดกันและยังไม่มีเพื่อนบ้านยืนยัน",
+    C3: "จับคู่ที่อยู่ได้ แต่ยังไม่มีหลักฐานตำแหน่งช่วยยืนยัน",
+    C4: "จับคู่ที่อยู่ที่ข้อมูลซอยไม่ครบ และยังไม่มีเพื่อนบ้านยืนยัน",
+    C5: "จับคู่ได้เฉพาะบ้านเลขที่ และยังไม่มีเพื่อนบ้านยืนยัน",
+    E1: "ใช้จุดกลางของกลุ่มบ้านเลขที่หลักเดียวกัน",
+    E2a: "ใช้จุดกลางกลุ่มบ้านเลขที่ย่อยใกล้เคียง",
+    E2b: "ใช้จุดกลางกลุ่มบ้านเลขที่หลักเดียวกันในระดับซอยหรือถนน",
+    E3: "อ้างอิงบ้านเลขที่หลักเดียวกันเพียงจุดเดียว",
+    I1: "แทรกตำแหน่งระหว่างบ้านเลขที่ข้างเคียงระยะใกล้",
+    I2: "แทรกตำแหน่งระหว่างบ้านเลขที่ข้างเคียงระยะไกล",
+    S: "ใช้จุดกลางบ้านอ้างอิงในถนนและซอยเดียวกัน",
+    K: "ใช้จุดกลางบ้านอ้างอิงในชุมชนเดียวกัน",
+    BL1: "ผูกอาคารกับแปลงจากทะเบียนนิติบุคคลที่อยู่เป็นกลุ่มเดียวกัน",
+    "desk-lookup": "ค้นตำแหน่งโครงการจากหลักฐานสาธารณะ",
+    "condo-pending": "ใช้จุดกลางกลุ่มห้องชุดชั่วคราว ระหว่างรอค้นอาคาร"
   });
 
   const REVIEW_LABELS = Object.freeze({
@@ -166,7 +192,26 @@
     snap_landlord_block: "จุดประมาณอยู่ในกลุ่มแปลงผู้ถือครองเดียว",
     soi_disambiguated_by_community: "ใช้ชุมชนช่วยแยกซอยที่กำกวม",
     community_confirmed: "ขอบเขตชุมชนสอดคล้อง",
-    community_polygon_only: "อ้างอิงเฉพาะรูปชุมชน"
+    community_polygon_only: "อ้างอิงเฉพาะรูปชุมชน",
+    frontage_road_by_name: "ทิศหน้าบ้านอ้างอิงจากชื่อถนน",
+    far_from_named_soi: "จุดอยู่ห่างจากซอยที่ระบุ",
+    nearer_to_another_soi: "จุดอยู่ใกล้ซอยอื่นมากกว่าซอยที่ระบุ",
+    frontage_none: "ยังหาด้านติดถนนของแปลงไม่ได้",
+    frontage_no_road: "ยังไม่พบแนวถนนใกล้แปลง",
+    frontage_off_parcel: "จุดหน้าบ้านอาจอยู่นอกแปลง",
+    condo_unit: "รายการนี้เป็นห้องชุด"
+  });
+
+  const FRONTAGE_SOURCE_LABELS = Object.freeze({
+    "road+soi": "จับคู่จากชื่อถนนและซอย",
+    road_name: "จับคู่จากชื่อถนน",
+    soi: "จับคู่จากชื่อซอย",
+    nearest: "เลือกแนวถนนที่ใกล้แปลงที่สุด"
+  });
+
+  const FRONTAGE_LAYER_LABELS = Object.freeze({
+    municipal: "ทะเบียนถนนของเทศบาล",
+    osm: "OpenStreetMap"
   });
 
   const CRITICAL_FLAG_CHIPS = Object.freeze({
@@ -198,9 +243,18 @@
     search: explorer.querySelector("[data-search]"),
     geomFilter: explorer.querySelector("[data-geom-filter]"),
     communityFilter: explorer.querySelector("[data-community-filter]"),
+    roadFilter: explorer.querySelector("[data-road-filter]"),
+    placeFilter: explorer.querySelector("[data-place-filter]"),
+    confidenceFilter: explorer.querySelector("[data-confidence-filter]"),
+    businessFilter: explorer.querySelector("[data-business-filter]"),
+    priorityFilter: explorer.querySelector("[data-priority-filter]"),
     evidenceFilter: explorer.querySelector("[data-evidence-filter]"),
     reviewFilters: [...explorer.querySelectorAll("[data-review-filter]")],
     filteredCount: explorer.querySelector("[data-filtered-count]"),
+    filteredWithCoordinate: explorer.querySelector("[data-filtered-with-coordinate]"),
+    filteredWithoutCoordinate: explorer.querySelector("[data-filtered-without-coordinate]"),
+    filteredBusiness: explorer.querySelector("[data-filtered-business]"),
+    filteredReview: explorer.querySelector("[data-filtered-review]"),
     resultNote: explorer.querySelector("[data-result-note]"),
     list: explorer.querySelector("[data-record-list]"),
     pagePrev: explorer.querySelector("[data-page-prev]"),
@@ -244,10 +298,14 @@
     selectedIndex: null,
     page: 0,
     evidenceFilter: "",
+    roadFilter: "",
+    placeFilter: "",
+    confidenceFilter: "",
+    businessFilter: "",
+    priorityFilter: "",
     reviewFilter: "",
     reviews: new Map(),
     coordinateCounts: new Map(),
-    parcelCounts: new Map(),
     boundaries: null,
     boundaryLayer: null,
     boundariesVisible: true,
@@ -274,20 +332,23 @@
     .replace(/^ชุมชน\s*/u, "")
     .trim();
 
-  const maskId = (value) => {
-    const text = clean(value, "", 120);
-    if (!text) return "ไม่พบรหัส";
-    if (text.length <= 6) return `••${text.slice(-3)}`;
-    return `••••${text.slice(-6)}`;
-  };
-
   const geometryLabel = (value) => GEOM_LABELS[value] || clean(value);
   const statusLabel = (value) => STATUS_LABELS[value] || clean(value);
+  const confidenceLabel = (value) => clean(value, "ยังไม่ระบุชั้นความเชื่อมั่น", 160);
+  const methodLabel = (value) => METHOD_LABELS[value] || "ประมาณจากข้อมูลต้นทางและบริบทพื้นที่";
+
+  const addressPart = (label, value) => {
+    const text = clean(value, "", 180);
+    if (!text || text === "-") return "";
+    return text.startsWith(label) ? text : `${label} ${text}`;
+  };
 
   const addressLine = (row) => {
     const parts = [`บ้านเลขที่ ${clean(row.house_no)}`];
-    if (row.soi && row.soi !== "-") parts.push(`ซอย ${clean(row.soi)}`);
-    if (row.road && row.road !== "-") parts.push(`ถนน ${clean(row.road)}`);
+    const soi = addressPart("ซอย", row.soi);
+    const road = addressPart("ถนน", row.road);
+    if (soi) parts.push(soi);
+    if (road) parts.push(road);
     return parts.join(" · ");
   };
 
@@ -311,36 +372,26 @@
 
   const matchesEvidenceFilter = (row, filter) => {
     if (!filter) return true;
-    const flags = splitFlags(row?.flags);
+    const flags = splitFlags(row?.review_flags);
     if (filter === "tier-a0") return row?.tier === "A0";
     if (filter === "building-register-conflict") return flags.has("building_register_conflict");
     if (filter === "building-register-multi-site") return flags.has("building_register_multi_site");
     if (filter === "far-from-road") return flags.has("far_from_road");
+    if (filter === "far-from-named-soi") return flags.has("far_from_named_soi");
+    if (filter === "nearer-to-another-soi") return flags.has("nearer_to_another_soi");
     if (filter === "source-needs-review") return row?.status === "needs-review";
     if (filter === "no-coordinate") return !Number.isFinite(row?.lat) || !Number.isFinite(row?.lon);
+    if (filter === "with-business") return Number(row?.business_count) > 0;
+    if (filter === "without-business") return Number(row?.business_count) === 0;
+    if (filter === "review-high") return row?.review_priority === "สูง";
+    if (filter === "review-mid") return row?.review_priority === "กลาง";
+    if (filter === "review-low") return row?.review_priority === "ต่ำ";
     return false;
-  };
-
-  const hasBadStreetviewFlag = (row) => {
-    const flags = splitFlags(row.flags);
-    return BAD_STREETVIEW_FLAGS.some((flag) => flags.has(flag));
   };
 
   const streetviewEligibility = (row) => {
     if (!Number.isFinite(row.lat) || !Number.isFinite(row.lon)) {
       return { allowed: false, reason: "รายการนี้ยังไม่มีพิกัด จึงเปิดภาพถนนไม่ได้" };
-    }
-    if (!["parcel", "building"].includes(row.geom_level)) {
-      return {
-        allowed: false,
-        reason: `${geometryLabel(row.geom_level)} กว้างเกินกว่าจะใช้ภาพถนนตรวจป้ายบ้านรายหลังได้`
-      };
-    }
-    if (["needs-review", "building-lookup-pending"].includes(row.status)) {
-      return { allowed: false, reason: "หลักฐานของรายการนี้ยังขัดกันหรือรอค้นเพิ่ม ควรดูแผนที่บริเวณแทน" };
-    }
-    if (hasBadStreetviewFlag(row)) {
-      return { allowed: false, reason: "รายการนี้มีธงเตือนด้านหลักฐาน จึงปิดการตรวจป้ายจากจุดเดียว" };
     }
     return { allowed: true, reason: "" };
   };
@@ -349,26 +400,19 @@
     if (!row || !Number.isFinite(row.lat) || !Number.isFinite(row.lon)) return "";
     if (mode === "streetview" && !streetviewEligibility(row).allowed) return "";
     if (mode !== "streetview" && mode !== "map") return "";
-    const url = new URL(mode === "streetview"
-      ? "https://www.google.com/maps/@"
-      : "https://www.google.com/maps/search/");
-    url.searchParams.set("api", "1");
     if (mode === "streetview") {
-      url.searchParams.set("map_action", "pano");
-      url.searchParams.set("viewpoint", `${Number(row.lat).toFixed(7)},${Number(row.lon).toFixed(7)}`);
-    } else {
-      url.searchParams.set("query", `${Number(row.lat).toFixed(7)},${Number(row.lon).toFixed(7)}`);
+      const viewpoint = `${Number(row.lat).toFixed(7)},${Number(row.lon).toFixed(7)}`;
+      const heading = Number.isFinite(row.frontage_heading) ? `&heading=${Number(row.frontage_heading)}` : "";
+      return `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${viewpoint}${heading}&pitch=0&fov=80`;
     }
-    return url.toString();
+    return `https://www.google.com/maps/search/?api=1&query=${Number(row.lat).toFixed(7)},${Number(row.lon).toFixed(7)}`;
   };
 
-  const reviewPriority = (row) => {
-    if (streetviewEligibility(row).allowed) return 0;
-    if (["parcel", "building"].includes(row.geom_level)) return 1;
-    if (row.geom_level === "cluster") return 2;
-    if (row.geom_level === "interpolated") return 3;
-    if (["soi_road", "community"].includes(row.geom_level)) return 4;
-    return 5;
+  const rowSortPriority = (row) => {
+    if (Object.prototype.hasOwnProperty.call(REVIEW_PRIORITY_RANK, row?.review_priority)) {
+      return REVIEW_PRIORITY_RANK[row.review_priority];
+    }
+    return 3;
   };
 
   const showOnly = (visible) => {
@@ -384,11 +428,11 @@
     const total = Number(progress?.totalRows || 42524);
     const details = {
       reading: "กำลังอ่านไฟล์เข้าสู่หน่วยความจำชั่วคราว",
-      hashing: "กำลังตรวจลายนิ้วมือ เพื่อยืนยันว่าเป็นไฟล์ v6 ที่ตรงกับผลสรุป",
+      hashing: "กำลังตรวจลายนิ้วมือ เพื่อยืนยันว่าเป็นชุดข้อมูลที่ตรงกับผลสรุป",
       decoding: "กำลังตรวจว่าไฟล์เป็น UTF-8 ที่สมบูรณ์",
       parsing: parsed > 0
         ? `ตรวจแล้ว ${NUMBER.format(parsed)} จาก ${NUMBER.format(total)} รายการ`
-        : "กำลังตรวจโครงสร้าง 22 คอลัมน์และทุกแถว"
+        : "กำลังตรวจโครงสร้าง 29 คอลัมน์และทุกแถว"
     };
     elements.parseTitle.textContent = stage === "parsing" ? "กำลังเตรียมโต๊ะตรวจ…" : "กำลังตรวจไฟล์ในเครื่อง…";
     elements.parseDetail.textContent = details[stage] || "กำลังตรวจโครงสร้างก่อนเปิดข้อมูลรายบ้าน";
@@ -400,7 +444,7 @@
     showOnly("error");
     elements.alertTitle.textContent = "เปิดไฟล์นี้ไม่ได้";
     const rowHint = Number.isInteger(error?.rowNumber) ? ` (ใกล้แถวที่ ${NUMBER.format(error.rowNumber)})` : "";
-    elements.alertDetail.textContent = `${clean(error?.message, "ไฟล์ไม่ผ่านการตรวจรุ่นและโครงสร้าง", 220)}${rowHint} กรุณาเลือก master table v6 ฉบับวันที่ 7 ก.ย. 2569`;
+    elements.alertDetail.textContent = `${clean(error?.message, "ไฟล์ไม่ผ่านการตรวจรุ่นและโครงสร้าง", 220)}${rowHint} กรุณาเลือกชุดข้อมูลหน้าแผนที่ฉบับวันที่ 8 ก.ย. 2569`;
     elements.alert.focus();
   };
 
@@ -428,15 +472,26 @@
     state.page = 0;
     state.reviews.clear();
     state.coordinateCounts.clear();
-    state.parcelCounts.clear();
     state.pointLayer?.setIndices([]);
     clearMapSelection();
     elements.fileInput.value = "";
     elements.search.value = "";
     elements.geomFilter.value = "";
     elements.communityFilter.replaceChildren(new Option("ทุกชุมชน", ""));
-    elements.evidenceFilter.value = "";
+    if (elements.roadFilter) elements.roadFilter.replaceChildren(new Option("ทุกถนน", ""));
+    if (elements.placeFilter) elements.placeFilter.replaceChildren(new Option("ทุกประเภทสถานที่", ""));
+    if (elements.confidenceFilter) elements.confidenceFilter.value = "";
+    if (elements.businessFilter) elements.businessFilter.value = "";
+    if (elements.priorityFilter) {
+      elements.priorityFilter.value = elements.priorityFilter.querySelector('option[value="สูง"]') ? "สูง" : "";
+    }
+    if (elements.evidenceFilter) elements.evidenceFilter.value = "";
     state.evidenceFilter = "";
+    state.roadFilter = "";
+    state.placeFilter = "";
+    state.confidenceFilter = "";
+    state.businessFilter = "";
+    state.priorityFilter = elements.priorityFilter?.value || "";
     elements.reviewFilters.forEach((button) => button.setAttribute("aria-pressed", String(button.dataset.reviewFilter === "")));
     elements.reviewCount.textContent = "0";
     elements.exportButton.disabled = true;
@@ -461,7 +516,7 @@
     setParseProgress({ stage: "reading" });
 
     try {
-      state.worker = new Worker("assets/record-worker.js?v=20260907-v6");
+      state.worker = new Worker("assets/record-worker.js?v=20260908-display-v2");
     } catch (_) {
       showError({ message: "เบราว์เซอร์นี้ไม่สามารถเปิดตัวอ่านไฟล์แบบแยกงานได้" });
       return;
@@ -494,14 +549,13 @@
 
   const prepareWorkspace = (rows, summary) => {
     if (!Array.isArray(rows) || rows.length !== 42524 || summary?.rowCount !== 42524) {
-      showError({ message: "ผลตรวจไฟล์ไม่ครบตามตารางหลัก v6" });
+      showError({ message: "ผลตรวจไฟล์ไม่ครบตามชุดข้อมูลหน้าแผนที่" });
       return;
     }
 
     state.rows = rows;
     state.summary = summary;
     state.coordinateCounts.clear();
-    state.parcelCounts.clear();
     state.searchIndex = new Array(rows.length);
     state.baseOrder = rows.map((_, index) => index);
 
@@ -514,29 +568,35 @@
         row.road,
         row.community,
         row.place_type,
-        row.source_parcel_id,
         row.tier,
+        row.confidence_band,
         row.method,
         row.status,
-        row.flags,
-        formatFlags(row.flags)
+        row.frontage_road,
+        row.frontage_road_layer,
+        row.frontage_road_source,
+        row.soi_check,
+        row.business_names,
+        row.business_status,
+        row.business_match_confidence,
+        row.review_priority,
+        row.review_flags,
+        formatFlags(row.review_flags)
       ].join(" ").toLocaleLowerCase("th-TH");
       state.searchIndex[index] = searchable;
 
       const coordKey = coordinateKey(row);
       if (coordKey) state.coordinateCounts.set(coordKey, (state.coordinateCounts.get(coordKey) || 0) + 1);
-      if (row.source_parcel_id) {
-        state.parcelCounts.set(row.source_parcel_id, (state.parcelCounts.get(row.source_parcel_id) || 0) + 1);
-      }
     });
 
     state.baseOrder.sort((leftIndex, rightIndex) => {
       const left = rows[leftIndex];
       const right = rows[rightIndex];
-      const priority = reviewPriority(left) - reviewPriority(right);
+      const priority = rowSortPriority(left) - rowSortPriority(right);
       if (priority !== 0) return priority;
-      const radius = (left.radius_m ?? Number.MAX_SAFE_INTEGER) - (right.radius_m ?? Number.MAX_SAFE_INTEGER);
-      return radius || leftIndex - rightIndex;
+      const score = (right.review_score ?? -1) - (left.review_score ?? -1);
+      if (score !== 0) return score;
+      return leftIndex - rightIndex;
     });
 
     const communities = [...new Set(rows.map((row) => clean(row.community, "", 160)).filter(Boolean))]
@@ -544,10 +604,31 @@
     const options = [new Option("ทุกชุมชน", "")];
     communities.forEach((community) => options.push(new Option(community, community)));
     elements.communityFilter.replaceChildren(...options);
+    if (elements.roadFilter) {
+      const roads = [...new Set(rows.map((row) => clean(row.road, "", 180)).filter(Boolean))]
+        .sort((a, b) => a.localeCompare(b, "th"));
+      elements.roadFilter.replaceChildren(
+        new Option("ทุกถนน", ""),
+        ...roads.map((road) => new Option(road, road))
+      );
+    }
+    if (elements.placeFilter) {
+      const placeTypes = [...new Set(rows.map((row) => clean(row.place_type, "", 120)).filter(Boolean))]
+        .sort((a, b) => a.localeCompare(b, "th"));
+      elements.placeFilter.replaceChildren(
+        new Option("ทุกประเภทสถานที่", ""),
+        ...placeTypes.map((placeType) => new Option(placeType, placeType))
+      );
+    }
     elements.datasetRows.textContent = NUMBER.format(summary.rowCount);
     state.page = 0;
-    elements.evidenceFilter.value = "";
+    if (elements.evidenceFilter) elements.evidenceFilter.value = "";
     state.evidenceFilter = "";
+    state.roadFilter = elements.roadFilter?.value || "";
+    state.placeFilter = elements.placeFilter?.value || "";
+    state.confidenceFilter = elements.confidenceFilter?.value || "";
+    state.businessFilter = elements.businessFilter?.value || "";
+    state.priorityFilter = elements.priorityFilter?.value || "";
     state.reviewFilter = "";
     elements.reviewFilters.forEach((button) => {
       button.setAttribute("aria-pressed", String(button.dataset.reviewFilter === ""));
@@ -569,6 +650,11 @@
     const query = elements.search.value.trim().toLocaleLowerCase("th-TH");
     const geometry = elements.geomFilter.value;
     const community = elements.communityFilter.value;
+    const road = state.roadFilter;
+    const placeType = state.placeFilter;
+    const confidence = state.confidenceFilter;
+    const business = state.businessFilter;
+    const priorityFilter = state.priorityFilter;
     const evidenceFilter = state.evidenceFilter;
 
     state.filtered = state.baseOrder.filter((index) => {
@@ -576,6 +662,12 @@
       if (query && !state.searchIndex[index].includes(query)) return false;
       if (geometry && row.geom_level !== geometry) return false;
       if (community && row.community !== community) return false;
+      if (road && row.road !== road) return false;
+      if (placeType && row.place_type !== placeType) return false;
+      if (confidence && row.confidence_band !== confidence) return false;
+      if (business === "with-business" && row.business_count <= 0) return false;
+      if (business === "without-business" && row.business_count !== 0) return false;
+      if (priorityFilter && row.review_priority !== priorityFilter) return false;
       if (!matchesEvidenceFilter(row, evidenceFilter)) return false;
       const reviewed = state.reviews.has(index);
       if (state.reviewFilter === "pending" && reviewed) return false;
@@ -586,8 +678,20 @@
     const totalPages = Math.max(1, Math.ceil(state.filtered.length / PAGE_SIZE));
     state.page = Math.min(state.page, totalPages - 1);
     elements.filteredCount.textContent = NUMBER.format(state.filtered.length);
+    const filteredStats = state.filtered.reduce((counts, index) => {
+      const row = state.rows[index];
+      if (Number.isFinite(row?.lat) && Number.isFinite(row?.lon)) counts.withCoordinate += 1;
+      else counts.withoutCoordinate += 1;
+      if (Number(row?.business_count) > 0) counts.withBusiness += 1;
+      if (row?.review_priority) counts.inReviewQueue += 1;
+      return counts;
+    }, { withCoordinate: 0, withoutCoordinate: 0, withBusiness: 0, inReviewQueue: 0 });
+    if (elements.filteredWithCoordinate) elements.filteredWithCoordinate.textContent = NUMBER.format(filteredStats.withCoordinate);
+    if (elements.filteredWithoutCoordinate) elements.filteredWithoutCoordinate.textContent = NUMBER.format(filteredStats.withoutCoordinate);
+    if (elements.filteredBusiness) elements.filteredBusiness.textContent = NUMBER.format(filteredStats.withBusiness);
+    if (elements.filteredReview) elements.filteredReview.textContent = NUMBER.format(filteredStats.inReviewQueue);
     elements.resultNote.textContent = state.filtered.length
-      ? `พบ ${NUMBER.format(state.filtered.length)} รายการ · ทะเบียนทั่วไปแสดงแยก หมุดตัวเลขใช้เฉพาะรายการอาคารที่ใช้พิกัดเดียวกันในข้อมูล`
+      ? `พบ ${NUMBER.format(state.filtered.length)} รายการ · มีพิกัด ${NUMBER.format(filteredStats.withCoordinate)} · ยังไม่มีพิกัด ${NUMBER.format(filteredStats.withoutCoordinate)} · บ้านที่มีข้อมูลทะเบียนกิจการ ${NUMBER.format(filteredStats.withBusiness)}`
       : "ไม่พบรายการที่ตรงตัวกรอง ลองลดเงื่อนไขหรือเปลี่ยนคำค้น";
 
     state.pointLayer?.setIndices(state.filtered);
@@ -629,10 +733,13 @@
       address.textContent = addressLine(row);
       const id = document.createElement("span");
       id.className = "record-id";
-      id.textContent = maskId(row.house_reg_id);
+      id.textContent = row.review_priority
+        ? `รายการตรวจลำดับ${row.review_priority}${row.review_score === null ? "" : ` · ${NUMBER.format(row.review_score)} คะแนน`}`
+        : "รายการสำรวจตำแหน่ง";
       const meta = document.createElement("span");
       meta.className = "record-meta";
-      meta.textContent = `${geometryLabel(row.geom_level)} · ${clean(row.community)}`;
+      const businessMeta = row.business_count > 0 ? ` · รายการทะเบียนกิจการต้นทาง ${NUMBER.format(row.business_count)}` : "";
+      meta.textContent = `${confidenceLabel(row.confidence_band)} · ${clean(row.community)}${businessMeta}`;
       const radius = document.createElement("span");
       radius.className = "record-radius";
       const review = state.reviews.get(index);
@@ -641,10 +748,42 @@
         : row.radius_m === 0
           ? "ต้นทางระบุรัศมี 0 ม. (ยังไม่ถือว่าแม่นยำ)"
           : `รัศมีประมาณ ${NUMBER.format(row.radius_m)} ม.`;
-      radius.textContent = review ? `● ${REVIEW_LABELS[review.result] || "มีบันทึกร่าง"} · ${radiusText}` : radiusText;
+      const queueReason = row.review_priority && row.review_flags
+        ? `ควรตรวจ: ${formatFlags(row.review_flags).split(" · ")[0]}`
+        : "";
+      radius.textContent = [
+        review ? `● ${REVIEW_LABELS[review.result] || "มีบันทึกร่าง"}` : "",
+        queueReason,
+        radiusText
+      ].filter(Boolean).join(" · ");
 
       button.append(address, id, meta, radius);
-      item.append(button);
+      const quickActions = document.createElement("div");
+      quickActions.className = "record-quick-actions";
+
+      const streetViewUrl = externalMapUrl(row, "streetview");
+      const streetViewAction = document.createElement(streetViewUrl ? "a" : "span");
+      streetViewAction.className = "record-quick-action";
+      streetViewAction.textContent = streetViewUrl ? "Street View ↗" : "ไม่มี Street View";
+      if (streetViewUrl) {
+        streetViewAction.href = streetViewUrl;
+        streetViewAction.target = "_blank";
+        streetViewAction.rel = "noopener noreferrer";
+        streetViewAction.setAttribute("aria-label", `เปิด Street View ของ ${addressLine(row)} ในแท็บใหม่`);
+      } else {
+        streetViewAction.setAttribute("aria-disabled", "true");
+      }
+
+      const satelliteAction = document.createElement("button");
+      satelliteAction.type = "button";
+      satelliteAction.className = "record-quick-action";
+      satelliteAction.dataset.satelliteIndex = String(index);
+      satelliteAction.textContent = "เทียบภาพดาวเทียม";
+      satelliteAction.disabled = !Number.isFinite(row.lat) || !Number.isFinite(row.lon);
+      satelliteAction.setAttribute("aria-label", `เลือก ${addressLine(row)} แล้วเปิดพื้นหลังภาพดาวเทียม`);
+
+      quickActions.append(streetViewAction, satelliteAction);
+      item.append(button, quickActions);
       elements.list.append(item);
     });
 
@@ -672,7 +811,7 @@
     renderList();
     renderDetail();
     updateMapSelection(options.moveMap !== false);
-    elements.answer.textContent = `${geometryLabel(row.geom_level)} · ${statusLabel(row.status)} · ${row.radius_m === null ? "ยังไม่มีรัศมี" : `รัศมี ${NUMBER.format(row.radius_m)} ม.`}`;
+    elements.answer.textContent = `${confidenceLabel(row.confidence_band)} · ${statusLabel(row.status)} · ${row.radius_m === null ? "ยังไม่มีรัศมี" : `รัศมี ${NUMBER.format(row.radius_m)} ม.`}`;
     if (options.switchPanel !== false && window.matchMedia("(max-width: 767px)").matches) {
       setMobilePanel("detail", { focus: false });
       requestAnimationFrame(() => elements.detailHouse.focus({ preventScroll: false }));
@@ -725,9 +864,27 @@
       if (key === "desk_lookup_project") {
         return parameter ? `${FLAG_LABELS[key]}: ${parameter}` : FLAG_LABELS[key];
       }
-      return FLAG_LABELS[key] || key;
+      return FLAG_LABELS[key] || "มีเหตุให้ตรวจสอบตำแหน่งเพิ่มเติม";
     }).join(" · ");
   };
+
+  const businessNamesPreview = (row) => {
+    const names = [...new Set(
+      String(row?.business_names || "")
+        .split(" | ")
+        .map((name) => clean(name, "", 240))
+        .filter(Boolean)
+    )];
+    if (!names.length) return "";
+    const shown = names.slice(0, 3).join(" · ");
+    const remaining = Math.max(0, names.length - 3);
+    return remaining > 0 ? `${shown} · และอีก ${NUMBER.format(remaining)} รายชื่อ` : shown;
+  };
+
+  const businessMatchLabel = (value) => ({
+    unique_house_key: "ตรงจากบ้านเลขที่ชุดเดียว",
+    soi_resolved: "ใช้ข้อมูลซอยช่วยแยกตำแหน่ง"
+  })[value] || (value ? "ผูกจากทะเบียนกิจการ" : "");
 
   const pointInRing = (lon, lat, ring) => {
     let inside = false;
@@ -766,7 +923,7 @@
     if (!row) return;
     elements.detailEmpty.hidden = true;
     elements.detail.hidden = false;
-    elements.detailId.textContent = `รายการ ${maskId(row.house_reg_id)}`;
+    elements.detailId.textContent = "รายละเอียดรายการทะเบียน";
     elements.detailHouse.textContent = `บ้านเลขที่ ${clean(row.house_no)}`;
 
     const radiusPhrase = row.radius_m === null
@@ -777,14 +934,17 @@
     elements.detailAnswer.textContent = `${geometryLabel(row.geom_level)} · ${radiusPhrase} · ยังไม่ผ่านการตรวจภาคสนาม`;
 
     elements.detailChips.replaceChildren();
+    appendChip(confidenceLabel(row.confidence_band), row.confidence_band?.startsWith("C ") ? "truth-chip-warning" : "truth-chip-specific");
     appendChip(geometryLabel(row.geom_level), ["parcel", "building"].includes(row.geom_level) ? "truth-chip-specific" : "");
     appendChip(statusLabel(row.status), ["needs-review", "building-lookup-pending"].includes(row.status) ? "truth-chip-warning" : "");
     if (row.tier === "A0") {
       appendChip("A0 · สำรวจเทศบาลผูกถึงแปลง", "truth-chip-specific");
       appendChip("A0 ยังไม่ตรวจหน้างาน", "truth-chip-warning");
-    } else if (row.tier) appendChip(`Tier ${clean(row.tier)}`);
+    }
     if (row.radius_m === 0) appendChip("รัศมี 0 ไม่ได้แปลว่าแม่นยำ", "truth-chip-warning");
-    const rowFlags = splitFlags(row.flags);
+    if (row.business_count > 0) appendChip(`พบรายการทะเบียนกิจการต้นทาง ${NUMBER.format(row.business_count)}`, "truth-chip-specific");
+    if (row.review_priority) appendChip(`ลำดับตรวจ ${clean(row.review_priority)}`, row.review_priority === "สูง" ? "truth-chip-warning" : "");
+    const rowFlags = splitFlags(row.review_flags);
     Object.entries(CRITICAL_FLAG_CHIPS).forEach(([flag, label]) => {
       if (rowFlags.has(flag)) appendChip(label, "truth-chip-warning");
     });
@@ -799,26 +959,39 @@
     }
 
     elements.recordFields.replaceChildren();
-    appendField("รหัสทะเบียน", row.house_reg_id, { data: true });
     appendField("ที่อยู่ย่อ", addressLine(row));
     appendField("ตรอก", row.trok);
     appendField("ซอย", row.soi);
     appendField("ถนน", row.road);
     appendField("ชุมชนในทะเบียน", row.community);
     if (boundaryCommunity) appendField("ขอบเขตที่จุดตกอยู่", `${boundaryCommunity}${boundaryCommunity !== declaredCommunity ? " (แสดงเพื่อ QA—ไม่เขียนทับทะเบียน)" : ""}`);
-    appendField("ตำบลตามชีต", row.subdistrict_sheet);
     appendField("ประเภทสถานที่", row.place_type);
-    appendField("ฝั่งถนน", row.side);
     appendField("ละติจูด", row.lat === null ? "ไม่มีพิกัด" : Number(row.lat).toFixed(7), { data: true });
     appendField("ลองจิจูด", row.lon === null ? "ไม่มีพิกัด" : Number(row.lon).toFixed(7), { data: true });
+    appendField("ชั้นความเชื่อมั่น", confidenceLabel(row.confidence_band));
     appendField("ระดับตำแหน่ง", geometryLabel(row.geom_level));
-    appendField("วิธี", row.method === "A0" ? "A0 · ทะเบียนสิ่งปลูกสร้างเทศบาลผูกบ้านเลขที่กับแปลง" : row.method, { data: true });
+    if (row.method) appendField("วิธีได้ตำแหน่ง", methodLabel(row.method));
+    appendField("สถานะการยืนยัน", statusLabel(row.status));
     appendField("รัศมีต้นทาง", row.radius_m === null ? "ไม่มีค่า" : `${NUMBER.format(row.radius_m)} เมตร`, { data: true });
     appendField("ใช้พิกัดนี้ร่วมกัน", coordinateKey(row) ? `${NUMBER.format(state.coordinateCounts.get(coordinateKey(row)) || 1)} รายการ` : "ไม่มีพิกัด");
-    appendField("รหัสแปลงต้นทาง", row.source_parcel_id, { data: true });
-    if (row.source_parcel_id) appendField("ใช้แปลงนี้ร่วมกัน", `${NUMBER.format(state.parcelCounts.get(row.source_parcel_id) || 1)} รายการ`);
-    appendField("ธงหลักฐาน", formatFlags(row.flags));
-    appendField("ผลภาคสนามต้นฉบับ", row.field_result || "ยังไม่มีผล");
+    if (row.frontage_heading !== null) appendField("ทิศที่กล้องหัน", `${NUMBER.format(row.frontage_heading)} องศา`, { data: true });
+    if (row.frontage_road) appendField("ถนนด้านหน้าที่ใช้เปิดภาพ", row.frontage_road);
+    if (row.frontage_road_layer) appendField("แหล่งแนวถนนด้านหน้า", FRONTAGE_LAYER_LABELS[row.frontage_road_layer] || "แหล่งข้อมูลแนวถนน");
+    if (row.frontage_road_source) appendField("วิธีเลือกถนนด้านหน้า", FRONTAGE_SOURCE_LABELS[row.frontage_road_source] || "เลือกจากแนวถนนใกล้แปลง");
+    if (row.dist_named_soi_m !== null) appendField("ระยะถึงซอยที่ระบุ", `${NUMBER.format(row.dist_named_soi_m)} เมตร`, { data: true });
+    if (row.soi_check) appendField("การตรวจชื่อซอย", row.soi_check);
+    if (row.business_count > 0) {
+      appendField("รายชื่อกิจการที่ปรากฏในข้อมูล", businessNamesPreview(row));
+      appendField("สถานะทะเบียนกิจการ", row.business_status);
+      appendField("วิธีผูกกิจการกับบ้าน", businessMatchLabel(row.business_match_confidence));
+      appendField("จำนวนรายการทะเบียนกิจการจากต้นทาง", NUMBER.format(row.business_count), { data: true });
+    }
+    if (row.review_priority) {
+      appendField("ลำดับการตรวจ", row.review_priority);
+      if (row.review_score !== null) appendField("คะแนนจัดคิว", NUMBER.format(row.review_score), { data: true });
+    }
+    appendField("เหตุผลที่ควรตรวจ", formatFlags(row.review_flags));
+    appendField("รอบประมวลผล", row.pipeline_run_id, { data: true });
 
     const eligibility = streetviewEligibility(row);
     elements.streetviewButton.disabled = !eligibility.allowed;
@@ -856,10 +1029,12 @@
     return "coarse";
   };
 
+  const confidenceKey = (row) => CONFIDENCE_KEYS[row?.confidence_band] || "unknown";
+
   const pointColor = (row) => {
-    if (markerBucket(row) === "specific") return cssColor("--series-5", "#007A58");
-    if (markerBucket(row) === "estimated") return cssColor("--series-7", "#147A9F");
-    return cssColor("--series-3", "#A87B00");
+    if (window.matchMedia("(forced-colors: active)").matches) return "CanvasText";
+    const key = confidenceKey(row);
+    return cssColor(`--confidence-${key}`, "CanvasText");
   };
 
   const markerPalette = () => {
@@ -877,15 +1052,15 @@
       };
     }
     return {
-      halo: cssColor("--map-marker-halo", "#FFFFFF"),
-      stroke: cssColor("--map-marker-stroke", "#182327"),
-      active: cssColor("--map-active", "#347DA8"),
-      selected: cssColor("--map-selected", "#176B82"),
-      clusterFill: cssColor("--surface-raised", "#FFFFFF"),
-      clusterText: cssColor("--text-primary", "#182327"),
-      specific: cssColor("--series-5", "#007A58"),
-      estimated: cssColor("--series-7", "#147A9F"),
-      coarse: cssColor("--series-3", "#A87B00")
+      halo: cssColor("--map-marker-halo", "Canvas"),
+      stroke: cssColor("--map-marker-stroke", "CanvasText"),
+      active: cssColor("--map-active", "Highlight"),
+      selected: cssColor("--map-selected", "Highlight"),
+      clusterFill: cssColor("--surface-raised", "Canvas"),
+      clusterText: cssColor("--text-primary", "CanvasText"),
+      specific: cssColor("--series-5", "CanvasText"),
+      estimated: cssColor("--series-7", "CanvasText"),
+      coarse: cssColor("--series-3", "CanvasText")
     };
   };
 
@@ -925,6 +1100,17 @@
     context.closePath();
   };
 
+  const drawA0Indicator = (context, row, radius, palette, x = 0, y = 0) => {
+    if (confidenceKey(row) !== "a0") return;
+    context.beginPath();
+    context.arc(x, y, Math.max(1.5, Math.min(2.25, radius * 0.28)), 0, Math.PI * 2);
+    context.fillStyle = palette.halo;
+    context.fill();
+    context.strokeStyle = palette.stroke;
+    context.lineWidth = 1.1;
+    context.stroke();
+  };
+
   const drawPointSymbol = (context, row, point, radius, palette) => {
     const bucket = markerBucket(row);
     context.save();
@@ -934,7 +1120,7 @@
     context.strokeStyle = palette.halo;
     context.lineWidth = 5;
     context.stroke();
-    context.fillStyle = palette[bucket];
+    context.fillStyle = pointColor(row);
     context.fill();
     context.strokeStyle = palette.stroke;
     context.lineWidth = 1.5;
@@ -951,12 +1137,31 @@
       context.lineWidth = 1.15;
       context.stroke();
     }
+    drawA0Indicator(context, row, radius, palette);
+    context.restore();
+  };
+
+  const drawUncertaintyCircle = (context, row, point, zoom, palette) => {
+    if (!Number.isFinite(row?.radius_m) || row.radius_m <= 100) return;
+    const metersPerPixel = 156543.03392 * Math.cos(Number(row.lat) * Math.PI / 180) / (2 ** zoom);
+    const pixelRadius = Math.max(3, row.radius_m / Math.max(metersPerPixel, Number.EPSILON));
+    context.save();
+    context.beginPath();
+    context.arc(point.x, point.y, pixelRadius, 0, Math.PI * 2);
+    context.fillStyle = pointColor(row);
+    context.globalAlpha = 0.055;
+    context.fill();
+    context.globalAlpha = 0.72;
+    context.strokeStyle = pointColor(row);
+    context.lineWidth = 1.25;
+    context.setLineDash([5, 4]);
+    context.stroke();
     context.restore();
   };
 
   const clusterLabel = (count) => count >= 1000 ? `${Math.floor(count / 1000)}k` : String(count);
 
-  const drawClusterSymbol = (context, point, count, palette) => {
+  const drawClusterSymbol = (context, point, count, palette, row) => {
     const label = clusterLabel(count);
     const radius = label.length >= 4 ? 17 : label.length === 3 ? 15 : 13;
     context.save();
@@ -968,14 +1173,15 @@
     context.stroke();
     context.fillStyle = palette.clusterFill;
     context.fill();
-    context.strokeStyle = palette.active;
-    context.lineWidth = 2.5;
+    context.strokeStyle = pointColor(row);
+    context.lineWidth = 3;
     context.stroke();
     context.fillStyle = palette.clusterText;
     context.font = `600 ${label.length >= 4 ? 8 : 9}px "JetBrains Mono", monospace`;
     context.textAlign = "center";
     context.textBaseline = "middle";
     context.fillText(label, 0, 0.5);
+    drawA0Indicator(context, row, radius, palette, radius * 0.58, -radius * 0.58);
     context.restore();
     return radius;
   };
@@ -990,7 +1196,10 @@
     } else {
       shape = '<path class="selected-marker-halo" d="m21 11 10 20H11Z"></path><path class="selected-marker-core selected-marker-coarse" d="m21 11 10 20H11Z"></path>';
     }
-    return `<svg viewBox="0 0 42 42" aria-hidden="true"><circle class="selected-marker-ring-halo" cx="21" cy="21" r="17"></circle><circle class="selected-marker-ring" cx="21" cy="21" r="17"></circle>${shape}</svg>`;
+    const a0Indicator = confidenceKey(row) === "a0"
+      ? '<circle class="selected-marker-detail-halo" cx="21" cy="21" r="2.6"></circle><circle class="selected-marker-detail" cx="21" cy="21" r="2.6"></circle>'
+      : "";
+    return `<svg class="selected-marker-confidence-${confidenceKey(row)}" viewBox="0 0 42 42" aria-hidden="true"><circle class="selected-marker-ring-halo" cx="21" cy="21" r="17"></circle><circle class="selected-marker-ring" cx="21" cy="21" r="17"></circle>${shape}${a0Indicator}</svg>`;
   };
 
   const selectedMarkerIcon = (row) => L.divIcon({
@@ -1088,9 +1297,21 @@
           this._coordinateTargets.get(marker.coordinateKey).push(marker);
         }
 
+        const uncertaintyKeys = new Set();
+        for (const marker of this._drawn) {
+          for (const index of marker.indices) {
+            const row = state.rows[index];
+            if (!row || !Number.isFinite(row.radius_m) || row.radius_m <= 100) continue;
+            const key = `${marker.coordinateKey}|${row.radius_m}|${confidenceKey(row)}`;
+            if (uncertaintyKeys.has(key)) continue;
+            uncertaintyKeys.add(key);
+            drawUncertaintyCircle(context, row, marker.point, zoom, palette);
+          }
+        }
+
         for (const marker of this._drawn) {
           if (marker.buildingGroup) {
-            marker.hitRadius = drawClusterSymbol(context, marker.point, marker.indices.length, palette);
+            marker.hitRadius = drawClusterSymbol(context, marker.point, marker.indices.length, palette, state.rows[marker.indices[0]]);
           } else {
             const radius = zoom >= 18 ? 7 : zoom >= 16 ? 6 : 5.5;
             for (const index of marker.indices) {
@@ -1106,11 +1327,11 @@
   };
 
   const boundaryStyle = () => ({
-    color: cssColor("--map-active", "#347DA8"),
+    color: cssColor("--map-active", "Highlight"),
     weight: 2,
     dashArray: "7 5",
     opacity: 0.9,
-    fillColor: cssColor("--citychat-primary", "#007A58"),
+    fillColor: cssColor("--citychat-primary", "CanvasText"),
     fillOpacity: 0.06
   });
 
@@ -1402,13 +1623,26 @@
       "lat",
       "lon",
       "geom_level",
-      "source_parcel_id",
+      "confidence_band",
       "source_status",
       "source_tier",
       "source_method",
       "source_radius_m",
-      "source_flags",
-      "snapshot_release",
+      "frontage_heading",
+      "frontage_road",
+      "frontage_road_layer",
+      "frontage_road_source",
+      "dist_named_soi_m",
+      "soi_check",
+      "business_count",
+      "business_names",
+      "business_status",
+      "business_match_confidence",
+      "source_review_priority",
+      "source_review_score",
+      "source_review_flags",
+      "pipeline_run_id",
+      "dataset_contract",
       "review_status",
       "verification_scope",
       "evidence_source",
@@ -1431,13 +1665,26 @@
           row.lat,
           row.lon,
           row.geom_level,
-          row.source_parcel_id,
+          row.confidence_band,
           row.status,
           row.tier,
           row.method,
           row.radius_m,
-          row.flags,
-          SNAPSHOT_RELEASE,
+          row.frontage_heading,
+          row.frontage_road,
+          row.frontage_road_layer,
+          row.frontage_road_source,
+          row.dist_named_soi_m,
+          row.soi_check,
+          row.business_count,
+          row.business_names,
+          row.business_status,
+          row.business_match_confidence,
+          row.review_priority,
+          row.review_score,
+          row.review_flags,
+          row.pipeline_run_id,
+          DATASET_CONTRACT,
           "draft-unverified",
           review.verificationScope || verificationScope(row),
           review.evidenceSource,
@@ -1453,7 +1700,7 @@
     const href = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
     anchor.href = href;
-    anchor.download = "citychat-saensuk-review-draft-v6.csv";
+    anchor.download = "citychat-saensuk-review-draft-20260908.csv";
     anchor.rel = "noopener";
     anchor.click();
     setTimeout(() => URL.revokeObjectURL(href), 1000);
@@ -1539,11 +1786,20 @@
     state.page = 0;
     applyFilters({ selectFirst: true });
   });
-  elements.evidenceFilter.addEventListener("change", () => {
-    state.evidenceFilter = elements.evidenceFilter.value;
-    state.page = 0;
-    applyFilters({ selectFirst: true });
-  });
+  const bindDatasetFilter = (element, stateKey) => {
+    if (!element) return;
+    element.addEventListener("change", () => {
+      state[stateKey] = element.value;
+      state.page = 0;
+      applyFilters({ selectFirst: true });
+    });
+  };
+  bindDatasetFilter(elements.roadFilter, "roadFilter");
+  bindDatasetFilter(elements.placeFilter, "placeFilter");
+  bindDatasetFilter(elements.confidenceFilter, "confidenceFilter");
+  bindDatasetFilter(elements.businessFilter, "businessFilter");
+  bindDatasetFilter(elements.priorityFilter, "priorityFilter");
+  bindDatasetFilter(elements.evidenceFilter, "evidenceFilter");
   elements.reviewFilters.forEach((button) => {
     button.addEventListener("click", () => {
       state.reviewFilter = button.dataset.reviewFilter;
@@ -1553,6 +1809,15 @@
     });
   });
   elements.list.addEventListener("click", (event) => {
+    const satelliteButton = event.target.closest("[data-satellite-index]");
+    if (satelliteButton) {
+      const index = Number(satelliteButton.dataset.satelliteIndex);
+      if (!Number.isInteger(index)) return;
+      selectRecord(index, { switchPanel: false });
+      setBasemap("satellite");
+      if (window.matchMedia("(max-width: 767px)").matches) setMobilePanel("map", { focus: false });
+      return;
+    }
     const button = event.target.closest("[data-record-index]");
     if (!button) return;
     const index = Number(button.dataset.recordIndex);

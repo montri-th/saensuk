@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0.0",
-  "manifest_id": "saensuk.citychat.public-assets.manifest-r5.2026-09-07",
+  "manifest_id": "saensuk.citychat.public-assets.manifest-r6.2026-09-08",
   "project": "CityChat Saensuk review desk",
-  "recorded_at": "2026-09-07",
+  "recorded_at": "2026-09-08",
   "approval": {
     "status": "approved_for_site_scoped_roles",
     "approver": "Montri (owner/user)",
@@ -39,8 +39,8 @@
   "cache": {
     "strategy": "revision-bearing-filename",
     "asset_revision": "v091-and-content-hash",
-    "page_bundle_revision": "20260907-v6-with-20260906-building-only-identity",
-    "note": "The six public brand asset URLs carry either v091 or an eight-character SHA-256 prefix. The v6 content, summary CSS, explorer CSS, parser worker, and review application use revision 20260907-v6; marker-grouping JavaScript remains revision 20260906-building-only. A byte change requires a new revision-bearing filename or query and a matching manifest update."
+    "page_bundle_revision": "20260908-v8",
+    "note": "The six public brand asset URLs carry either v091 or an eight-character SHA-256 prefix. The verified production color projection uses its SHA-256 prefix; v8 tokens, content, summary CSS, explorer CSS, and review application use a 20260908-v8 revision; the display-v2 parser and worker use 20260908-display-v2; unchanged marker-grouping JavaScript remains revision 20260906-building-only. A byte change requires a new revision-bearing filename or query and a matching manifest update."
   },
   "source_set": {
     "supplied_by": "Verified, owner-approved CityChat landing handoff",
