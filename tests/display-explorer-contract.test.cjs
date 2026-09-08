@@ -131,6 +131,52 @@ test("map colors encode confidence and large uncertainty radii are drawn", () =>
   assert.match(css, /\.selected-marker-confidence-d \.selected-marker-core/);
 });
 
+test("community lines and inferred outer frame are independent, truthful map layers", () => {
+  assert.match(html, /data-toggle-community-boundaries[^>]*>แนวชุมชน \(23\)<\/button>/);
+  assert.match(html, /data-toggle-inferred-frame[^>]*>กรอบพื้นที่อนุมาน<\/button>/);
+  assert.match(html, /<button(?=[^>]*data-toggle-community-boundaries)(?=[^>]*aria-pressed="true")[^>]*>/);
+  assert.match(html, /<button(?=[^>]*data-toggle-inferred-frame)(?=[^>]*aria-pressed="true")[^>]*>/);
+  assert.match(html, /ไม่ใช่เขตเทศบาล แนวเขตทางกฎหมาย หรือแนวเขตสิทธิ/);
+  assert.doesNotMatch(html, /data-toggle-boundaries/);
+
+  for (const stateName of [
+    "communityBoundaries",
+    "communityBoundaryLayer",
+    "communityBoundariesVisible",
+    "inferredOuterFrame",
+    "inferredFrameLayer",
+    "inferredFrameVisible"
+  ]) {
+    assert.match(explorer, new RegExp(`${stateName}:`));
+  }
+  assert.match(explorer, /for \(const feature of state\.communityBoundaries\.features\)/);
+  assert.doesNotMatch(explorer, /for \(const feature of state\.inferredOuterFrame\.features\)/);
+  assert.match(explorer, /saensuk-community-outer-frame\.geojson/);
+  assert.match(explorer, /properties\.name !== "กรอบพื้นที่อนุมานจากขอบนอก 23 ชุมชน"/);
+  assert.match(explorer, /properties\.role !== "inferred_outer_frame"/);
+  assert.match(explorer, /properties\.source_features !== 23/);
+  assert.match(explorer, /propertyKeys !== "name,role,source_features"/);
+  assert.match(explorer, /geometry\?\.type !== "Polygon"/);
+  assert.match(explorer, /geometry\.coordinates\?\.length !== 1/);
+  assert.match(explorer, /ring\.length !== 528/);
+  assert.match(explorer, /\[100\.8974531,13\.2383789,100\.9643072,13\.3175765\]/);
+  assert.match(explorer, /Promise\.allSettled/);
+
+  assert.match(explorer, /pane: "inferred-frame-pane",\s*interactive: false/);
+  assert.match(explorer, /pane: "community-boundary-pane",\s*interactive: true/);
+  assert.match(explorer, /const communityBoundaryStyle = \(\) => \(\{[\s\S]*?weight: 1\.75,[\s\S]*?dashArray: "7 5"/);
+  assert.match(explorer, /const inferredFrameStyle = \(\) => \(\{[\s\S]*?weight: 4,[\s\S]*?fill: false/);
+  assert.match(explorer, /const fitSpatialContextOnce/);
+  assert.match(explorer, /inferredBounds\?\.isValid\(\)[\s\S]*?communityBounds\?\.isValid\(\)/);
+  assert.match(explorer, /state\.initialSpatialFitDone = true/);
+  assert.match(explorer, /state\.communityBoundaryLayer\?\.setStyle\(communityBoundaryStyle\)/);
+  assert.match(explorer, /state\.inferredFrameLayer\?\.setStyle\(inferredFrameStyle\)/);
+
+  assert.match(css, /\.boundary-line-community\s*\{[^}]*border-top: 2px dashed var\(--map-active\)/);
+  assert.match(css, /\.boundary-line-inferred\s*\{[^}]*border-top: 4px solid var\(--map-selected\)/);
+  assert.doesNotMatch(css, /\.boundary-line-(?:community|inferred)\s*\{[^}]*#[0-9a-f]{3,8}/i);
+});
+
 test("detail copy translates methods, hides technical codes, and describes business source rows accurately", () => {
   for (const method of [
     "A0", "A1", "A2", "B2", "B3", "B4", "B5", "B6", "B7",

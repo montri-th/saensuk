@@ -1095,6 +1095,27 @@ html:not([data-top-level-safe="true"]) [data-file-label] {
   font-weight: 600;
 }
 
+.boundary-line-sample {
+  display: inline-block;
+  flex: 0 0 30px;
+  width: 30px;
+  height: 0;
+}
+
+.boundary-line-community {
+  border-top: 2px dashed var(--map-active);
+}
+
+.boundary-line-inferred {
+  border-top: 4px solid var(--map-selected);
+}
+
+.map-legend .legend-boundary-note {
+  flex-basis: 100%;
+  color: var(--text-metadata);
+  font-size: 0.75rem;
+}
+
 .confidence-swatch {
   position: relative;
   display: inline-block;
@@ -1787,6 +1808,7 @@ html:not([data-top-level-safe="true"]) [data-file-label] {
   .legend-symbol,
   .legend-cluster,
   .legend-selected,
+  .boundary-line-sample,
   .answer-orb,
   .local-data-icon {
     forced-color-adjust: auto;

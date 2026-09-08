@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>โต๊ะตรวจตำแหน่งบ้าน | CityChat แสนสุข</title>
-  <meta name="description" content="เปิดตารางตำแหน่งทะเบียนบ้านแสนสุขจากเครื่องของคุณ ดูจุดร่วมกับขอบเขตชุมชน แผนที่ถนน หรือภาพถ่ายดาวเทียม และเปิด Street View อย่างรู้ข้อจำกัด">
+  <meta name="description" content="เปิดตารางตำแหน่งทะเบียนบ้านแสนสุขจากเครื่องของคุณ ดูจุดร่วมกับแนวชุมชน 23 พื้นที่ กรอบพื้นที่อนุมาน แผนที่ถนน หรือภาพถ่ายดาวเทียม และเปิด Street View อย่างรู้ข้อจำกัด">
   <meta name="robots" content="index,follow">
   <meta name="theme-color" content="#1D4497">
   <meta name="referrer" content="strict-origin-when-cross-origin">
@@ -15,11 +15,11 @@
   <meta property="og:locale" content="th_TH">
   <meta property="og:site_name" content="CityChat · แสนสุข">
   <meta property="og:title" content="โต๊ะตรวจตำแหน่งบ้าน · CityChat แสนสุข">
-  <meta property="og:description" content="เปิดไฟล์ในเครื่อง เลือกรายการ แล้วเทียบตำแหน่งกับขอบเขตชุมชน แผนที่ถนน หรือภาพถ่ายดาวเทียม โดยไม่อัปโหลดตารางทะเบียนบ้าน">
+  <meta property="og:description" content="เปิดไฟล์ในเครื่อง เลือกรายการ แล้วเทียบตำแหน่งกับแนวชุมชน กรอบพื้นที่อนุมาน แผนที่ถนน หรือภาพถ่ายดาวเทียม โดยไม่อัปโหลดตารางทะเบียนบ้าน">
   <meta property="og:url" content="https://montri-th.github.io/saensuk/">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="โต๊ะตรวจตำแหน่งบ้าน · CityChat แสนสุข">
-  <meta name="twitter:description" content="สำรวจตำแหน่งบ้านรายรายการจากไฟล์ในเครื่อง พร้อมขอบเขตชุมชน แผนที่ถนน ภาพถ่ายดาวเทียม และทางออกไป Street View แบบตั้งใจเปิด">
+  <meta name="twitter:description" content="สำรวจตำแหน่งบ้านรายรายการจากไฟล์ในเครื่อง พร้อมแนวชุมชน กรอบพื้นที่อนุมาน แผนที่ถนน ภาพถ่ายดาวเทียม และทางออกไป Street View แบบตั้งใจเปิด">
   <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -43,11 +43,11 @@
   <link rel="stylesheet" href="assets/tokens.css?v=20260908-v8">
   <link rel="stylesheet" href="assets/vendor/leaflet/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
   <link rel="stylesheet" href="assets/styles.css?v=20260908-v8">
-  <link rel="stylesheet" href="assets/explorer.css?v=20260908-v8">
+  <link rel="stylesheet" href="assets/explorer.css?v=20260908-v8-outer-frame">
   <script defer src="assets/vendor/leaflet/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
   <script defer src="assets/app.js?v=20260908-v8"></script>
   <script defer src="assets/marker-grouping.js?v=20260906-building-only"></script>
-  <script defer src="assets/record-explorer.js?v=20260908-v8"></script>
+  <script defer src="assets/record-explorer.js?v=20260908-v8-outer-frame"></script>
 </head>
 <body id="top">
   <a class="skip-link" href="#main">ข้ามไปยังเนื้อหาหลัก</a>
@@ -348,24 +348,25 @@
           <section class="map-pane" id="map-panel" role="tabpanel" aria-labelledby="mobile-tab-map map-title" data-panel="map">
             <div class="map-toolbar">
               <div>
-                <p class="pane-kicker">พื้นที่ที่เรารู้</p>
+                <p class="pane-kicker">ชั้นพื้นที่ประกอบ</p>
                 <h3 id="map-title">แผนที่ตรวจตำแหน่ง</h3>
               </div>
-              <div class="map-actions">
+              <div class="map-actions" role="group" aria-label="ควบคุมมุมมองและชั้นเส้นพื้นที่ประกอบ">
                 <button type="button" class="quiet-button" data-fit-results>เห็นจุดที่กรอง</button>
-                <button type="button" class="quiet-button" aria-pressed="true" data-toggle-boundaries>ขอบเขตชุมชน</button>
+                <button type="button" class="quiet-button" aria-label="เปิดหรือปิดแนวชุมชนโดยประมาณ 23 พื้นที่" aria-pressed="true" data-toggle-community-boundaries>แนวชุมชน (23)</button>
+                <button type="button" class="quiet-button" aria-label="เปิดหรือปิดกรอบพื้นที่อนุมานจากขอบนอกชุมชน" aria-pressed="true" data-toggle-inferred-frame>กรอบพื้นที่อนุมาน</button>
               </div>
             </div>
             <div class="map-stage">
-              <div id="record-map" class="record-map" role="region" aria-label="แผนที่เสริมสำหรับเลือกดูตำแหน่ง รายการทั้งหมดเข้าถึงได้จากคิวด้านข้าง"></div>
+              <div id="record-map" class="record-map" role="region" aria-label="แผนที่เสริมสำหรับเลือกดูตำแหน่ง พร้อมแนวชุมชนและกรอบพื้นที่อนุมาน รายการทั้งหมดเข้าถึงได้จากคิวด้านข้าง"></div>
               <div class="basemap-picker" role="group" aria-label="เลือกพื้นหลังแผนที่">
                 <span class="basemap-picker-label">พื้นหลัง</span>
                 <button type="button" class="map-tile-button" aria-pressed="true" data-basemap="none">ปิด</button>
                 <button type="button" class="map-tile-button" aria-pressed="false" data-basemap="streets">ถนน</button>
                 <button type="button" class="map-tile-button" aria-pressed="false" data-basemap="satellite">ดาวเทียม</button>
               </div>
-              <div class="map-loading" data-map-loading>กำลังเตรียมขอบเขตชุมชน…</div>
-              <div class="map-legend" role="note" aria-label="คำอธิบายสีความเชื่อมั่นและรูปทรงจุดบนแผนที่">
+              <div class="map-loading" data-map-loading>กำลังเตรียมแนวชุมชนและกรอบพื้นที่อนุมาน…</div>
+              <div class="map-legend" role="note" aria-label="คำอธิบายสีความเชื่อมั่น รูปทรงจุด และเส้นพื้นที่ประกอบบนแผนที่">
                 <span class="legend-heading">สี = ความเชื่อมั่น · A0 ใช้สีเดียวกับ A และมีจุดวงเล็กด้านใน</span>
                 <span><i class="confidence-swatch confidence-a0" aria-hidden="true"></i>A0 · สำรวจเทศบาล 10,114</span>
                 <span><i class="confidence-swatch confidence-a" aria-hidden="true"></i>A · จากที่อยู่เจ้าของ 1,855</span>
@@ -398,9 +399,13 @@
                 </span>
                 <span><i class="legend-cluster" aria-hidden="true">12</i> ทะเบียนอาคารที่พิกัดเดียวกัน</span>
                 <span><i class="legend-selected" aria-hidden="true"></i> รายการที่เลือก</span>
+                <span class="legend-heading">เส้นพื้นที่ประกอบ</span>
+                <span><i class="boundary-line-sample boundary-line-community" aria-hidden="true"></i>แนวแบ่งชุมชนโดยประมาณ</span>
+                <span><i class="boundary-line-sample boundary-line-inferred" aria-hidden="true"></i>กรอบพื้นที่อนุมานจากขอบนอก 23 ชุมชน</span>
+                <span class="legend-boundary-note">ทั้งสองเส้นใช้ช่วยอ่านบริบท ไม่ใช่เขตเทศบาล แนวเขตทางกฎหมาย หรือแนวเขตสิทธิ</span>
               </div>
             </div>
-            <p class="map-disclosure" data-map-disclosure>พื้นหลังปิดอยู่ จึงยังไม่ส่งพื้นที่ที่ดูออกไปภายนอก เลือกถนน (OpenStreetMap) หรือดาวเทียม (Esri World Imagery) เมื่อต้องการเปรียบเทียบ · สีหมุดบอกชั้นความเชื่อมั่น โดย A0 ใช้สีเดียวกับ A และมีจุดวงเล็กด้านใน ส่วนรูปทรงบอกระดับตำแหน่ง · ทิศหน้าถนนใช้เฉพาะแถวที่มีค่าและเป็นเพียงมุมเริ่มดูภาพ · ภาพถ่ายอาจต่างช่วงเวลาและความละเอียด ไม่ใช่หลักฐานสิทธิ แนวเขต หรือการยืนยันป้ายบ้าน</p>
+            <p class="map-disclosure" data-map-disclosure>พื้นหลังปิดอยู่ จึงยังไม่ส่งพื้นที่ที่ดูออกไปภายนอก เลือกถนน (OpenStreetMap) หรือดาวเทียม (Esri World Imagery) เมื่อต้องการเปรียบเทียบ · แนวแบ่งชุมชนและกรอบพื้นที่อนุมานจากขอบนอก 23 ชุมชนเป็นชั้นประกอบ ไม่ใช่เขตเทศบาล แนวเขตทางกฎหมาย หรือแนวเขตสิทธิ · สีหมุดบอกชั้นความเชื่อมั่น โดย A0 ใช้สีเดียวกับ A และมีจุดวงเล็กด้านใน ส่วนรูปทรงบอกระดับตำแหน่ง · ทิศหน้าถนนใช้เฉพาะแถวที่มีค่าและเป็นเพียงมุมเริ่มดูภาพ · ภาพถ่ายอาจต่างช่วงเวลาและความละเอียด ไม่ใช่การยืนยันป้ายบ้าน</p>
           </section>
 
           <aside class="detail-pane" id="detail-panel" role="tabpanel" aria-label="รายละเอียดรายการที่เลือก" data-panel="detail">
@@ -869,7 +874,7 @@
             <div><dt>กติกาประมวลผล</dt><dd>รุ่น 1.8.0</dd></div>
             <div><dt>รหัสรอบ</dt><dd class="source-run-id">20260908T044243_<wbr>f3b4ba_<wbr>38e4d7_<wbr>rules1.8.0</dd></div>
             <div><dt>แผนดำเนินงาน</dt><dd>Implementation plan v1 · 4 ก.ย. 2569</dd></div>
-            <div><dt>ขอบเขตชุมชนประกอบ</dt><dd>GeoJSON ที่ผู้ใช้จัดเตรียม · 23 ชุมชน · ใช้สื่อสารและตรวจคุณภาพ ไม่อ้างว่าเป็นแนวเขตทางการหรือแนวเขตสิทธิ</dd></div>
+            <div><dt>ชั้นพื้นที่ประกอบ</dt><dd>แนวแบ่งชุมชน 23 พื้นที่จาก GeoJSON ที่ผู้ใช้จัดเตรียม และกรอบพื้นที่อนุมานจากขอบนอกของทั้ง 23 ชุมชน · ใช้สื่อสารและตรวจคุณภาพ ไม่อ้างว่าเป็นเขตเทศบาล แนวเขตทางกฎหมาย หรือแนวเขตสิทธิ</dd></div>
           </dl>
         </div>
         <div>
@@ -891,7 +896,7 @@
           <li>จุดอ้างอิงหน้าถนนและทิศมุมมองไม่ใช่ตำแหน่งประตู อาคาร ป้ายทะเบียนบ้าน หรือแนวเขตสิทธิ</li>
           <li>กรณีชื่อซอยไม่สอดคล้อง จุดอยู่ใกล้ซอยอื่นมากกว่า หรือห่างจากซอยที่ระบุ เป็นธงสำหรับตรวจ ไม่ใช่หลักฐานว่าข้อมูลทะเบียนหรือชั้นถนนฝ่ายใดผิด</li>
           <li>ชื่อกิจการหมายถึงที่อยู่จดทะเบียนที่จับคู่กับแถวบ้าน ไม่ยืนยันสถานะเปิด–ปิด ป้ายหน้าร้าน หรือผู้ครอบครองปัจจุบัน</li>
-          <li>ขอบเขตชุมชนที่แสดงเป็นชั้นประกอบจากไฟล์ที่ผู้ใช้ให้ ไม่ใช่ขอบเขตทางกฎหมายหรือขอบเขตแปลง</li>
+          <li>แนวแบ่งชุมชนเป็นชั้นประกอบจากไฟล์ที่ผู้ใช้ให้ ส่วนกรอบพื้นที่อนุมานสร้างจากขอบนอกของ 23 ชุมชน ทั้งคู่ไม่ใช่เขตเทศบาล ขอบเขตทางกฎหมาย หรือขอบเขตแปลง</li>
           <li>ค่า “ยังไม่มีข้อมูล” ถูกแยกจากศูนย์ และกลุ่มที่หลักฐานไม่พอถูกเว้นพิกัดโดยตั้งใจ</li>
           <li>ตัวเลขบนหน้านี้เป็นผลสรุปจากรอบที่ระบุ ไม่ใช่คะแนนความแม่นยำจากตัวอย่างภาคสนามอิสระ</li>
         </ul>

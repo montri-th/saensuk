@@ -2,7 +2,7 @@
 
 Interactive single-page review desk and executive summary for the Saensuk household-registry geocoding run produced on 2026-09-08 (`rules 1.8.0`). The reader-facing interface is Thai and is designed for municipal officers and non-technical executives.
 
-The public repository contains the interface, aggregate figures, an index-safe community-boundary layer, and governed brand/design assets. It does **not** contain the display CSV, raw registry, household identifiers, house numbers, parcel identifiers, review notes, company-address rows, or exact per-house coordinates.
+The public repository contains the interface, aggregate figures, an index-safe 23-community layer, its derived outer frame, and governed brand/design assets. It does **not** contain the display CSV, raw registry, household identifiers, house numbers, parcel identifiers, review notes, company-address rows, or exact per-house coordinates.
 
 ## Local-data review desk
 
@@ -21,18 +21,19 @@ The public repository contains the interface, aggregate figures, an index-safe c
 
 ## Private Google Sheet connection
 
-The browser-to-Google-Sheet connection is not implemented in this release. It still requires a Google OAuth Web Client ID, enabled Google Sheets API, consent configuration, and an authorized JavaScript origin. The intended connection must use a user-triggered read-only token and the file's existing Drive permissions; it must not expose a public CSV or `gviz` endpoint. Until those inputs are supplied and verified, approved local-CSV selection is the only data-loading path.
+The browser-to-Google-Sheet connection is not implemented in this release. In plain terms, the current safe route is to download the approved CSV and choose it from the device; the file is processed only in that browser tab. A future private-Sheet route would require a separately configured Google sign-in flow and access-control review so that the Sheet is never made public. Until that work is supplied and verified, approved local-CSV selection is the only data-loading path.
 
 Because all project sites under `montri-th.github.io` share one browser origin, a dedicated custom hostname remains the stronger isolation choice for wider sensitive-data use.
 
 ## Maps and outbound boundaries
 
-- The map starts with no third-party basemap. The same-origin community polygons are an approximate communication/QA layer, not an official municipal boundary.
+- The map starts with no third-party basemap. The same-origin 23-community polygons remain the named communication/QA layer used for community comparison.
+- A separate solid outer frame is derived by dissolving all 23 community polygons and retaining the union's exterior ring. It is labelled as an inferred working extent—not an official municipal, legal, cadastral, or property boundary.
 - Road tiles (OpenStreetMap) and satellite imagery (Esri World Imagery) are explicit opt-ins. A selected provider may receive the user's IP address and viewed area; attribution remains visible.
 - Imagery can differ by date, resolution, and source. It supports visual review but does not prove present conditions, property rights, legal boundaries, or that a house plate matches.
 - Google Maps and Street View open only after an explicit click. Google may receive normal connection, IP, account, or session metadata.
 
-The published community GeoJSON contains 23 polygons with name and geometry only, uses CRS84, and has SHA-256 `1419e28b00ed22ba4802a30cc3e0d01e4051c57165bc20e548b055839f4b8d71`.
+The owner-supplied `saensuk_village_boundaries.geojson` has SHA-256 `d397dff38411bdb46d8923d5a04e608f10c569fe65a598f4754464608e8f3c83`. Its published geometry-equivalent safe copy contains 23 polygons with name and geometry only, uses CRS84, and has SHA-256 `1419e28b00ed22ba4802a30cc3e0d01e4051c57165bc20e548b055839f4b8d71`. The separate inferred outer-frame GeoJSON contains one closed 528-vertex Polygon, is 13,974 bytes, and has SHA-256 `8f0661e695b20e606fd38084ca5d4281b3b318ea054cf4dadf74b4c1033eac9e`. Its area is approximately 20.163 km² and it covers all 23 supplied polygons. It is the exterior of their dissolved union, not a convex hull or bounding box; taking only that exterior fills ten topology micro-holes totalling 63.8914 m².
 
 ## Snapshot
 
@@ -42,7 +43,7 @@ The published community GeoJSON contains 23 polygons with name and geometry only
 - Review priorities high/mid/low: 500 / 2,044 / 3,102
 - 13,960 frontage points; 8,036 face a road named by the address; 9,630 use a municipal-road geometry layer
 - 1,379 registry rows carry 2,048 business-registration tags
-- Field-verified count, measured accuracy, and official municipal boundary are null in the delivered figures and are therefore not rendered as numeric claims
+- Field-verified count, measured accuracy, and official municipal boundary are null in the delivered figures and are therefore not rendered as numeric claims. The inferred outer frame is a separately labelled working context and does not replace that null official-boundary value.
 
 Visual guidance is Landometer Design System v0.9.1 (`0.9.1-r8`, machine package `v0.9.1-mp7`) plus the approved CityChat DS Add-on v0.9.1. The exact audience-safe production color projection is shipped as `assets/color-srgb-05.production.css`, 8,184 bytes, SHA-256 `3bac2499df594bbf6b016b650ee7763f7ec093e33bc5f28239144e0677281d5c`.
 
@@ -59,3 +60,5 @@ node --test tests/*.test.cjs
 ```
 
 The page performs no map-provider request until the user explicitly enables a road or satellite basemap. Google Maps and Street View open only after an explicit record action.
+
+Physical iPhone/Safari testing was not available. The owner accepted the best available browser coverage on 2026-09-08; responsive emulation, touch-sized controls, Thai 130%, 200% zoom, light/dark/system themes, keyboard focus, and reduced motion remain the recorded evidence and must not be described as a physical-device pass.

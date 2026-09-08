@@ -1,5 +1,5 @@
 artifact: saensuk-house-geocode-review-desk
-artifact_release: "v8-2026-09-08"
+artifact_release: "v8-outer-frame-2026-09-08"
 audience: [municipal_officer, municipal_executive]
 locale: [th]
 
@@ -69,8 +69,13 @@ content:
   registry_rows_with_business_tags: 1379
   business_registration_tags: 2048
   field_verification: "figures value is null; no numeric verification or accuracy element is rendered"
-  official_municipality_boundary: "figures value is null; the optional 23-polygon layer is labelled community QA context only"
-  truth_boundary: "Position coverage is not accuracy. Frontage, imagery, registered-business addresses, roads, and community polygons are supporting context rather than field verification, operating-business proof, property rights, or legal boundaries."
+  official_municipality_boundary: "figures value is null; the UI makes no official municipal-boundary claim; its separately rendered outer frame is derived context only"
+  community_boundary_source: "owner-supplied saensuk_village_boundaries.geojson 52,014 bytes; sha256 d397dff38411bdb46d8923d5a04e608f10c569fe65a598f4754464608e8f3c83; 23 named CRS84 Polygon features; public geometry-equivalent safe copy 42,807 bytes; sha256 1419e28b00ed22ba4802a30cc3e0d01e4051c57165bc20e548b055839f4b8d71"
+  inferred_outer_frame: "one closed 528-vertex CRS84 Polygon; bbox [100.8974531, 13.2383789, 100.9643072, 13.3175765]; 13,974 bytes; sha256 8f0661e695b20e606fd38084ca5d4281b3b318ea054cf4dadf74b4c1033eac9e"
+  inferred_outer_frame_derivation: "Shapely 2.0.7 / GEOS 3.11.4 unary_union in source CRS84; retain and orient the union exterior ring; fill ten topology micro-holes totalling 63.8914 m2; rotate to a deterministic lexicographic start; canonical compact JSON plus newline"
+  inferred_outer_frame_validation: "valid Polygon; covers 23/23 source community polygons; zero outside area; exterior area 20,162,822.3497 m2; perimeter 28,312.2449 m; measurements after transform to EPSG:32647 with pyproj 3.6.1 / PROJ 9.3.0; convex hull rejected because it would add 12.633 km2 (62.66%) beyond the supplied geometry"
+  inferred_outer_frame_role: "owner-requested working extent derived from the supplied community layer; explicitly not an official municipal, legal, cadastral, or property boundary"
+  truth_boundary: "Position coverage is not accuracy. Frontage, imagery, registered-business addresses, roads, community polygons, and the derived outer frame are supporting context rather than field verification, operating-business proof, property rights, or legal boundaries."
   source_discrepancies:
     - "display review_score is blank while QA review list v5 carries scores; UI orders by priority and stable source order without inventing score"
     - "work order says 526 high-priority rows in one clause; figures, display, and QA data agree on 500"
@@ -78,25 +83,27 @@ content:
     - "registry business tags v4 has no pipeline_run_id column although the work order says every data file carries it; exact hash plus 100% join and aggregate parity with display v2 bind it to this delivery without inventing a field"
 
 privacy:
-  public_payload: "interface, aggregate facts, index-safe community polygons, and governed brand/design assets only"
+  public_payload: "interface, aggregate facts, index-safe community polygons, their one-feature inferred outer frame, and governed brand/design assets only"
   local_only: "display CSV, household IDs, addresses, exact coordinates, company-address detail, and draft review notes"
   data_lifecycle: "record data and drafts remain in tab memory; no service worker, analytics, URL state, IndexedDB, sessionStorage, or localStorage for record data"
   outbound: "basemaps are opt-in; Google links are explicit and coordinate-only"
-  google_sheet_loading: "not implemented; requires owner-supplied OAuth configuration and a separately verified access design"
+  google_sheet_loading: "not implemented; local approved-CSV selection remains the owner-facing default; any later private-Sheet route requires a separately configured Google sign-in flow and verified access design"
 
 qa:
-  tested_at: "2026-09-08 local pre-release; live verification pending deployment"
+  tested_at: "2026-09-08 local outer-frame pre-release; live verification pending deployment"
   source_integrity: "display v2 exact hash/bytes, 29-column order, unique IDs, run ID, and all aggregate invariants passed"
-  parser_unit_contract: "28/28 local Node tests passed after shell integration"
+  parser_unit_contract: "29/29 local Node tests passed after outer-frame integration"
   responsive: "rendered checks passed at 320, 360, 390, 768, 1024, 1180, and 1440 CSS px; Thai 130% and 200% text/geometry stress checks had no horizontal overflow"
   accessibility: "keyboard selection, mobile tabs, minimum 44px basemap targets, focus flow, reduced motion, live regions, labels, ARIA references, and light/dark/system states passed automated rendered checks"
-  privacy: "47 tracked files; no raw tabular files and no sampled household ID, company-name, or coordinate matches; record storage surfaces empty; no outbound request before opt-in"
+  privacy: "48 tracked files including the one-feature inferred outer-frame GeoJSON; no raw tabular files and no sampled household ID, company-name, or coordinate matches; record storage surfaces empty; no outbound request before opt-in"
   external_maps: "Street View contract generates coordinates plus heading only when supplied; every rendered row has Street View and satellite actions when coordinates exist; Esri and OSM returned image tiles after explicit opt-in"
   color_contrast: "CityChat light field with white: minimum 4.929:1; dark field with mineral ink: minimum 8.238:1"
-  local_browser: "Chrome rendered QA, map/cluster interaction, export, fail-closed replacement, embedded/opener safety, brand byte checks, and basemap network checks passed with zero console/page/CSP/failed-response errors"
+  local_browser: "Chrome rendered QA, map/cluster interaction, independent community/frame toggles, isolated failure of either spatial layer, export, fail-closed dataset replacement, embedded/opener safety, brand byte checks, and basemap network checks passed with zero console/page/CSP/failed-response errors"
   live: "pending GitHub Pages provider success and byte attestation"
-  open_manual_gate: "Physical iPhone/Safari behavior is not yet tested; browser emulation cannot close this native-device gate."
+  native_device_limit: "owner accepted best available browser coverage on 2026-09-08 because no physical iPhone/Safari device is available; responsive emulation, touch targets, Thai 130%, 200% zoom, themes, keyboard, and reduced motion passed, but this is not recorded as a physical-device pass"
 
 claim:
   statement: "Strictly applies the approved v0.9.1 rules within the recorded component scope; it does not claim to be the CityChat public landing-page template."
   owner_basis: "owner-message:2026-09-08:replace-mixed-v7-files-with-correct-v8-set-and-republish"
+  owner_outer_frame_basis: "owner-message:2026-09-08:use-the-outermost-frame-of-the-supplied-community-boundaries"
+  owner_native_device_basis: "owner-message:2026-09-08:no-physical-device-accept-best-available-testing"

@@ -264,7 +264,8 @@
     mapLoading: explorer.querySelector("[data-map-loading]"),
     mapDisclosure: explorer.querySelector("[data-map-disclosure]"),
     fitResults: explorer.querySelector("[data-fit-results]"),
-    toggleBoundaries: explorer.querySelector("[data-toggle-boundaries]"),
+    toggleCommunityBoundaries: explorer.querySelector("[data-toggle-community-boundaries]"),
+    toggleInferredFrame: explorer.querySelector("[data-toggle-inferred-frame]"),
     basemapButtons: [...explorer.querySelectorAll("[data-basemap]")],
     detailEmpty: explorer.querySelector("[data-detail-empty]"),
     detail: explorer.querySelector("[data-record-detail]"),
@@ -306,9 +307,14 @@
     reviewFilter: "",
     reviews: new Map(),
     coordinateCounts: new Map(),
-    boundaries: null,
-    boundaryLayer: null,
-    boundariesVisible: true,
+    communityBoundaries: null,
+    communityBoundaryLayer: null,
+    communityBoundariesVisible: true,
+    inferredOuterFrame: null,
+    inferredFrameLayer: null,
+    inferredFrameVisible: true,
+    spatialContextReady: false,
+    initialSpatialFitDone: false,
     map: null,
     selectionRenderer: null,
     pointLayer: null,
@@ -907,8 +913,8 @@
   };
 
   const containingCommunity = (row) => {
-    if (!state.boundaries || !Number.isFinite(row.lon) || !Number.isFinite(row.lat)) return "";
-    for (const feature of state.boundaries.features) {
+    if (!state.communityBoundaries || !Number.isFinite(row.lon) || !Number.isFinite(row.lat)) return "";
+    for (const feature of state.communityBoundaries.features) {
       const geometry = feature.geometry;
       const polygons = geometry.type === "Polygon" ? [geometry.coordinates] : geometry.coordinates;
       if (polygons.some((polygon) => pointInPolygon(row.lon, row.lat, polygon))) {
@@ -964,7 +970,7 @@
     appendField("ซอย", row.soi);
     appendField("ถนน", row.road);
     appendField("ชุมชนในทะเบียน", row.community);
-    if (boundaryCommunity) appendField("ขอบเขตที่จุดตกอยู่", `${boundaryCommunity}${boundaryCommunity !== declaredCommunity ? " (แสดงเพื่อ QA—ไม่เขียนทับทะเบียน)" : ""}`);
+    if (boundaryCommunity) appendField("ชุมชนตามชั้นประกอบที่จุดตกอยู่", `${boundaryCommunity}${boundaryCommunity !== declaredCommunity ? " (แสดงเพื่อ QA—ไม่เขียนทับทะเบียน)" : ""}`);
     appendField("ประเภทสถานที่", row.place_type);
     appendField("ละติจูด", row.lat === null ? "ไม่มีพิกัด" : Number(row.lat).toFixed(7), { data: true });
     appendField("ลองจิจูด", row.lon === null ? "ไม่มีพิกัด" : Number(row.lon).toFixed(7), { data: true });
@@ -1326,32 +1332,71 @@
     return new CanvasPointLayer();
   };
 
-  const boundaryStyle = () => ({
+  const communityBoundaryStyle = () => ({
     color: cssColor("--map-active", "Highlight"),
-    weight: 2,
+    weight: 1.75,
     dashArray: "7 5",
-    opacity: 0.9,
+    opacity: 0.92,
     fillColor: cssColor("--citychat-primary", "CanvasText"),
-    fillOpacity: 0.06
+    fillOpacity: 0.045
   });
 
-  const addBoundaryLayer = () => {
-    if (!state.map || !state.boundaries || state.boundaryLayer) return;
-    const tooltipClass = "community-tooltip";
-    state.boundaryLayer = L.geoJSON(state.boundaries, {
-      interactive: true,
-      style: boundaryStyle,
-      onEachFeature: (feature, layer) => {
-        const label = document.createElement("span");
-        label.textContent = clean(feature.properties?.name, "ไม่ระบุชื่อ", 160);
-        layer.bindTooltip(label, { sticky: true, className: tooltipClass });
-      }
-    });
-    if (state.boundariesVisible) state.boundaryLayer.addTo(state.map);
-    if (state.boundaryLayer.getBounds().isValid()) {
-      state.map.fitBounds(state.boundaryLayer.getBounds(), { padding: [18, 18] });
+  const inferredFrameStyle = () => ({
+    color: cssColor("--map-selected", "Highlight"),
+    weight: 4,
+    opacity: 1,
+    fill: false,
+    fillOpacity: 0
+  });
+
+  const ensureSpatialPanes = () => {
+    if (!state.map) return;
+    const inferredPane = state.map.getPane("inferred-frame-pane") || state.map.createPane("inferred-frame-pane");
+    inferredPane.style.zIndex = "360";
+    inferredPane.style.pointerEvents = "none";
+    const communityPane = state.map.getPane("community-boundary-pane") || state.map.createPane("community-boundary-pane");
+    communityPane.style.zIndex = "370";
+  };
+
+  const fitSpatialContextOnce = () => {
+    if (!state.map || !state.spatialContextReady || state.initialSpatialFitDone) return;
+    const inferredBounds = state.inferredFrameLayer?.getBounds();
+    const communityBounds = state.communityBoundaryLayer?.getBounds();
+    const bounds = inferredBounds?.isValid()
+      ? inferredBounds
+      : communityBounds?.isValid()
+        ? communityBounds
+        : null;
+    if (bounds) state.map.fitBounds(bounds, { padding: [18, 18] });
+    state.initialSpatialFitDone = true;
+  };
+
+  const addSpatialLayers = () => {
+    if (!state.map) return;
+    ensureSpatialPanes();
+    if (state.inferredOuterFrame && !state.inferredFrameLayer) {
+      state.inferredFrameLayer = L.geoJSON(state.inferredOuterFrame, {
+        pane: "inferred-frame-pane",
+        interactive: false,
+        style: inferredFrameStyle
+      });
+      if (state.inferredFrameVisible) state.inferredFrameLayer.addTo(state.map);
     }
-    elements.mapLoading.hidden = true;
+    if (state.communityBoundaries && !state.communityBoundaryLayer) {
+      const tooltipClass = "community-tooltip";
+      state.communityBoundaryLayer = L.geoJSON(state.communityBoundaries, {
+        pane: "community-boundary-pane",
+        interactive: true,
+        style: communityBoundaryStyle,
+        onEachFeature: (feature, layer) => {
+          const label = document.createElement("span");
+          label.textContent = clean(feature.properties?.name, "ไม่ระบุชื่อ", 160);
+          layer.bindTooltip(label, { sticky: true, className: tooltipClass });
+        }
+      });
+      if (state.communityBoundariesVisible) state.communityBoundaryLayer.addTo(state.map);
+    }
+    fitSpatialContextOnce();
   };
 
   const ensureMap = () => {
@@ -1374,12 +1419,12 @@
       zoomOutTitle: "ย่อแผนที่"
     }).addTo(state.map);
     state.map.attributionControl.setPrefix('<a href="https://leafletjs.com" target="_blank" rel="noreferrer">Leaflet</a>');
-    state.map.attributionControl.addAttribution("ขอบเขตชุมชน: ชุดข้อมูลที่ผู้ใช้จัดเตรียม");
+    state.map.attributionControl.addAttribution("แนวชุมชนและกรอบพื้นที่อนุมาน: จากข้อมูลที่ผู้ใช้จัดเตรียม");
     state.pointLayer = createPointLayer();
     state.pointLayer.addTo(state.map);
     state.pointLayer.setIndices(state.filtered);
     state.map.on("click", (event) => selectMapPoint(event));
-    addBoundaryLayer();
+    addSpatialLayers();
     if (state.selectedIndex !== null) updateMapSelection(false);
     requestAnimationFrame(() => state.map?.invalidateSize());
   };
@@ -1486,20 +1531,34 @@
     if (bounds.isValid()) state.map.fitBounds(bounds, { padding: [24, 24], maxZoom: 18 });
   };
 
-  const toggleBoundaries = () => {
+  const toggleSpatialLayer = (layerKey, visibleKey, button) => {
     ensureMap();
-    if (!state.map || !state.boundaryLayer) return;
-    state.boundariesVisible = !state.boundariesVisible;
-    if (state.boundariesVisible) state.boundaryLayer.addTo(state.map);
-    else state.map.removeLayer(state.boundaryLayer);
-    elements.toggleBoundaries.setAttribute("aria-pressed", String(state.boundariesVisible));
-    elements.toggleBoundaries.textContent = state.boundariesVisible ? "ขอบเขตชุมชน" : "แสดงขอบเขตชุมชน";
+    const layer = state[layerKey];
+    if (!state.map || !layer || !button) return;
+    state[visibleKey] = !state[visibleKey];
+    if (state[visibleKey]) layer.addTo(state.map);
+    else state.map.removeLayer(layer);
+    button.setAttribute("aria-pressed", String(state[visibleKey]));
   };
 
+  const toggleCommunityBoundaries = () => toggleSpatialLayer(
+    "communityBoundaryLayer",
+    "communityBoundariesVisible",
+    elements.toggleCommunityBoundaries
+  );
+
+  const toggleInferredFrame = () => toggleSpatialLayer(
+    "inferredFrameLayer",
+    "inferredFrameVisible",
+    elements.toggleInferredFrame
+  );
+
+  const SPATIAL_CONTEXT_DISCLOSURE = "แนวแบ่งชุมชนและกรอบพื้นที่อนุมานจากขอบนอก 23 ชุมชนเป็นชั้นประกอบ ไม่ใช่เขตเทศบาล แนวเขตทางกฎหมาย หรือแนวเขตสิทธิ";
+
   const BASEMAP_DISCLOSURES = {
-    none: "พื้นหลังปิดอยู่ จึงยังไม่ส่งพื้นที่ที่ดูออกไปภายนอก เลือกถนน (OpenStreetMap) หรือดาวเทียม (Esri World Imagery) เมื่อต้องการเปรียบเทียบ · ทะเบียนคนละหลังไม่ถูกรวมเพราะอยู่ใกล้กัน หมุดตัวเลขใช้เฉพาะอาคารชุด สำนักงาน หรือรายการพิกัดระดับอาคารที่ใช้พิกัดเดียวกันในข้อมูล · ภาพถ่ายอาจต่างช่วงเวลาและความละเอียด ไม่ใช่หลักฐานสิทธิหรือแนวเขต · ระดับแปลงแสดงเป็นจุดอ้างอิง เพราะ CSV ไม่มีรูปแปลง",
-    streets: "พื้นหลังถนนจาก OpenStreetMap เปิดอยู่ ผู้ให้บริการอาจได้รับ IP และพื้นที่แผนที่ที่เปิดดู แต่เว็บไม่ส่งเลขที่บ้าน รหัสทะเบียน หรือไฟล์ CSV · ทะเบียนคนละหลังไม่ถูกรวมเพราะอยู่ใกล้กัน หมุดตัวเลขใช้เฉพาะอาคารชุด สำนักงาน หรือรายการพิกัดระดับอาคารที่ใช้พิกัดเดียวกันในข้อมูล · ระดับแปลงยังแสดงเป็นจุดอ้างอิง เพราะ CSV ไม่มีรูปแปลง",
-    satellite: "ภาพถ่ายดาวเทียม Esri World Imagery เปิดอยู่ ผู้ให้บริการอาจได้รับ IP และพื้นที่แผนที่ที่เปิดดู แต่เว็บไม่ส่งเลขที่บ้าน รหัสทะเบียน หรือไฟล์ CSV · ทะเบียนคนละหลังไม่ถูกรวมเพราะอยู่ใกล้กัน หมุดตัวเลขใช้เฉพาะอาคารชุด สำนักงาน หรือรายการพิกัดระดับอาคารที่ใช้พิกัดเดียวกันในข้อมูล · ภาพอาจมาจากหลายช่วงเวลาและหลายแหล่ง ใช้เปรียบเทียบบริบท ไม่ใช่หลักฐานสิทธิ ความสดของข้อมูล หรือแนวเขต"
+    none: `พื้นหลังปิดอยู่ จึงยังไม่ส่งพื้นที่ที่ดูออกไปภายนอก เลือกถนน (OpenStreetMap) หรือดาวเทียม (Esri World Imagery) เมื่อต้องการเปรียบเทียบ · ${SPATIAL_CONTEXT_DISCLOSURE} · ทะเบียนคนละหลังไม่ถูกรวมเพราะอยู่ใกล้กัน หมุดตัวเลขใช้เฉพาะอาคารชุด สำนักงาน หรือรายการพิกัดระดับอาคารที่ใช้พิกัดเดียวกันในข้อมูล · ภาพถ่ายอาจต่างช่วงเวลาและความละเอียด ไม่ใช่การยืนยันตำแหน่ง · ระดับแปลงแสดงเป็นจุดอ้างอิง เพราะ CSV ไม่มีรูปแปลง`,
+    streets: `พื้นหลังถนนจาก OpenStreetMap เปิดอยู่ ผู้ให้บริการอาจได้รับ IP และพื้นที่แผนที่ที่เปิดดู แต่เว็บไม่ส่งเลขที่บ้าน รหัสทะเบียน หรือไฟล์ CSV · ${SPATIAL_CONTEXT_DISCLOSURE} · ทะเบียนคนละหลังไม่ถูกรวมเพราะอยู่ใกล้กัน หมุดตัวเลขใช้เฉพาะอาคารชุด สำนักงาน หรือรายการพิกัดระดับอาคารที่ใช้พิกัดเดียวกันในข้อมูล · ระดับแปลงยังแสดงเป็นจุดอ้างอิง เพราะ CSV ไม่มีรูปแปลง`,
+    satellite: `ภาพถ่ายดาวเทียม Esri World Imagery เปิดอยู่ ผู้ให้บริการอาจได้รับ IP และพื้นที่แผนที่ที่เปิดดู แต่เว็บไม่ส่งเลขที่บ้าน รหัสทะเบียน หรือไฟล์ CSV · ${SPATIAL_CONTEXT_DISCLOSURE} · ทะเบียนคนละหลังไม่ถูกรวมเพราะอยู่ใกล้กัน หมุดตัวเลขใช้เฉพาะอาคารชุด สำนักงาน หรือรายการพิกัดระดับอาคารที่ใช้พิกัดเดียวกันในข้อมูล · ภาพอาจมาจากหลายช่วงเวลาและหลายแหล่ง ใช้เปรียบเทียบบริบท ไม่ใช่หลักฐานสิทธิหรือความสดของข้อมูล`
   };
 
   const createBasemapLayer = (mode) => {
@@ -1725,26 +1784,81 @@
     }
   };
 
-  const loadBoundaries = async () => {
-    try {
-      const response = await fetch("assets/data/saensuk-community-boundaries.geojson", { cache: "no-cache" });
-      if (!response.ok) throw new Error("boundary response");
-      const data = await response.json();
-      if (data?.type !== "FeatureCollection" || data.features?.length !== 23) throw new Error("boundary shape");
-      const names = new Set();
-      for (const feature of data.features) {
-        const name = clean(feature?.properties?.name, "", 160);
-        if (!name || names.has(name) || !["Polygon", "MultiPolygon"].includes(feature?.geometry?.type)) {
-          throw new Error("boundary content");
-        }
-        names.add(name);
+  const loadGeoJson = async (path) => {
+    const response = await fetch(path, { cache: "no-cache" });
+    if (!response.ok) throw new Error("spatial response");
+    return response.json();
+  };
+
+  const validateCommunityBoundaries = (data) => {
+    if (data?.type !== "FeatureCollection" || data.features?.length !== 23) throw new Error("community shape");
+    const names = new Set();
+    for (const feature of data.features) {
+      const name = clean(feature?.properties?.name, "", 160);
+      if (!name || names.has(name) || !["Polygon", "MultiPolygon"].includes(feature?.geometry?.type)) {
+        throw new Error("community content");
       }
-      state.boundaries = data;
-      addBoundaryLayer();
-      if (state.selectedIndex !== null) renderDetail();
-    } catch (_) {
-      elements.mapLoading.textContent = "เปิดขอบเขตชุมชนไม่ได้ แต่ยังตรวจรายการจากตารางได้";
-      elements.toggleBoundaries.disabled = true;
+      names.add(name);
+    }
+    return data;
+  };
+
+  const validateInferredOuterFrame = (data) => {
+    if (data?.type !== "FeatureCollection" || data.features?.length !== 1) throw new Error("frame shape");
+    const feature = data.features[0];
+    const properties = feature?.properties || {};
+    const geometry = feature?.geometry;
+    const ring = geometry?.coordinates?.[0];
+    const propertyKeys = Object.keys(properties).sort().join(",");
+    if (
+      propertyKeys !== "name,role,source_features" ||
+      properties.name !== "กรอบพื้นที่อนุมานจากขอบนอก 23 ชุมชน" ||
+      properties.role !== "inferred_outer_frame" ||
+      properties.source_features !== 23 ||
+      geometry?.type !== "Polygon" ||
+      geometry.coordinates?.length !== 1 ||
+      !Array.isArray(ring) ||
+      ring.length !== 528 ||
+      JSON.stringify(data.bbox) !== "[100.8974531,13.2383789,100.9643072,13.3175765]"
+    ) {
+      throw new Error("frame content");
+    }
+    return data;
+  };
+
+  const disableSpatialControl = (button, label) => {
+    if (!button) return;
+    button.disabled = true;
+    button.setAttribute("aria-pressed", "false");
+    button.setAttribute("aria-label", `${label}โหลดไม่ได้`);
+  };
+
+  const loadSpatialContext = async () => {
+    const [communityResult, frameResult] = await Promise.allSettled([
+      loadGeoJson("assets/data/saensuk-community-boundaries.geojson").then(validateCommunityBoundaries),
+      loadGeoJson("assets/data/saensuk-community-outer-frame.geojson").then(validateInferredOuterFrame)
+    ]);
+
+    if (communityResult.status === "fulfilled") {
+      state.communityBoundaries = communityResult.value;
+    } else {
+      state.communityBoundariesVisible = false;
+      disableSpatialControl(elements.toggleCommunityBoundaries, "แนวชุมชน ");
+    }
+    if (frameResult.status === "fulfilled") {
+      state.inferredOuterFrame = frameResult.value;
+    } else {
+      state.inferredFrameVisible = false;
+      disableSpatialControl(elements.toggleInferredFrame, "กรอบพื้นที่อนุมาน ");
+    }
+
+    state.spatialContextReady = true;
+    addSpatialLayers();
+    if (state.selectedIndex !== null && state.communityBoundaries) renderDetail();
+    if (state.communityBoundaries || state.inferredOuterFrame) {
+      elements.mapLoading.hidden = true;
+    } else {
+      elements.mapLoading.textContent = "เปิดชั้นพื้นที่ประกอบไม่ได้ แต่ยังตรวจรายการจากตารางได้";
     }
   };
 
@@ -1835,7 +1949,8 @@
     elements.list.querySelector("button")?.focus();
   });
   elements.fitResults.addEventListener("click", fitFilteredResults);
-  elements.toggleBoundaries.addEventListener("click", toggleBoundaries);
+  elements.toggleCommunityBoundaries.addEventListener("click", toggleCommunityBoundaries);
+  elements.toggleInferredFrame.addEventListener("click", toggleInferredFrame);
   elements.basemapButtons.forEach((button) => {
     button.addEventListener("click", () => setBasemap(button.dataset.basemap));
   });
@@ -1864,7 +1979,8 @@
 
   const refreshMapPalette = () => {
     state.pointLayer?.redraw();
-    state.boundaryLayer?.setStyle(boundaryStyle);
+    state.communityBoundaryLayer?.setStyle(communityBoundaryStyle);
+    state.inferredFrameLayer?.setStyle(inferredFrameStyle);
     const row = state.rows[state.selectedIndex];
     if (!row) return;
     const color = pointColor(row);
@@ -1878,6 +1994,6 @@
   const colorScheme = window.matchMedia("(prefers-color-scheme: dark)");
   if (typeof colorScheme.addEventListener === "function") colorScheme.addEventListener("change", refreshMapPalette);
 
-  loadBoundaries();
+  loadSpatialContext();
   showOnly("gate");
 })();
