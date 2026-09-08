@@ -2,6 +2,9 @@
 
 # Local registry sources and review exports must never enter the public site.
 *house-geocode-master-table*.csv
+*housegeocodemaster*.csv
+*housemapdisplaydataset*.csv
 *review-draft*.csv
+*point-adjustment-draft*.csv
 private-data/
 local-data/

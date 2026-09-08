@@ -1,5 +1,7 @@
 artifact: saensuk-house-geocode-review-desk
-artifact_release: "v8-outer-frame-2026-09-08"
+artifact_release: "v9-display-v3-coordinate-adjustment-2026-09-08"
+release_status: "source_settled_live_attestation_external"
+release_authority: "owner-message:2026-09-08:publish-now"
 audience: [municipal_officer, municipal_executive]
 locale: [th]
 
@@ -49,13 +51,16 @@ motion:
   noJavaScript: "aggregate narrative remains visible; interactive review desk explains its requirement"
 
 content:
-  source_snapshot: "house map display dataset v2, 2026-09-08; pipeline v8; rules 1.8.0"
-  source_sha256: "4f68b1c5a7f962a2ddc06e4e9f7bd6a9959e94c42bd65e2c94354153a04c19d5"
-  source_bytes: 14812722
-  registry_business_tags: "03CityChat__registrybusinesstags__v4__20260908.csv; 2,048 rows; 919,010 bytes; sha256 98359475255c98727cfa16cf92269f3d16b36bcea974a542c00312e02d967f5f"
-  ambiguous_business_addresses: "03CityChat__businessambiguousaddresses__v3__20260908.csv; 218 rows; 145,661 bytes; sha256 b7e10e4dbe9c333f788a8e542cde38e3ddaecd1709204c0052301d648b393117"
-  figures_display: "03CityChat__figuresdisplay__v2__20260908.json; 6,668 bytes; sha256 d1eccd5eeac475283381b0e4443afcafd6dd3242bd3e8c7814f8d87b24408ea6"
-  pipeline_run_id: "20260908T044243_f3b4ba_38e4d7_rules1.8.0"
+  source_snapshot: "house map display dataset v3, 2026-09-08; pipeline v9; rules 1.9.0"
+  source_file: "03CityChat__housemapdisplaydataset__v3__20260908.csv"
+  source_sha256: "a57f1462fdc5b23f88d90856b0e2556d2d231d6e0b17af3468e133ed2770d8f5"
+  source_bytes: 15709401
+  source_schema: "29 ordered columns; dist_named_soi_m and soi_check removed; paired soi_name_check and soi_name_check_confidence added"
+  registry_business_tags: "03CityChat__registrybusinesstags__v5__20260908.csv; 2,048 rows; 919,010 bytes; sha256 98359475255c98727cfa16cf92269f3d16b36bcea974a542c00312e02d967f5f"
+  ambiguous_business_addresses: "03CityChat__businessambiguousaddresses__v4__20260908.csv; 218 rows; 145,661 bytes; sha256 b7e10e4dbe9c333f788a8e542cde38e3ddaecd1709204c0052301d648b393117"
+  figures_display: "03CityChat__figuresdisplay__v3__20260908.json; 6,941 bytes; sha256 618cad2f120615bde9f5b3596a40ec76364b76e3b097226dbe24ed8e8c9805d5"
+  pipeline_manifest: "03CityChat__rungeocodemanifest__v9__20260908.json; 9,224 bytes; sha256 f591e746165627b2ddbda952c2ee0b93cada0a4584ceb46aaa8ab9daf3d3a0d4; acceptance 20/20 true"
+  pipeline_run_id: "20260908T071053_f3b4ba_38e4d7_rules1.9.0"
   records: 42524
   positioned_records: 40236
   no_coordinate_records: 2288
@@ -63,9 +68,14 @@ content:
   municipal_building_survey_a0_records: 10114
   visual_review_list_records: 5646
   visual_review_high_mid_low: [500, 2044, 3102]
-  frontage_records: 13960
-  frontage_named_from_address_records: 8036
-  frontage_municipal_layer_records: 9630
+  frontage_records: 13959
+  frontage_named_from_address_records: 8042
+  frontage_municipal_layer_records: 9634
+  soi_name_keys_checked: 103
+  soi_name_keys_verified: 84
+  soi_name_verified_positioned_records: 9775
+  soi_name_municipal_review_keys: 4
+  soi_name_municipal_review_positioned_records: 380
   registry_rows_with_business_tags: 1379
   business_registration_tags: 2048
   field_verification: "figures value is null; no numeric verification or accuracy element is rendered"
@@ -77,33 +87,57 @@ content:
   inferred_outer_frame_role: "owner-requested working extent derived from the supplied community layer; explicitly not an official municipal, legal, cadastral, or property boundary"
   truth_boundary: "Position coverage is not accuracy. Frontage, imagery, registered-business addresses, roads, community polygons, and the derived outer frame are supporting context rather than field verification, operating-business proof, property rights, or legal boundaries."
   source_discrepancies:
-    - "display review_score is blank while QA review list v5 carries scores; UI orders by priority and stable source order without inventing score"
-    - "work order says 526 high-priority rows in one clause; figures, display, and QA data agree on 500"
-    - "business_count counts registration-tag rows, not guaranteed distinct companies; business_names can contain more than three names"
-    - "registry business tags v4 has no pipeline_run_id column although the work order says every data file carries it; exact hash plus 100% join and aggregate parity with display v2 bind it to this delivery without inventing a field"
+    - "display v3 review_score is blank on all 42,524 rows while the separate QA review list carries scores; UI orders by priority and stable source order without inventing score"
+    - "business_count counts registration-tag rows, not guaranteed distinct companies; the work order says business_names contains at most three names, but display v3 has 20 rows above three and a maximum of 56, so the UI previews three and reports the remainder"
+    - "registry business tags v5 has no pipeline_run_id column although the work order says every data file carries it; exact hash plus aggregate parity with display v3 bind it to this delivery without inventing a field"
+    - "figures/work-order/run-report state 72 no-coordinate rows with one candidate parcel while manifest v9 states 73 and reports a different offered-row total; the website does not present this as a reconciled aggregate"
+    - "the run report retains prior-round frontage copy (13,960 / 8,036 / 9,630) and a 102-key/19-check table entry; display v3, figures v3, and manifest v9 agree on 13,959 / 8,042 / 9,634, 103 keys, and 20 checks, which are the release values"
+    - "soi_name_check labels also occur on no-coordinate rows; the 9,775 verified-row figure is the positioned subset and must not be inferred by counting all display labels"
+
+coordinate_adjustment:
+  role: "local evidence-backed patch proposal; never mutates the loaded source row and never claims an authoritative correction"
+  coordinate_separation: "source_lat/source_lon and proposed_lat/proposed_lon remain separate; source and proposal use distinct map markers with a comparison connector"
+  actions: "existing valid coordinate -> move_existing; both source coordinates absent -> place_missing; partial or invalid source coordinate pairs fail closed"
+  evidence_gate: "reason, evidence source/reference/date, reviewer code, adjustment ID, and UTC timestamp are required; A0 and multi-unit/building rows require a strong evidence source"
+  export_contract: "27 ordered columns; draft-unverified status; includes movement, EPSG:4326, source run ID, source SHA-256, source dataset contract, source uncertainty fields, tool release, and export batch ID"
+  lifecycle: "working proposals remain in tab memory; export is an auditable local CSV patch and does not overwrite the source CSV or update the upstream pipeline"
+  downstream_acceptance: "an authorized reviewer must accept and apply a proposal upstream before any new master/display dataset can treat it as source truth"
+
+loader_resilience:
+  primary_path: "dedicated Web Worker using the pinned display-v3 parser"
+  fallback_path: "one in-tab retry with the same pinned parser only when Worker construction, transport, or execution fails"
+  fail_closed_boundary: "a parser-reported file, hash, schema, row, run-ID, or aggregate validation error is authoritative and is never retried as an acceptance bypass"
+  cache_identity: "main parser, Worker URL, and Worker parser import share revision 20260908-display-v3-r3"
+
+map_review_experience:
+  primary_route: "The map receives a wider two-column desktop layout through 1600 CSS px; the record detail moves below rather than squeezing the map into a narrow centre column."
+  focused_view: "A labelled 44px action expands the map to the full review-workspace width, temporarily removes the queue and detail panes from layout and accessibility navigation, preserves all record/draft/basemap state, refreshes Leaflet geometry, and returns with the same action or Escape."
+  legend: "A native details disclosure starts closed; its open body is scroll-bounded over desktop imagery and reflows statically below the map on small screens."
+  mobile: "Existing queue/map/detail tabs remain the mobile navigation; the redundant desktop expansion control is hidden below 768 CSS px."
 
 privacy:
   public_payload: "interface, aggregate facts, index-safe community polygons, their one-feature inferred outer frame, and governed brand/design assets only"
-  local_only: "display CSV, household IDs, addresses, exact coordinates, company-address detail, and draft review notes"
-  data_lifecycle: "record data and drafts remain in tab memory; no service worker, analytics, URL state, IndexedDB, sessionStorage, or localStorage for record data"
+  local_only: "display CSV, household IDs, addresses, exact source/proposed coordinates, company-address detail, draft review notes, and coordinate-adjustment exports"
+  data_lifecycle: "record data, review drafts, and coordinate proposals remain in tab memory; no service worker, analytics, URL state, IndexedDB, sessionStorage, or localStorage for record data; an export occurs only after the officer explicitly requests a local file"
   outbound: "basemaps are opt-in; Google links are explicit and coordinate-only"
   google_sheet_loading: "not implemented; local approved-CSV selection remains the owner-facing default; any later private-Sheet route requires a separately configured Google sign-in flow and verified access design"
 
 qa:
-  tested_at: "2026-09-08 local outer-frame pre-release; live verification pending deployment"
-  source_integrity: "display v2 exact hash/bytes, 29-column order, unique IDs, run ID, and all aggregate invariants passed"
-  parser_unit_contract: "29/29 local Node tests passed after outer-frame integration"
-  responsive: "rendered checks passed at 320, 360, 390, 768, 1024, 1180, and 1440 CSS px; Thai 130% and 200% text/geometry stress checks had no horizontal overflow"
-  accessibility: "keyboard selection, mobile tabs, minimum 44px basemap targets, focus flow, reduced motion, live regions, labels, ARIA references, and light/dark/system states passed automated rendered checks"
-  privacy: "48 tracked files including the one-feature inferred outer-frame GeoJSON; no raw tabular files and no sampled household ID, company-name, or coordinate matches; record storage surfaces empty; no outbound request before opt-in"
+  tested_at: "2026-09-08 local v9/display-v3, coordinate-adjustment, and map-focus release checks; production attestation must be tied to the deployed commit"
+  source_integrity: "display v3 exact file name/hash/bytes, 29-column order, 42,524 unique IDs, rules 1.9.0 run ID, paired soi verification fields, and all enforced aggregate invariants passed"
+  parser_unit_contract: "11/11 focused parser tests passed, including the exact 15,709,401-byte display-v3 file"
+  repository_node_contract: "62/62 local Node tests passed across parser, Worker fallback, coordinate-adjustment, map-focus/legend contracts, explorer contract, and marker grouping"
+  responsive: "The existing shell retains its recorded 320, 360, 390, 768, 1024, 1180, and 1440 CSS-px coverage. A headless Chromium run with the exact display-v3 file measured a 1,098 x 560 CSS-px satellite map in the normal 1536 x 864 layout and 1,438 x 572 CSS px in focused view; at 390 x 844 the selected map tab measured 356 x 405 CSS px, with a closed static legend below it. Physical-device testing remains unavailable."
+  accessibility: "Coordinate-adjustment controls have explicit labels, required-field cues, visible focus styles, status live regions, 44px minimum action targets, drag-independent map placement/nudge controls, reduced-motion behavior, and forced-colors treatment. Map focus mirrors pressed state, makes hidden side panes inert, refreshes Leaflet, and returns focus on Escape; the native legend disclosure is closed by default and keyboard-operable. Production delivery evidence is recorded outside this source-owned card."
+  privacy: "The public working tree includes the one-feature inferred outer-frame GeoJSON but no raw tabular files and no sampled household ID, company-name, or coordinate matches; record storage surfaces empty; no outbound request before opt-in"
   external_maps: "Street View contract generates coordinates plus heading only when supplied; every rendered row has Street View and satellite actions when coordinates exist; Esri and OSM returned image tiles after explicit opt-in"
   color_contrast: "CityChat light field with white: minimum 4.929:1; dark field with mineral ink: minimum 8.238:1"
-  local_browser: "Chrome rendered QA, map/cluster interaction, independent community/frame toggles, isolated failure of either spatial layer, export, fail-closed dataset replacement, embedded/opener safety, brand byte checks, and basemap network checks passed with zero console/page/CSP/failed-response errors"
-  live: "pending GitHub Pages provider success and byte attestation"
+  local_browser: "The exact 15,709,401-byte display-v3 file opened as 42,524 rows with the default 500-row high-priority queue on the pinned r3 Worker path with no browser warning or error. With the Worker deliberately made unavailable, the same file opened as 42,524 rows through the one-shot in-tab fallback with no warning or error. A selected source point was moved 1 m, saved as a draft, made dirty, blocked from export, and restored to the saved baseline with Undo. A separate Chromium run opened satellite imagery, expanded and restored the map, opened and closed the legend, and switched to the 390px mobile map tab with no runtime or console error. Live-byte verification remains release evidence rather than a source inference."
+  live: "must be attested against the current GitHub Pages commit; this source card alone makes no deployment claim"
   native_device_limit: "owner accepted best available browser coverage on 2026-09-08 because no physical iPhone/Safari device is available; responsive emulation, touch targets, Thai 130%, 200% zoom, themes, keyboard, and reduced motion passed, but this is not recorded as a physical-device pass"
 
 claim:
   statement: "Strictly applies the approved v0.9.1 rules within the recorded component scope; it does not claim to be the CityChat public landing-page template."
-  owner_basis: "owner-message:2026-09-08:replace-mixed-v7-files-with-correct-v8-set-and-republish"
+  owner_basis: "owner-request:2026-09-08:update-to-supplied-v9-display-v3-and-add-coordinate-adjustment-and-new-file-export; owner-message:2026-09-08:publish-now"
   owner_outer_frame_basis: "owner-message:2026-09-08:use-the-outermost-frame-of-the-supplied-community-boundaries"
   owner_native_device_basis: "owner-message:2026-09-08:no-physical-device-accept-best-available-testing"

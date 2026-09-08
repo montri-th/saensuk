@@ -21,8 +21,8 @@
     "frontage_road",
     "frontage_road_layer",
     "frontage_road_source",
-    "dist_named_soi_m",
-    "soi_check",
+    "soi_name_check",
+    "soi_name_check_confidence",
     "business_count",
     "business_names",
     "business_status",
@@ -57,12 +57,24 @@
     "ต่ำ": 3102
   });
 
-  const PIPELINE_RUN_ID = "20260908T044243_f3b4ba_38e4d7_rules1.8.0";
+  const DISPLAY_FILE_NAME = "03CityChat__housemapdisplaydataset__v3__20260908.csv";
+  const PIPELINE_RUN_ID = "20260908T071053_f3b4ba_38e4d7_rules1.9.0";
   const FRONTAGE_LAYERS = new Set(["", "municipal", "osm"]);
   const FRONTAGE_SOURCES = new Set(["", "road+soi", "road_name", "nearest"]);
+  const SOI_NAME_CHECKS = new Set([
+    "",
+    "ชื่อถนนและซอยตรวจแล้ว ตรงกับที่ตั้ง",
+    "ตรวจแล้ว บางหลังอยู่นอกบริเวณซอยนั้น",
+    "ชื่อซอยยังต้องให้เทศบาลสอบทาน",
+    "บ้านน้อยเกินตัดสิน",
+    "จุดยังไม่แยกซอย เกาะถนนสายหลัก"
+  ]);
+  const SOI_NAME_CHECK_CONFIDENCES = new Set(["", "สูง", "กลาง", "ต่ำ"]);
 
   const PRODUCTION_POLICY = Object.freeze({
-    expectedSha256: "4f68b1c5a7f962a2ddc06e4e9f7bd6a9959e94c42bd65e2c94354153a04c19d5",
+    expectedFileName: DISPLAY_FILE_NAME,
+    expectedByteLength: 15709401,
+    expectedSha256: "a57f1462fdc5b23f88d90856b0e2556d2d231d6e0b17af3468e133ed2770d8f5",
     expectedRowCount: 42524,
     expectedValidCoordinateCount: 40236,
     expectedNoCoordinateCount: 2288,
@@ -71,9 +83,9 @@
     expectedReviewPriorityDistribution: REVIEW_PRIORITY_DISTRIBUTION,
     expectedBusinessRowCount: 1379,
     expectedBusinessTagCount: 2048,
-    expectedFrontageHeadingCount: 13960,
-    expectedNamedFrontageCount: 8036,
-    expectedMunicipalFrontageCount: 9630,
+    expectedFrontageHeadingCount: 13959,
+    expectedNamedFrontageCount: 8042,
+    expectedMunicipalFrontageCount: 9634,
     expectedPipelineRunId: PIPELINE_RUN_ID,
     maxBytes: 20 * 1024 * 1024,
     maxCellChars: 4096,
@@ -413,10 +425,24 @@
       if (["road+soi", "road_name"].includes(row.frontage_road_source)) namedFrontageCount += 1;
       if (row.frontage_road_layer === "municipal") municipalFrontageCount += 1;
 
-      const distNamedSoiM = numberOrNull(row.dist_named_soi_m, "dist_named_soi_m", rowNumber, {
-        min: 0,
-        max: rules.maxRadiusM
-      });
+      if (!SOI_NAME_CHECKS.has(row.soi_name_check)) {
+        fail("UNKNOWN_SOI_NAME_CHECK", "พบผลตรวจชื่อซอยที่ไม่รองรับ", {
+          rowNumber,
+          columnName: "soi_name_check"
+        });
+      }
+      if (!SOI_NAME_CHECK_CONFIDENCES.has(row.soi_name_check_confidence)) {
+        fail("UNKNOWN_SOI_NAME_CHECK_CONFIDENCE", "พบระดับความมั่นใจของผลตรวจชื่อซอยที่ไม่รองรับ", {
+          rowNumber,
+          columnName: "soi_name_check_confidence"
+        });
+      }
+      if (Boolean(row.soi_name_check) !== Boolean(row.soi_name_check_confidence)) {
+        fail("SOI_NAME_CHECK_CONFLICT", "ผลตรวจชื่อซอยและระดับความมั่นใจต้องมีพร้อมกันหรือเว้นว่างพร้อมกัน", {
+          rowNumber,
+          columnName: "soi_name_check_confidence"
+        });
+      }
 
       const businessCount = numberOrNull(row.business_count, "business_count", rowNumber, {
         min: 0,
@@ -507,7 +533,6 @@
       row.lon = lon;
       row.radius_m = radius;
       row.frontage_heading = frontageHeading;
-      row.dist_named_soi_m = distNamedSoiM;
       row.business_count = businessCount;
       row.review_score = reviewScore;
       rows[rowIndex] = row;
@@ -599,6 +624,9 @@
     if (bytes.byteLength > PRODUCTION_POLICY.maxBytes) {
       fail("FILE_TOO_LARGE", "ไฟล์มีขนาดเกิน 20 MB");
     }
+    if (bytes.byteLength !== PRODUCTION_POLICY.expectedByteLength) {
+      fail("BYTE_LENGTH_MISMATCH", "ขนาดไฟล์ไม่ตรงกับชุดข้อมูลหน้าแผนที่ฉบับที่กำหนด");
+    }
 
     emitProgress(onProgress, { stage: "hashing", completed: 0, total: bytes.byteLength });
     const checksum = await sha256Hex(bytes);
@@ -624,6 +652,9 @@
     if (file.size > PRODUCTION_POLICY.maxBytes) {
       fail("FILE_TOO_LARGE", "ไฟล์มีขนาดเกิน 20 MB");
     }
+    if (file.name !== PRODUCTION_POLICY.expectedFileName) {
+      fail("FILE_NAME_MISMATCH", `ชื่อไฟล์ต้องเป็น ${PRODUCTION_POLICY.expectedFileName}`);
+    }
 
     emitProgress(onProgress, { stage: "reading", completed: 0, total: file.size });
     let buffer;
@@ -641,6 +672,7 @@
     GEOM_DISTRIBUTION,
     CONFIDENCE_DISTRIBUTION,
     REVIEW_PRIORITY_DISTRIBUTION,
+    DISPLAY_FILE_NAME,
     PIPELINE_RUN_ID,
     PRODUCTION_POLICY,
     CsvValidationError,

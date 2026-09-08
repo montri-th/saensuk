@@ -2,6 +2,8 @@
 
 const test = require("node:test");
 const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const os = require("node:os");
 const path = require("node:path");
 const { webcrypto } = require("node:crypto");
 
@@ -30,8 +32,8 @@ function syntheticRow(overrides) {
     frontage_road: "ถนนทดสอบ",
     frontage_road_layer: "municipal",
     frontage_road_source: "road+soi",
-    dist_named_soi_m: "10.5",
-    soi_check: "ตรงซอยที่ระบุ",
+    soi_name_check: "ชื่อถนนและซอยตรวจแล้ว ตรงกับที่ตั้ง",
+    soi_name_check_confidence: "สูง",
     business_count: "2",
     business_names: "บริษัท ทดสอบ จำกัด | ห้างหุ้นส่วน ทดสอบ จำกัด",
     business_status: "จดทะเบียนอยู่",
@@ -60,8 +62,8 @@ function validSyntheticRows(overridesByRow = {}) {
       frontage_road: "",
       frontage_road_layer: "",
       frontage_road_source: "",
-      dist_named_soi_m: "",
-      soi_check: "",
+      soi_name_check: "",
+      soi_name_check_confidence: "",
       business_count: "0",
       business_names: "",
       business_status: "",
@@ -85,8 +87,8 @@ function validSyntheticRows(overridesByRow = {}) {
       frontage_road: "",
       frontage_road_layer: "",
       frontage_road_source: "",
-      dist_named_soi_m: "",
-      soi_check: "",
+      soi_name_check: "",
+      soi_name_check_confidence: "",
       business_count: "0",
       business_names: "",
       business_status: "",
@@ -136,19 +138,21 @@ test("production constants match the approved 29-column display contract", () =>
     "frontage_road",
     "frontage_road_layer",
     "frontage_road_source",
-    "dist_named_soi_m",
-    "soi_check"
+    "soi_name_check",
+    "soi_name_check_confidence"
   ]);
   assert.equal(parser.PRODUCTION_POLICY.expectedRowCount, 42524);
-  assert.equal(parser.PRODUCTION_POLICY.expectedSha256, "4f68b1c5a7f962a2ddc06e4e9f7bd6a9959e94c42bd65e2c94354153a04c19d5");
+  assert.equal(parser.PRODUCTION_POLICY.expectedFileName, "03CityChat__housemapdisplaydataset__v3__20260908.csv");
+  assert.equal(parser.PRODUCTION_POLICY.expectedByteLength, 15709401);
+  assert.equal(parser.PRODUCTION_POLICY.expectedSha256, "a57f1462fdc5b23f88d90856b0e2556d2d231d6e0b17af3468e133ed2770d8f5");
   assert.equal(parser.PRODUCTION_POLICY.expectedValidCoordinateCount, 40236);
   assert.equal(parser.PRODUCTION_POLICY.expectedNoCoordinateCount, 2288);
   assert.equal(parser.PRODUCTION_POLICY.expectedBusinessRowCount, 1379);
   assert.equal(parser.PRODUCTION_POLICY.expectedBusinessTagCount, 2048);
-  assert.equal(parser.PRODUCTION_POLICY.expectedFrontageHeadingCount, 13960);
-  assert.equal(parser.PRODUCTION_POLICY.expectedNamedFrontageCount, 8036);
-  assert.equal(parser.PRODUCTION_POLICY.expectedMunicipalFrontageCount, 9630);
-  assert.equal(parser.PIPELINE_RUN_ID, "20260908T044243_f3b4ba_38e4d7_rules1.8.0");
+  assert.equal(parser.PRODUCTION_POLICY.expectedFrontageHeadingCount, 13959);
+  assert.equal(parser.PRODUCTION_POLICY.expectedNamedFrontageCount, 8042);
+  assert.equal(parser.PRODUCTION_POLICY.expectedMunicipalFrontageCount, 9634);
+  assert.equal(parser.PIPELINE_RUN_ID, "20260908T071053_f3b4ba_38e4d7_rules1.9.0");
   assert.deepEqual(parser.REVIEW_PRIORITY_DISTRIBUTION, { "สูง": 500, "กลาง": 2044, "ต่ำ": 3102 });
 });
 
@@ -186,7 +190,8 @@ test("synthetic display dataset is sanitized, typed, and summarized", () => {
   assert.equal(result.rows[0].review_flags, "safeflag");
   assert.equal(result.rows[0].lat, 13);
   assert.equal(result.rows[0].frontage_heading, 90);
-  assert.equal(result.rows[0].dist_named_soi_m, 10.5);
+  assert.equal(result.rows[0].soi_name_check, "ชื่อถนนและซอยตรวจแล้ว ตรงกับที่ตั้ง");
+  assert.equal(result.rows[0].soi_name_check_confidence, "สูง");
   assert.equal(result.rows[0].business_count, 2);
   assert.equal(result.rows[0].review_score, 200);
   assert.equal(result.rows[1].radius_m, 15.5);
@@ -273,4 +278,76 @@ test("heading, business, review, and run provenance violations fail closed", () 
     () => parser.parseAndValidateText(toCsv(wrongRun), syntheticPolicy),
     (error) => error.code === "PIPELINE_RUN_MISMATCH"
   );
+});
+
+test("soi-name verification fields use exact paired values", () => {
+  const missingConfidence = validSyntheticRows({
+    0: { soi_name_check_confidence: "" }
+  });
+  assert.throws(
+    () => parser.parseAndValidateText(toCsv(missingConfidence), syntheticPolicy),
+    (error) => error.code === "SOI_NAME_CHECK_CONFLICT"
+  );
+
+  const orphanConfidence = validSyntheticRows({
+    1: { soi_name_check: "", soi_name_check_confidence: "กลาง" }
+  });
+  assert.throws(
+    () => parser.parseAndValidateText(toCsv(orphanConfidence), syntheticPolicy),
+    (error) => error.code === "SOI_NAME_CHECK_CONFLICT"
+  );
+
+  const unknownCheck = validSyntheticRows({
+    0: { soi_name_check: "ตรงกับที่ตั้ง" }
+  });
+  assert.throws(
+    () => parser.parseAndValidateText(toCsv(unknownCheck), syntheticPolicy),
+    (error) => error.code === "UNKNOWN_SOI_NAME_CHECK"
+  );
+
+  const unknownConfidence = validSyntheticRows({
+    0: { soi_name_check_confidence: "high" }
+  });
+  assert.throws(
+    () => parser.parseAndValidateText(toCsv(unknownConfidence), syntheticPolicy),
+    (error) => error.code === "UNKNOWN_SOI_NAME_CHECK_CONFIDENCE"
+  );
+});
+
+test("verified file checks exact v3 name and byte length before parsing", async () => {
+  await assert.rejects(
+    parser.parseVerifiedFile({
+      name: "renamed.csv",
+      size: parser.PRODUCTION_POLICY.expectedByteLength,
+      arrayBuffer: async () => new ArrayBuffer(0)
+    }),
+    (error) => error.code === "FILE_NAME_MISMATCH"
+  );
+
+  await assert.rejects(
+    parser.parseVerifiedBytes(new Uint8Array(1)),
+    (error) => error.code === "BYTE_LENGTH_MISMATCH"
+  );
+});
+
+const approvedDatasetPath = process.env.SAENSUK_V3_DATASET_PATH
+  || path.join(os.homedir(), "Downloads", parser.PRODUCTION_POLICY.expectedFileName);
+
+test("approved v3 display file passes the production parser", {
+  skip: !fs.existsSync(approvedDatasetPath)
+}, async () => {
+  const bytes = fs.readFileSync(approvedDatasetPath);
+  const buffer = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
+  const result = await parser.parseVerifiedFile({
+    name: path.basename(approvedDatasetPath),
+    size: bytes.byteLength,
+    arrayBuffer: async () => buffer
+  });
+
+  assert.equal(result.rows.length, 42524);
+  assert.equal(result.summary.sha256, parser.PRODUCTION_POLICY.expectedSha256);
+  assert.equal(result.summary.byteLength, parser.PRODUCTION_POLICY.expectedByteLength);
+  assert.equal(result.summary.frontageHeadingCount, 13959);
+  assert.equal(result.summary.namedFrontageCount, 8042);
+  assert.equal(result.summary.municipalFrontageCount, 9634);
 });
