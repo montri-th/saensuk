@@ -1,12 +1,13 @@
 artifact: saensuk-public-house-map
-artifact_release: "public-20261111"
+artifact_release: "public-20261112-r1"
 release_status: "source_candidate_live_attestation_external"
-release_authority: "owner-message:2026-11-11:open-public-and-publish-existing-site"
+release_authority: "owner-message:2026-11-12:publish-existing-site; explicit-followup:public-house-numbers-and-roads"
 audience: [public_reader, municipal_officer]
 locale: [th]
-job: "Open all available points immediately, with stronger source evidence first."
-primary_action: "Inspect all points on the map."
+job: "Open all points immediately; search house numbers and inspect the specific contribution of the new building register."
+primary_action: "Search a house number or inspect working parcel fallbacks."
 historical_baseline_commit: "de79a43e6919b58bc8bb3c25948aaed08b767699"
+previous_public_commit: "dca7dcc7b2fa0b1fcd9f8abd98c1c7b21bae4dca"
 
 lds:
   document_id: "lds-0.9.7-landometer-standalone-r1"
@@ -32,7 +33,7 @@ surface:
   direction: "D low; B middle; A/A0 high; C retains source no-data status."
   non_color_cues: "Tier labels, geometry shapes, A0 centre mark, hollow dashed parcel fallback."
   opacity: "Data marks use opaque governed colours; uncertainty circles have no tinted fill."
-  decorative_left_rails: "Removed from the affected summary stats; focus outlines retained."
+  decorative_left_rails: "Removed from precision selection controls and affected summary stats; focus outlines retained."
 
 identity:
   asset_manifest: "governance/assets.json"
@@ -65,6 +66,8 @@ data:
   presentation_order: [A0, A, B, D, C]
   paint_order: "Lower-evidence points first; A0/A/B remain on top."
   candidates: 70
+  assessment: "governance/building-register-assessment.json"
+  quick_inspection_presets: {working_fallback: 34, previously_missing: 4, comparison_only: 36}
   candidates_without_prior_parcel_id: 68
   candidates_with_prior_parcel_conflict: 2
   working_parcel_fallbacks: 34
@@ -80,23 +83,25 @@ data:
   boundaries: "23-community context and its dissolved exterior are not legal or cadastral boundaries."
 
 privacy:
-  public_payload: "Minimized coordinate records, controlled road/community/place labels, confidence/status and separate parcel candidates."
-  excluded: "Owners, house numbers, registration IDs, parcel/building IDs, contacts, business names, reviewer information and free-text addresses."
-  exposure: "Coordinates are public and downloadable; geographic re-identification remains possible."
+  public_payload: "Owner-approved house numbers, controlled road/community/place labels, coordinates, source evidence/status and separate parcel candidates."
+  house_number_authority: "Explicit current user replies on 2026-11-12 approve house numbers and roads on the existing public site."
+  excluded: "Owner names, registration IDs, parcel/building IDs, contacts, business names, reviewer information, trok/soi and free-text addresses."
+  exposure: "House numbers, roads and coordinates are public and downloadable."
   raw_inputs: "No private CSV, XLSX, LTAX records or private comparison report deployed."
   mutation: "Public mode is read-only; no review/export/adjustment controls or backend submissions."
   outbound: "Basemaps off until opt-in; Google links are explicit and coordinate-only."
   authentication: "Not required by owner's public-release decision; no email allowlist embedded."
 
 qa:
-  tested_at: "2026-11-11"
-  node: "79/79 tests pass with the exact private display CSV supplied outside the repository."
-  python_projection: "11/11 tests pass."
-  independent_data_audit: "All 42,524 source field tuples and 70 candidates compared exactly; source missingness and confidence retained."
+  tested_at: "2026-11-12"
+  node: "83/83 tests pass with the exact private display CSV supplied outside the repository."
+  python_projection: "14/14 tests pass."
+  independent_data_audit: "70 candidates and 34 fallbacks independently reconstructed; none of the 34 has a changed-code building history. Aggregate assessment recorded separately."
   gzip: "Deterministic bytes, content-addressed name, compressed SHA verified before decompression."
   token_aliases: "27 categorical aliases resolve current fill definitions; analytical light/dark anchors match."
-  local_browser: "Not run: cloud browser cannot reach local HTTP preview (ERR_CONNECTION_REFUSED)."
+  local_browser: "Observed automatic load, house-number/Thai-digit/house-plus-road search, no-results recovery, presets 34/4/36, unchanged source missingness and keyboard 3px focus in local HTTP preview. No console errors observed."
   live_browser: "Pending deployed-origin inspection; no source inference substitutes for this."
   physical_device: "Not tested."
-  responsive_current: "Current narrow/touch matrix not yet observed; historical 2026-09-08 results are not reused as a fresh pass."
+  responsive_current: "1440x1000 and 390x844 observed; light/dark rendered. Additional temporary 130% desktop and 200% mobile root-font simulations had no document or evidence-table horizontal overflow. These are text-size simulations, not native browser-zoom or physical-device passes."
+  static_artifact_checker: "FAIL on pre-existing Leaflet vendor literal colors and unresolved color functions in existing vendor/styles/explorer rules. No new authored color literals introduced."
   certification: "No formal DS conformance or signed artifact-promotion level claimed."

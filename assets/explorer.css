@@ -1803,6 +1803,124 @@ html:not([data-top-level-safe="true"]) [data-file-label] {
   margin-block: var(--space-3);
 }
 
+.building-update-tools {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  border-block: 1px solid var(--border-default);
+  background: var(--surface-raised);
+}
+
+.building-update-tools h3,
+.building-update-tools p {
+  margin: 0;
+}
+
+.building-update-tools h3 {
+  margin-block-end: var(--space-2);
+  font-size: 1.25rem;
+}
+
+.building-update-tools p,
+.building-evidence-summary p {
+  color: var(--text-secondary);
+  max-width: 75ch;
+}
+
+.public-house-search-note {
+  margin: 0 0 var(--space-3);
+  color: var(--text-metadata);
+  font-size: 0.875rem;
+}
+
+.building-update-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.building-update-actions button {
+  min-height: 48px;
+  white-space: normal;
+  text-align: center;
+}
+
+.building-update-actions button[aria-pressed="true"] {
+  background: var(--surface-soft);
+  border-color: var(--border-emphasis);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.building-evidence-summary {
+  margin-block: var(--space-8);
+  padding-block: var(--space-6);
+  border-block: 1px solid var(--border-default);
+}
+
+.building-evidence-table {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.building-evidence-table table {
+  min-width: 0;
+  width: 100%;
+  table-layout: fixed;
+}
+
+.building-evidence-table th,
+.building-evidence-table td {
+  white-space: normal;
+  overflow-wrap: break-word;
+  vertical-align: top;
+}
+
+.building-evidence-table th:first-child {
+  width: 58%;
+}
+
+.building-evidence-table tbody th {
+  font-weight: 400;
+}
+
+.building-evidence-summary .building-evidence-note {
+  margin-block: var(--space-4) 0;
+  font-size: 0.875rem;
+}
+
+.building-history-note {
+  margin-block-start: var(--space-4);
+}
+
+.building-history-note summary {
+  min-height: 48px;
+  padding-block: var(--space-3);
+  color: var(--text-primary);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.building-history-note p {
+  margin-block: var(--space-3);
+}
+
+@media (max-width: 600px) {
+  .building-update-tools {
+    padding: var(--space-4);
+  }
+
+  .building-update-actions button {
+    flex: 1 1 100%;
+  }
+
+  .building-evidence-table th,
+  .building-evidence-table td {
+    padding-inline: var(--space-2);
+    font-size: 0.875rem;
+  }
+}
+
 .public-presets button {
   flex: 1 1 9rem;
   min-height: 44px;

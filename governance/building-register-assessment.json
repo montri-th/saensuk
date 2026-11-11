@@ -1,0 +1,119 @@
+{
+  "schema_version": "saensuk-uplift-assessment-1",
+  "assessment_date": "2026-11-12",
+  "sources": [
+    {
+      "role": "municipal_building_register_received_20261111",
+      "sha256": "36b5c91e8de4f587468e20c00175dba18cba2d8b4f38e62779abe7c6f1cb4a66",
+      "rows": 16953
+    },
+    {
+      "role": "supplementary_historical_building_register_20260904",
+      "sha256": "4a6070ff73f4e2f1775deac140ec92b0f8c34f59e77decf821d00cfad9c72283",
+      "rows": 14577
+    },
+    {
+      "role": "baseline_display_20260908",
+      "sha256": "a57f1462fdc5b23f88d90856b0e2556d2d231d6e0b17af3468e133ed2770d8f5",
+      "rows": 42524
+    },
+    {
+      "role": "baseline_master_20260908",
+      "sha256": "d0192f1676b6e646e76d7e93cba28e2e3df14af24792aeb5dd8ea2900f960d1b",
+      "rows": 42524
+    },
+    {
+      "role": "historical_ltax_parcels_20260904",
+      "sha256": "38e4d737533f7e639ce0ff43c631c13bc471bbe19cd44f76bcb225a5ec12eb06",
+      "rows": 30110
+    }
+  ],
+  "received_register": {
+    "building_rows": 16953,
+    "unique_building_ids": 16953,
+    "unique_parcel_codes": 14546,
+    "house_number_present": 14826,
+    "house_number_missing": 2127,
+    "road_present": 15759,
+    "road_missing": 1194,
+    "house_registry_id_present": 0,
+    "house_registry_id_missing": 16953,
+    "coordinate_columns": 0,
+    "soi_columns": 0
+  },
+  "historical_register_delta": {
+    "historical_building_rows": 14577,
+    "net_additional_rows": 2376,
+    "net_growth_percent": 16.3,
+    "added_building_ids": 2536,
+    "removed_building_ids": 160,
+    "retained_building_ids": 14417,
+    "retained_ids_with_changed_parcel_code": 5069,
+    "retained_ids_changed_code_same_raw_house_and_road": 4943,
+    "retained_ids_changed_house_number": 308,
+    "retained_ids_changed_road": 68
+  },
+  "direct_historical_ltax_code_join": {
+    "matched_distinct_codes": 5992,
+    "unmatched_distinct_codes": 8554,
+    "matched_building_rows": 7437,
+    "unmatched_building_rows": 9516
+  },
+  "published_candidate_independent_audit": {
+    "candidate_comparisons": 70,
+    "guarded_working_parcel_positions": 34,
+    "guarded_from_approximate_D": 30,
+    "guarded_from_missing_C": 4,
+    "comparison_only": 36,
+    "no_known_prior_parcel_conflict": 68,
+    "known_prior_parcel_conflicts": 2,
+    "auxiliary_structure_candidates": 4,
+    "other_nonresidential_candidates": 6,
+    "candidates_from_new_building_ids": 17,
+    "candidates_from_existing_building_ids": 53,
+    "candidates_with_changed_parcel_code": 1,
+    "guarded_positions_with_changed_parcel_code": 0,
+    "newly_field_verified": 0
+  },
+  "historical_identity_continuity": {
+    "unmatched_current_codes_with_unique_stable_building_history_to_historical_ltax": 4564,
+    "current_codes_with_multiple_historical_codes": 4,
+    "historical_codes_with_multiple_current_codes": 3,
+    "unique_address_CD_records_available_for_historical_review_only": 6,
+    "historical_review_D": 4,
+    "historical_review_C": 2,
+    "novel_current_location_evidence": false
+  },
+  "coordinate_coverage": {
+    "total_records": 42524,
+    "original_with_coordinates": 40236,
+    "original_without_coordinates": 2288,
+    "working_with_positions": 40240,
+    "working_without_positions": 2284,
+    "newly_working_positioned_records": 4,
+    "guarded_changed_display_positions": 30,
+    "guarded_share_total_percent": 0.08,
+    "position_coverage_percentage_point_change": 0.0094,
+    "measured_accuracy_improvement_percent": null
+  },
+  "method": {
+    "attachment_instructions_treated_as_request": false,
+    "source_files_modified": false,
+    "external_geocoding_used": false,
+    "building_identity_delta": "Exact stable building identifier between supplied historical supplementary CSV and received workbook.",
+    "parcel_crosswalk": "Exact new parcel code to historical LTAX parcel code; no suffix/prefix guesses.",
+    "candidate_reconstruction": "Existing 70 public candidates rejoined locally to approved baseline display order and original LTAX map coordinates; exactly one received building source row per candidate.",
+    "candidate_guards": "Retain original source fields. Only C/D; no prior parcel conflict, auxiliary or other nonresidential category. D displacement at most 500 m and no more than original radius. C requires both original coordinates missing.",
+    "historical_only": "Stable building identity plus unchanged raw house number and road indicates historical continuity; never promoted to current geometry or added to working positions.",
+    "accuracy_limit": "No field truth sample is provided. Growth, matches, displacements and point containment are not measured household-position accuracy."
+  },
+  "attached_drafts": {
+    "review_rows": 2,
+    "review_rows_still_draft_unverified": 2,
+    "review_rows_recorded_plate_matches": 2,
+    "point_adjustment_rows": 1,
+    "point_adjustment_rows_still_draft_unverified": 1,
+    "explicit_QA_demo_adjustments": 1,
+    "drafts_written_back_to_source": 0
+  }
+}

@@ -5,7 +5,7 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 const zlib = require("node:zlib");
-const { validatePublicSnapshot, publicEvidenceRank, isPublicParcelFallback, publicDisplayPoint } = require("../assets/record-explorer.js");
+const { validatePublicSnapshot, publicEvidenceRank, isPublicParcelFallback, publicDisplayPoint, matchesPublicPreset, matchesPublicSearch, PUBLIC_PRESETS } = require("../assets/record-explorer.js");
 
 const root = path.join(__dirname, "..");
 const manifest = JSON.parse(fs.readFileSync(path.join(root, "governance", "public-data-release.json"), "utf8"));
@@ -123,6 +123,53 @@ test("working display uses only the 34 conservative parcel fallbacks and preserv
   assert.match(source, /ระดับแปลงสำรอง—ยังไม่ยืนยัน/);
   assert.match(source, /layoutGroups\(this\._indices, state\.mapRows\)/);
   assert.match(source, /if \(state\.publicMode && isPublicParcelFallback\(row\)\) continue/);
+});
+
+test("public presets isolate the 34 working fallbacks, four newly displayed records and 36 comparison-only candidates", () => {
+  const original = JSON.stringify(snapshot.records);
+  const expectedCounts = { all: 42524, "strong-source": 12713, candidates: 70, "working-fallback": 34, "new-position": 4, "comparison-only": 36, "no-conflict": 68, conflict: 2 };
+  assert.deepEqual(PUBLIC_PRESETS, Object.keys(expectedCounts));
+  for (const [preset, count] of Object.entries(expectedCounts)) {
+    assert.equal(snapshot.records.filter((row) => matchesPublicPreset(row, preset)).length, count, preset);
+  }
+  const working = snapshot.records.filter((row) => matchesPublicPreset(row, "working-fallback"));
+  const comparisonOnly = snapshot.records.filter((row) => matchesPublicPreset(row, "comparison-only"));
+  assert.equal(new Set([...working, ...comparisonOnly].map((row) => row.public_id)).size, 70);
+  assert.ok(working.every((row) => !matchesPublicPreset(row, "comparison-only")));
+  const newPositions = snapshot.records.filter((row) => matchesPublicPreset(row, "new-position"));
+  assert.ok(newPositions.every((row) => /^C/u.test(row.tier) && row.lat === null && row.lon === null && isPublicParcelFallback(row)));
+  assert.ok(comparisonOnly.every((row) => row.candidate && !isPublicParcelFallback(row)));
+  assert.equal(snapshot.records.filter((row) => matchesPublicPreset(row, "unrecognized-preset")).length, 0);
+  assert.equal(JSON.stringify(snapshot.records), original);
+});
+
+test("numeric public searches match the complete house number rather than display IDs or numeric substrings", () => {
+  const original = JSON.stringify(snapshot.records);
+  const expected = snapshot.records.filter((row) => row.house_no === "657");
+  const actual = snapshot.records.filter((row) => matchesPublicSearch(row, "657"));
+  assert.ok(expected.length > 0);
+  assert.deepEqual(actual.map((row) => row.public_id), expected.map((row) => row.public_id));
+  assert.equal(matchesPublicSearch({ public_id: "P000657", house_no: "127" }, "657"), false);
+  assert.equal(matchesPublicSearch({ public_id: "P000001", house_no: "1657" }, "657"), false);
+  assert.equal(matchesPublicSearch({ public_id: "P000002", house_no: "6571" }, "657"), false);
+  assert.equal(matchesPublicSearch({ public_id: "P000003", house_no: "657/1" }, "657"), false);
+  assert.deepEqual(snapshot.records.filter((row) => matchesPublicSearch(row, "๖๕๗")).map((row) => row.public_id), expected.map((row) => row.public_id));
+  assert.equal(JSON.stringify(snapshot.records), original);
+});
+
+test("public search combines an exact house number with all road words while retaining text and P-ID searches", () => {
+  const row = { public_id: "P000657", house_no: "22/9 ก.", road: "ถนน บางแสนสาย 1", community: "ชุมชน แสนสุข", place_type: "บ้าน" };
+  assert.equal(matchesPublicSearch(row, "๒๒/๙ ก. บางแสนสาย 1"), true);
+  assert.equal(matchesPublicSearch(row, "22/9ก บางแสนสาย"), true);
+  assert.equal(matchesPublicSearch(row, "22/9 ก. บางแสนสาย สุขุมวิท"), false);
+  assert.equal(matchesPublicSearch(row, "22/9 ข. บางแสนสาย"), false);
+  assert.equal(matchesPublicSearch(row, "ถนน บางแสนสาย 1"), true);
+  assert.equal(matchesPublicSearch(row, "บางแสนสาย แสนสุข"), true);
+  assert.equal(matchesPublicSearch(row, "P000657 แสนสุข"), true);
+  assert.equal(matchesPublicSearch(row, "P000657 สุขุมวิท"), false);
+  assert.equal(matchesPublicSearch(row, "  "), true);
+  assert.equal(matchesPublicSearch({ ...row, house_no: "4//44" }, "4//44"), true);
+  assert.equal(matchesPublicSearch({ ...row, house_no: "4//44" }, "4/44"), false);
 });
 
 test("fallback excludes conflict, nonresidential, auxiliary, long or out-of-radius shifts and stronger tiers", () => {

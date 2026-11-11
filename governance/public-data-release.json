@@ -1,17 +1,18 @@
 {
-  "schema_version": "saensuk-public-data-review-1",
-  "release_id": "public-20261111",
-  "owner_authorization": "owner-message:2026-11-11:เปิด public เลย",
+  "schema_version": "saensuk-public-data-review-2",
+  "release_id": "public-20261112",
+  "owner_authorization": "owner-message:2026-11-12:public-house-number-and-road-approved",
+  "previous_owner_authorization": "owner-message:2026-11-11:เปิด public เลย",
   "audience": "public",
   "public_asset": {
-    "path": "assets/data/public-housepoints-43a6b7022e2b.json.gz",
-    "sha256": "43a6b7022e2b81e95e7a5ba80c7eec611e15adcf3f36b98fd42181705062c197",
-    "bytes": 327589,
+    "path": "assets/data/public-housepoints-74080982aded.json.gz",
+    "sha256": "74080982aded398033ab40f71062557539fec09829d54df95db9a6e3cf3fd54f",
+    "bytes": 453902,
     "mime_type": "application/gzip",
     "stored_compression": "gzip",
     "decoded": {
-      "sha256": "d619529e8d2ae64bb40eeec1fac4122b6518cb510d8268d9d39481acdbe9321d",
-      "bytes": 15903624,
+      "sha256": "a14ffc3bc643dc5316fac1e10a8bf191fb559e6773a9ca1da42552730ccc9493",
+      "bytes": 16699447,
       "mime_type": "application/json"
     }
   },
@@ -39,13 +40,15 @@
     "display_v3_sha256": "a57f1462fdc5b23f88d90856b0e2556d2d231d6e0b17af3468e133ed2770d8f5",
     "private_candidate70_sha256": "bb68abbca7bea680b7f1d40bb72d51f3feabf45b9077a6e227ee3dbb4bc1ae03",
     "ltax_sha256": "38e4d737533f7e639ce0ff43c631c13bc471bbe19cd44f76bcb225a5ec12eb06",
-    "buildings_received_sha256": "36b5c91e8de4f587468e20c00175dba18cba2d8b4f38e62779abe7c6f1cb4a66"
+    "buildings_received_sha256": "36b5c91e8de4f587468e20c00175dba18cba2d8b4f38e62779abe7c6f1cb4a66",
+    "previous_public_sha256": "43a6b7022e2b81e95e7a5ba80c7eec611e15adcf3f36b98fd42181705062c197"
   },
   "fields_allowed": [
     "candidate",
     "community",
     "confidence_band",
     "geom_level",
+    "house_no",
     "lat",
     "lon",
     "place_type",
@@ -67,7 +70,6 @@
     "owner_names",
     "contact_details",
     "house_reg_id",
-    "house_no",
     "trok",
     "soi",
     "source_parcel_id",
@@ -77,7 +79,7 @@
     "reviewer_metadata",
     "review_notes"
   ],
-  "disclosure": "Contains source household point coordinates and separate unverified parcel candidate coordinates under explicit owner authorization. Removing direct identifiers is data minimization, not a guarantee of anonymity; geographic context may allow re-identification.",
+  "disclosure": "Contains original source house numbers, controlled road/community labels, household point coordinates and separate unverified parcel candidate coordinates under explicit owner authorization. These public addresses and coordinates can identify a location; owner names, municipal household identifiers, parcel identifiers and contact details remain excluded.",
   "public_id_meaning": "Snapshot-specific display sequence after geographic/category sorting; not a municipal registry identifier.",
   "candidate_policy": {
     "status": "candidate-unverified",
@@ -123,9 +125,14 @@
   "checks": {
     "all_private_household_ids_absent": 42524,
     "private_candidate_parcel_and_building_ids_absent": 70,
+    "candidate_identifier_check": "inherited hash-pinned public projection; all candidate values unchanged",
     "strict_field_allowlist": true,
     "controlled_text_vocabularies": true,
+    "strict_house_number_grammar": true,
+    "house_numbers_preserved_from_exact_source": 42524,
     "source_hashes_match": true,
-    "aggregate_counts_match": true
+    "aggregate_counts_match": true,
+    "previous_public_source_fields_equal": 42524,
+    "only_added_record_field": "house_no"
   }
 }
