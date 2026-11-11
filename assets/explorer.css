@@ -951,8 +951,7 @@ html:not([data-top-level-safe="true"]) [data-file-label] {
   grid-template-columns: minmax(0, 1fr) auto;
   gap: var(--space-2) var(--space-3);
   padding: var(--space-4);
-  border: 0;
-  border-left: 5px solid transparent;
+  border: 1px solid transparent;
   background: transparent;
   color: var(--text-primary);
   text-align: left;
@@ -964,7 +963,7 @@ html:not([data-top-level-safe="true"]) [data-file-label] {
 }
 
 .record-button[aria-current="true"] {
-  border-left-color: var(--citychat-primary);
+  border-color: var(--border-emphasis);
   background: var(--surface-blue-tint);
 }
 
@@ -1686,7 +1685,7 @@ html:not([data-top-level-safe="true"]) [data-file-label] {
 .adjustment-guidance {
   margin: 0;
   padding: var(--space-3);
-  border-left: 3px solid var(--citychat-primary);
+  border: 1px solid var(--border-default);
   background: var(--surface-raised);
   color: var(--text-secondary);
   font-size: 0.8125rem;
@@ -1694,7 +1693,7 @@ html:not([data-top-level-safe="true"]) [data-file-label] {
 
 .adjustment-guidance[data-level="place"],
 .adjustment-guidance[data-level="move"] {
-  border-left-color: var(--state-warning-fg);
+  border-color: var(--state-warning-fg);
 }
 
 .adjustment-required-note {
@@ -1862,7 +1861,7 @@ html:not([data-top-level-safe="true"]) [data-file-label] {
 .review-scope-note {
   margin: 0;
   padding: var(--space-2) var(--space-3);
-  border-left: 3px solid var(--citychat-primary);
+  border: 1px solid var(--border-default);
   background: var(--surface-blue-tint);
   color: var(--text-secondary);
   font-size: 0.75rem;

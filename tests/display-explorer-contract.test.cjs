@@ -54,7 +54,7 @@ test("top-level and embedding-blocked pages share the current public visual bund
     "assets/color-srgb-10.production.css?v=20261111",
     "assets/tokens.css?v=20261111-public",
     "assets/styles.css?v=20261111-public",
-    "assets/explorer.css?v=20261111-public"
+    "assets/explorer.css?v=20261111-public-r3"
   ]) {
     assert.ok(html.includes(asset));
     assert.ok(embedded.includes(asset));
