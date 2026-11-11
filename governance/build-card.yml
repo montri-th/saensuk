@@ -1,143 +1,102 @@
-artifact: saensuk-house-geocode-review-desk
-artifact_release: "v9-display-v3-coordinate-adjustment-2026-09-08"
-release_status: "source_settled_live_attestation_external"
-release_authority: "owner-message:2026-09-08:publish-now"
-audience: [municipal_officer, municipal_executive]
+artifact: saensuk-public-house-map
+artifact_release: "public-20261111"
+release_status: "source_candidate_live_attestation_external"
+release_authority: "owner-message:2026-11-11:open-public-and-publish-existing-site"
+audience: [public_reader, municipal_officer]
 locale: [th]
+job: "Open all available points immediately, with stronger source evidence first."
+primary_action: "Inspect all points on the map."
+historical_baseline_commit: "de79a43e6919b58bc8bb3c25948aaed08b767699"
 
 lds:
-  release: "0.9.1"
-  authoring: "0.9.1-r8"
-  machine: "v0.9.1-mp7"
-  colorSet: "color-srgb-05"
-  package_validation: "passed 5,394 checks before release implementation"
-  production_color_css: "assets/color-srgb-05.production.css"
-  production_color_css_sha256: "3bac2499df594bbf6b016b650ee7763f7ec093e33bc5f28239144e0677281d5c"
-  color_alias_contract: "artifact aliases resolve to the verified --ldm-* production variables; analytical and CityChat colors have no embedded fallback hex values"
-
+  document_id: "lds-0.9.7-landometer-standalone-r1"
+  release: "v0.9.7-owner.1"
+  colorSet: "color-srgb-10"
+  doc: "project-source:Landometer-Design-System-v0.9.7.md"
+  doc_sha256: "d3085cbc0a50195f1cbf0c77b1d77c0d19b84364daf2948eb367348d65432d96"
+  production_color_css: "assets/color-srgb-10.production.css"
+  production_color_css_sha256: "3d34924a249804c4573da5b136303141b67c47f24a3f00dd5d7b86b521d9dfc8"
+  historical_projection: "color-srgb-05 remains immutable for rollback, not active authority."
 addon:
-  release: "0.9.1"
-  doc: "project-source:CityChat-DS-Addon-v0.9.1-normative.md"
-  doc_sha256: "6956ee39bb0e83036efd9ef730bd0200e97e1facf3f39ca2195a5da7de65d3e3"
-  reference_css: "verified-handoff:templates/citychat-landing/citychat.css"
-  reference_css_sha256: "58749c3a88290019175d3e568a047f92bc552f38298943df4e7f7bbdcfab0e16"
-  conformance_scope: "CC-SURF-01 and CityChat identity/motif roles used by this focused review desk"
+  document_id: "citychat-addon-0.9.2-lds-0.9.7-r1"
+  release: "0.9.2"
+  doc: "project-source:CityChat-Add-on-v0.9.2-for-LDS-v0.9.7.md"
+  doc_sha256: "345ef4054d7a646a73a8b369549c58c8b11d3190e39de5aa0f59704d6a3223ad"
+  base_document_sha256: "d3085cbc0a50195f1cbf0c77b1d77c0d19b84364daf2948eb367348d65432d96"
 
 surface:
   gradient_token: "--product-citychat-gradient"
   foreground_contract: "--on-product-citychat*"
-  canvas_heading_token: "--citychat-heading"
-  theme_behavior: "light theme uses deep product field; dark theme uses light product field"
-  analytical_color_contract: "three governed confidence anchors; A0 and A share the high anchor and are distinguished by an A0 centre mark; C is no-data"
+  analytical_family: confidence
+  confidence_anchors_both_themes: ["#EEF4EB", "#66AEDF", "#236A5E"]
+  direction: "D low; B middle; A/A0 high; C retains source no-data status."
+  non_color_cues: "Tier labels, geometry shapes, A0 centre mark, hollow dashed parcel fallback."
+  opacity: "Data marks use opaque governed colours; uncertainty circles have no tinted fill."
+  decorative_left_rails: "Removed from the affected summary stats; focus outlines retained."
 
 identity:
   asset_manifest: "governance/assets.json"
-  raster_verification_manifest: "governance/image-assets.json"
-  hero_lockup: "exact verified bytes, surface-selected, no carrier, filter, or crop"
-  navbar_identity: "exact Landometer symbol plus exact CityChat v0.9.1 surface-selected full lockup; owner-approved for this Saensuk navbar only"
-  favicon: "exact hash-bound CityChat browser-tab PNG; owner-approved for this Saensuk favicon role only"
-  conversation_motif: "decorative governed derivative, surface-selected, empty alt"
-  prohibited_roles: [touch_icon, maskable_icon, standalone_compact_logo, social_preview, social_avatar, evidence]
+  raster_manifest: "governance/image-assets.json"
+  immutable_bytes: "Existing CityChat lockups, conversation motif, Landometer symbol and favicon retained."
+  historical_names: "v091 filenames preserve asset identity, not an active design-version pin."
+  permissions: "Role-scoped historical owner approvals remain applicable to the exact unchanged bytes."
+  gaps: "No new approved CityChat six-size icon set or OG artwork supplied; none invented."
 
-nav:
-  preset: "focused-review-desk existing header"
-  applicability: "The cross-property CityChat landing navigation and bookmark rail are outside this operational tool release."
-  identity: "Landometer symbol at 54 CSS px and exact CityChat lockup; navbar variants follow the actual light or dark canvas surface."
-  controls: "44px minimum targets; menu closes with Escape and outside click"
-
+navigation:
+  sideBookmark: omitted
+  sideBookmarkUserBenefit: null
+  primary_target: "#explorer"
+  mobile_initial_panel: map
 motion:
-  contract: "no new reveal, parallax, carousel, or looping animation"
-  reducedMotion: "final_state"
-  noJavaScript: "aggregate narrative remains visible; interactive review desk explains its requirement"
+  decision: "No new decorative motion."
+  reduced_motion: final_state
+  no_script: "Primary explanation and aggregate facts remain visible; map requires JavaScript."
 
-content:
-  source_snapshot: "house map display dataset v3, 2026-09-08; pipeline v9; rules 1.9.0"
-  source_file: "03CityChat__housemapdisplaydataset__v3__20260908.csv"
-  source_sha256: "a57f1462fdc5b23f88d90856b0e2556d2d231d6e0b17af3468e133ed2770d8f5"
-  source_bytes: 15709401
-  source_schema: "29 ordered columns; dist_named_soi_m and soi_check removed; paired soi_name_check and soi_name_check_confidence added"
-  registry_business_tags: "03CityChat__registrybusinesstags__v5__20260908.csv; 2,048 rows; 919,010 bytes; sha256 98359475255c98727cfa16cf92269f3d16b36bcea974a542c00312e02d967f5f"
-  ambiguous_business_addresses: "03CityChat__businessambiguousaddresses__v4__20260908.csv; 218 rows; 145,661 bytes; sha256 b7e10e4dbe9c333f788a8e542cde38e3ddaecd1709204c0052301d648b393117"
-  figures_display: "03CityChat__figuresdisplay__v3__20260908.json; 6,941 bytes; sha256 618cad2f120615bde9f5b3596a40ec76364b76e3b097226dbe24ed8e8c9805d5"
-  pipeline_manifest: "03CityChat__rungeocodemanifest__v9__20260908.json; 9,224 bytes; sha256 f591e746165627b2ddbda952c2ee0b93cada0a4584ceb46aaa8ab9daf3d3a0d4; acceptance 20/20 true"
-  pipeline_run_id: "20260908T071053_f3b4ba_38e4d7_rules1.9.0"
-  records: 42524
-  positioned_records: 40236
-  no_coordinate_records: 2288
-  parcel_or_building_records: 19864
-  municipal_building_survey_a0_records: 10114
-  visual_review_list_records: 5646
-  visual_review_high_mid_low: [500, 2044, 3102]
-  frontage_records: 13959
-  frontage_named_from_address_records: 8042
-  frontage_municipal_layer_records: 9634
-  soi_name_keys_checked: 103
-  soi_name_keys_verified: 84
-  soi_name_verified_positioned_records: 9775
-  soi_name_municipal_review_keys: 4
-  soi_name_municipal_review_positioned_records: 380
-  registry_rows_with_business_tags: 1379
-  business_registration_tags: 2048
-  field_verification: "figures value is null; no numeric verification or accuracy element is rendered"
-  official_municipality_boundary: "figures value is null; the UI makes no official municipal-boundary claim; its separately rendered outer frame is derived context only"
-  community_boundary_source: "owner-supplied saensuk_village_boundaries.geojson 52,014 bytes; sha256 d397dff38411bdb46d8923d5a04e608f10c569fe65a598f4754464608e8f3c83; 23 named CRS84 Polygon features; public geometry-equivalent safe copy 42,807 bytes; sha256 1419e28b00ed22ba4802a30cc3e0d01e4051c57165bc20e548b055839f4b8d71"
-  inferred_outer_frame: "one closed 528-vertex CRS84 Polygon; bbox [100.8974531, 13.2383789, 100.9643072, 13.3175765]; 13,974 bytes; sha256 8f0661e695b20e606fd38084ca5d4281b3b318ea054cf4dadf74b4c1033eac9e"
-  inferred_outer_frame_derivation: "Shapely 2.0.7 / GEOS 3.11.4 unary_union in source CRS84; retain and orient the union exterior ring; fill ten topology micro-holes totalling 63.8914 m2; rotate to a deterministic lexicographic start; canonical compact JSON plus newline"
-  inferred_outer_frame_validation: "valid Polygon; covers 23/23 source community polygons; zero outside area; exterior area 20,162,822.3497 m2; perimeter 28,312.2449 m; measurements after transform to EPSG:32647 with pyproj 3.6.1 / PROJ 9.3.0; convex hull rejected because it would add 12.633 km2 (62.66%) beyond the supplied geometry"
-  inferred_outer_frame_role: "owner-requested working extent derived from the supplied community layer; explicitly not an official municipal, legal, cadastral, or property boundary"
-  truth_boundary: "Position coverage is not accuracy. Frontage, imagery, registered-business addresses, roads, community polygons, and the derived outer frame are supporting context rather than field verification, operating-business proof, property rights, or legal boundaries."
-  source_discrepancies:
-    - "display v3 review_score is blank on all 42,524 rows while the separate QA review list carries scores; UI orders by priority and stable source order without inventing score"
-    - "business_count counts registration-tag rows, not guaranteed distinct companies; the work order says business_names contains at most three names, but display v3 has 20 rows above three and a maximum of 56, so the UI previews three and reports the remainder"
-    - "registry business tags v5 has no pipeline_run_id column although the work order says every data file carries it; exact hash plus aggregate parity with display v3 bind it to this delivery without inventing a field"
-    - "figures/work-order/run-report state 72 no-coordinate rows with one candidate parcel while manifest v9 states 73 and reports a different offered-row total; the website does not present this as a reconciled aggregate"
-    - "the run report retains prior-round frontage copy (13,960 / 8,036 / 9,630) and a 102-key/19-check table entry; display v3, figures v3, and manifest v9 agree on 13,959 / 8,042 / 9,634, 103 keys, and 20 checks, which are the release values"
-    - "soi_name_check labels also occur on no-coordinate rows; the 9,775 verified-row figure is the positioned subset and must not be inferred by counting all display labels"
-
-coordinate_adjustment:
-  role: "local evidence-backed patch proposal; never mutates the loaded source row and never claims an authoritative correction"
-  coordinate_separation: "source_lat/source_lon and proposed_lat/proposed_lon remain separate; source and proposal use distinct map markers with a comparison connector"
-  actions: "existing valid coordinate -> move_existing; both source coordinates absent -> place_missing; partial or invalid source coordinate pairs fail closed"
-  evidence_gate: "reason, evidence source/reference/date, reviewer code, adjustment ID, and UTC timestamp are required; A0 and multi-unit/building rows require a strong evidence source"
-  export_contract: "27 ordered columns; draft-unverified status; includes movement, EPSG:4326, source run ID, source SHA-256, source dataset contract, source uncertainty fields, tool release, and export batch ID"
-  lifecycle: "working proposals remain in tab memory; export is an auditable local CSV patch and does not overwrite the source CSV or update the upstream pipeline"
-  downstream_acceptance: "an authorized reviewer must accept and apply a proposal upstream before any new master/display dataset can treat it as source truth"
-
-loader_resilience:
-  primary_path: "dedicated Web Worker using the pinned display-v3 parser"
-  fallback_path: "one in-tab retry with the same pinned parser only when Worker construction, transport, or execution fails"
-  fail_closed_boundary: "a parser-reported file, hash, schema, row, run-ID, or aggregate validation error is authoritative and is never retried as an acceptance bypass"
-  cache_identity: "main parser, Worker URL, and Worker parser import share revision 20260908-display-v3-r3"
-
-map_review_experience:
-  primary_route: "The map receives a wider two-column desktop layout through 1600 CSS px; the record detail moves below rather than squeezing the map into a narrow centre column."
-  focused_view: "A labelled 44px action expands the map to the full review-workspace width, temporarily removes the queue and detail panes from layout and accessibility navigation, preserves all record/draft/basemap state, refreshes Leaflet geometry, and returns with the same action or Escape."
-  legend: "A native details disclosure starts closed; its open body is scroll-bounded over desktop imagery and reflows statically below the map on small screens."
-  mobile: "Existing queue/map/detail tabs remain the mobile navigation; the redundant desktop expansion control is hidden below 768 CSS px."
+data:
+  public_review: "governance/public-data-release.json"
+  source_date: "2026-09-08"
+  buildings_received_date: "2026-11-11"
+  source_rules: "1.9.0"
+  source_rows: 42524
+  source_coordinate_rows: 40236
+  source_missing_rows: 2288
+  confidence_counts: {A0: 10114, A: 1855, B: 744, C: 2288, D: 27523}
+  default_filter: all
+  presentation_order: [A0, A, B, D, C]
+  paint_order: "Lower-evidence points first; A0/A/B remain on top."
+  candidates: 70
+  candidates_without_prior_parcel_id: 68
+  candidates_with_prior_parcel_conflict: 2
+  working_parcel_fallbacks: 34
+  working_fallback_D: 30
+  working_fallback_C: 4
+  displayed_coordinate_rows: 40240
+  displayed_missing_rows: 2284
+  fallback_rule: "No conflict, auxiliary or non-residential flag. C requires both source coordinates absent. D requires shift <=500 m and <= original positive radius."
+  fallback_boundary: "Screening only, not measured accuracy; the old radius is not independently calibrated."
+  source_immutable: "Coordinates, tier, status, radius and original missingness remain unchanged."
+  no_accuracy_claim: "Containment in a parcel does not establish the correct dwelling or entrance."
+  grouping: "Only exact-coordinate records with explicit shared-building semantics get numeric groups; nearby houses remain separate."
+  boundaries: "23-community context and its dissolved exterior are not legal or cadastral boundaries."
 
 privacy:
-  public_payload: "interface, aggregate facts, index-safe community polygons, their one-feature inferred outer frame, and governed brand/design assets only"
-  local_only: "display CSV, household IDs, addresses, exact source/proposed coordinates, company-address detail, draft review notes, and coordinate-adjustment exports"
-  data_lifecycle: "record data, review drafts, and coordinate proposals remain in tab memory; no service worker, analytics, URL state, IndexedDB, sessionStorage, or localStorage for record data; an export occurs only after the officer explicitly requests a local file"
-  outbound: "basemaps are opt-in; Google links are explicit and coordinate-only"
-  google_sheet_loading: "not implemented; local approved-CSV selection remains the owner-facing default; any later private-Sheet route requires a separately configured Google sign-in flow and verified access design"
+  public_payload: "Minimized coordinate records, controlled road/community/place labels, confidence/status and separate parcel candidates."
+  excluded: "Owners, house numbers, registration IDs, parcel/building IDs, contacts, business names, reviewer information and free-text addresses."
+  exposure: "Coordinates are public and downloadable; geographic re-identification remains possible."
+  raw_inputs: "No private CSV, XLSX, LTAX records or private comparison report deployed."
+  mutation: "Public mode is read-only; no review/export/adjustment controls or backend submissions."
+  outbound: "Basemaps off until opt-in; Google links are explicit and coordinate-only."
+  authentication: "Not required by owner's public-release decision; no email allowlist embedded."
 
 qa:
-  tested_at: "2026-09-08 local v9/display-v3, coordinate-adjustment, and map-focus release checks; production attestation must be tied to the deployed commit"
-  source_integrity: "display v3 exact file name/hash/bytes, 29-column order, 42,524 unique IDs, rules 1.9.0 run ID, paired soi verification fields, and all enforced aggregate invariants passed"
-  parser_unit_contract: "11/11 focused parser tests passed, including the exact 15,709,401-byte display-v3 file"
-  repository_node_contract: "62/62 local Node tests passed across parser, Worker fallback, coordinate-adjustment, map-focus/legend contracts, explorer contract, and marker grouping"
-  responsive: "The existing shell retains its recorded 320, 360, 390, 768, 1024, 1180, and 1440 CSS-px coverage. A headless Chromium run with the exact display-v3 file measured a 1,098 x 560 CSS-px satellite map in the normal 1536 x 864 layout and 1,438 x 572 CSS px in focused view; at 390 x 844 the selected map tab measured 356 x 405 CSS px, with a closed static legend below it. Physical-device testing remains unavailable."
-  accessibility: "Coordinate-adjustment controls have explicit labels, required-field cues, visible focus styles, status live regions, 44px minimum action targets, drag-independent map placement/nudge controls, reduced-motion behavior, and forced-colors treatment. Map focus mirrors pressed state, makes hidden side panes inert, refreshes Leaflet, and returns focus on Escape; the native legend disclosure is closed by default and keyboard-operable. Production delivery evidence is recorded outside this source-owned card."
-  privacy: "The public working tree includes the one-feature inferred outer-frame GeoJSON but no raw tabular files and no sampled household ID, company-name, or coordinate matches; record storage surfaces empty; no outbound request before opt-in"
-  external_maps: "Street View contract generates coordinates plus heading only when supplied; every rendered row has Street View and satellite actions when coordinates exist; Esri and OSM returned image tiles after explicit opt-in"
-  color_contrast: "CityChat light field with white: minimum 4.929:1; dark field with mineral ink: minimum 8.238:1"
-  local_browser: "The exact 15,709,401-byte display-v3 file opened as 42,524 rows with the default 500-row high-priority queue on the pinned r3 Worker path with no browser warning or error. With the Worker deliberately made unavailable, the same file opened as 42,524 rows through the one-shot in-tab fallback with no warning or error. A selected source point was moved 1 m, saved as a draft, made dirty, blocked from export, and restored to the saved baseline with Undo. A separate Chromium run opened satellite imagery, expanded and restored the map, opened and closed the legend, and switched to the 390px mobile map tab with no runtime or console error. Live-byte verification remains release evidence rather than a source inference."
-  live: "must be attested against the current GitHub Pages commit; this source card alone makes no deployment claim"
-  native_device_limit: "owner accepted best available browser coverage on 2026-09-08 because no physical iPhone/Safari device is available; responsive emulation, touch targets, Thai 130%, 200% zoom, themes, keyboard, and reduced motion passed, but this is not recorded as a physical-device pass"
-
-claim:
-  statement: "Strictly applies the approved v0.9.1 rules within the recorded component scope; it does not claim to be the CityChat public landing-page template."
-  owner_basis: "owner-request:2026-09-08:update-to-supplied-v9-display-v3-and-add-coordinate-adjustment-and-new-file-export; owner-message:2026-09-08:publish-now"
-  owner_outer_frame_basis: "owner-message:2026-09-08:use-the-outermost-frame-of-the-supplied-community-boundaries"
-  owner_native_device_basis: "owner-message:2026-09-08:no-physical-device-accept-best-available-testing"
+  tested_at: "2026-11-11"
+  node: "79/79 tests pass with the exact private display CSV supplied outside the repository."
+  python_projection: "11/11 tests pass."
+  independent_data_audit: "All 42,524 source field tuples and 70 candidates compared exactly; source missingness and confidence retained."
+  gzip: "Deterministic bytes, content-addressed name, compressed SHA verified before decompression."
+  token_aliases: "27 categorical aliases resolve current fill definitions; analytical light/dark anchors match."
+  local_browser: "Not run: cloud browser cannot reach local HTTP preview (ERR_CONNECTION_REFUSED)."
+  live_browser: "Pending deployed-origin inspection; no source inference substitutes for this."
+  physical_device: "Not tested."
+  responsive_current: "Current narrow/touch matrix not yet observed; historical 2026-09-08 results are not reused as a fresh pass."
+  certification: "No formal DS conformance or signed artifact-promotion level claimed."

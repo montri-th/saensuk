@@ -1,6 +1,94 @@
+(function attachPublicSnapshotContract(root) {
+  "use strict";
+  const exactKeys = (value, keys) => value && typeof value === "object" && !Array.isArray(value)
+    && Object.keys(value).length === keys.length && keys.every((key) => Object.prototype.hasOwnProperty.call(value, key));
+  const fail = () => { throw new Error("ชุดข้อมูลสาธารณะไม่ตรงกับรุ่นและขอบเขตที่กำหนด"); };
+  const finiteCoordinate = (lat, lon) => Number.isFinite(lat) && Number.isFinite(lon) && lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180;
+  const distanceMeters = (left, right) => {
+    const radians = (degrees) => degrees * Math.PI / 180;
+    const dlat = radians(right.lat - left.lat);
+    const dlon = radians(right.lon - left.lon);
+    const h = Math.sin(dlat / 2) ** 2 + Math.cos(radians(left.lat)) * Math.cos(radians(right.lat)) * Math.sin(dlon / 2) ** 2;
+    return 12742017.6 * Math.atan2(Math.sqrt(h), Math.sqrt(Math.max(0, 1 - h)));
+  };
+  // Sorting is presentation only: it never upgrades a source tier or coordinate.
+  const publicEvidenceRank = (row) => row?.tier === "A0" ? 0
+    : /^A[12]$/u.test(row?.tier || "") ? 1
+      : /^B[2-7]$/u.test(row?.tier || "") ? 2
+        : row?.tier === "D" ? 3 : 4;
+  const isPublicParcelFallback = (row) => {
+    const candidate = row?.candidate;
+    if (!candidate || candidate.conflict || candidate.auxiliary || candidate.nonresidential || !finiteCoordinate(candidate.lat, candidate.lon)) return false;
+    if (/^C[1-5]$/u.test(row.tier || "")) return row.lat === null && row.lon === null;
+    return row.tier === "D" && finiteCoordinate(row.lat, row.lon)
+      && Number.isFinite(row.radius_m) && row.radius_m > 0
+      && Number.isFinite(candidate.shift_m) && candidate.shift_m >= 0
+      && candidate.shift_m <= 500 && candidate.shift_m <= row.radius_m;
+  };
+  const publicDisplayPoint = (row) => {
+    if (isPublicParcelFallback(row)) return { lat: row.candidate.lat, lon: row.candidate.lon, parcelFallback: true };
+    return finiteCoordinate(row?.lat, row?.lon) ? { lat: row.lat, lon: row.lon, parcelFallback: false } : null;
+  };
+  const validatePublicSnapshot = (snapshot) => {
+    if (!exactKeys(snapshot, ["schema_version", "release_id", "snapshot", "summary", "records"])) fail();
+    if (snapshot.schema_version !== "saensuk-public-points-1" || snapshot.release_id !== "public-20261111") fail();
+    if (!exactKeys(snapshot.snapshot, ["source_date", "rules", "buildings_received_date"]) || snapshot.snapshot.source_date !== "2026-09-08" || snapshot.snapshot.rules !== "1.9.0" || snapshot.snapshot.buildings_received_date !== "2026-11-11") fail();
+    const expectedCounts = { A0: 10114, A: 1855, B: 744, C: 2288, D: 27523 };
+    const summary = snapshot.summary;
+    if (!exactKeys(summary, ["rows", "with_coordinates", "without_coordinates", "confidence_counts", "parcel_candidates", "parcel_candidates_no_known_conflict", "parcel_candidates_conflict"])) fail();
+    if (summary.rows !== 42524 || summary.with_coordinates !== 40236 || summary.without_coordinates !== 2288 || summary.parcel_candidates !== 70 || summary.parcel_candidates_no_known_conflict !== 68 || summary.parcel_candidates_conflict !== 2) fail();
+    if (!exactKeys(summary.confidence_counts, Object.keys(expectedCounts)) || Object.keys(expectedCounts).some((key) => summary.confidence_counts[key] !== expectedCounts[key])) fail();
+    if (!Array.isArray(snapshot.records) || snapshot.records.length !== 42524) fail();
+    const bands = {
+      "A0 สำรวจสิ่งปลูกสร้างของเทศบาล": "A0", "A จับคู่จากที่อยู่เจ้าของ": "A",
+      "B จับคู่แบบมีเงื่อนไข": "B", "C ยังไม่มีพิกัด ต้องตรวจ": "C", "D ค่าประมาณกลุ่ม": "D"
+    };
+    const tiers = new Set(["A0", "A1", "A2", "B2", "B3", "B4", "B5", "B6", "B7", "C1", "C2", "C3", "C4", "C5", "D"]);
+    const statuses = new Set(["approximate-unverified", "prototype-unverified", "needs-review", "desk-lookup-unverified", "building-lookup-pending"]);
+    const geometries = new Set(["parcel", "building", "cluster", "interpolated", "soi_road", "community", "review"]);
+    const counts = { A0: 0, A: 0, B: 0, C: 0, D: 0 };
+    let positioned = 0;
+    let candidates = 0;
+    let conflicts = 0;
+    let missingCandidates = 0;
+    snapshot.records.forEach((row, index) => {
+      if (!exactKeys(row, ["public_id", "road", "community", "place_type", "lat", "lon", "radius_m", "tier", "confidence_band", "status", "geom_level", "candidate"])) fail();
+      if (row.public_id !== `P${String(index + 1).padStart(6, "0")}`) fail();
+      if (["road", "community", "place_type"].some((key) => typeof row[key] !== "string" || row[key].length > 200 || /[<>\u0000-\u001f]/u.test(row[key]))) fail();
+      if (!tiers.has(row.tier) || !Object.prototype.hasOwnProperty.call(bands, row.confidence_band) || !statuses.has(row.status) || !geometries.has(row.geom_level)) fail();
+      const band = row.tier === "A0" ? "A0" : row.tier[0];
+      if (bands[row.confidence_band] !== band) fail();
+      counts[band] += 1;
+      const hasCoordinate = finiteCoordinate(row.lat, row.lon);
+      if (!hasCoordinate && !(row.lat === null && row.lon === null)) fail();
+      if (hasCoordinate) positioned += 1;
+      if ((band === "C") !== !hasCoordinate) fail();
+      if (row.radius_m !== null && (!Number.isFinite(row.radius_m) || row.radius_m < 0 || row.radius_m > 100000)) fail();
+      if (row.candidate !== null) {
+        const candidate = row.candidate;
+        if (!exactKeys(candidate, ["lat", "lon", "shift_m", "conflict", "auxiliary", "nonresidential"])) fail();
+        if (!finiteCoordinate(candidate.lat, candidate.lon) || !["C", "D"].includes(band)) fail();
+        if (["conflict", "auxiliary", "nonresidential"].some((key) => typeof candidate[key] !== "boolean")) fail();
+        if (hasCoordinate) {
+          if (!Number.isFinite(candidate.shift_m) || candidate.shift_m < 0 || Math.abs(candidate.shift_m - distanceMeters(row, candidate)) > 1) fail();
+        } else if (candidate.shift_m !== null) fail();
+        candidates += 1;
+        if (candidate.conflict) conflicts += 1;
+        if (!hasCoordinate) missingCandidates += 1;
+      }
+    });
+    if (positioned !== 40236 || candidates !== 70 || conflicts !== 2 || missingCandidates !== 4 || Object.keys(counts).some((key) => counts[key] !== expectedCounts[key])) fail();
+    return snapshot;
+  };
+  const api = Object.freeze({ validatePublicSnapshot, publicEvidenceRank, isPublicParcelFallback, publicDisplayPoint });
+  root.CityChatPublicSnapshot = api;
+  if (typeof module === "object" && module.exports) module.exports = api;
+})(typeof globalThis === "object" ? globalThis : this);
+
 (() => {
   "use strict";
 
+  if (typeof document === "undefined") return;
   const explorer = document.querySelector("[data-explorer]");
   if (!explorer) return;
 
@@ -44,6 +132,8 @@
   const PAGE_SIZE = 30;
   const DATASET_CONTRACT = "housemapdisplaydataset";
   const TOOL_RELEASE = "citychat-saensuk-v9-point-adjustment-20260908";
+  const PUBLIC_SNAPSHOT_URL = explorer.dataset.publicSnapshotUrl || "";
+  const PUBLIC_SNAPSHOT_SHA256 = explorer.dataset.publicSnapshotSha256 || "";
   const WORKER_URL = "assets/record-worker.js?v=20260908-display-v3-r3";
   const NUMBER = new Intl.NumberFormat("th-TH");
   const csvParser = window.CityChatCsv || null;
@@ -410,6 +500,7 @@
     requestId: 0,
     worker: null,
     rows: [],
+    mapRows: [],
     summary: null,
     searchIndex: [],
     rowIndexById: new Map(),
@@ -453,6 +544,13 @@
     },
     searchTimer: null
   };
+  state.publicMode = Boolean(PUBLIC_SNAPSHOT_URL);
+  state.publicFilter = "all";
+  state.publicCandidateLayer = null;
+  const publicEvidenceRank = window.CityChatPublicSnapshot.publicEvidenceRank;
+  const isPublicParcelFallback = window.CityChatPublicSnapshot.isPublicParcelFallback;
+  const displayPoint = (row) => state.publicMode ? window.CityChatPublicSnapshot.publicDisplayPoint(row)
+    : Number.isFinite(row?.lat) && Number.isFinite(row?.lon) ? { lat: row.lat, lon: row.lon, parcelFallback: false } : null;
 
   const clean = (value, fallback = "—", max = 500) => {
     const text = String(value ?? "").trim();
@@ -475,6 +573,7 @@
   };
 
   const addressLine = (row) => {
+    if (row?.public_id) return `จุด ${row.public_id} · ${clean(row.road, "ไม่ระบุถนน")}`;
     const parts = [`บ้านเลขที่ ${clean(row.house_no)}`];
     const soi = addressPart("ซอย", row.soi);
     const road = addressPart("ถนน", row.road);
@@ -600,6 +699,7 @@
   );
 
   const proposedPoint = (row) => {
+    if (state.publicMode) return row?.candidate || null;
     const working = getWorkingAdjustment(row);
     if (!working || !Number.isFinite(working.proposedLat) || !Number.isFinite(working.proposedLon)) return null;
     return { lat: working.proposedLat, lon: working.proposedLon };
@@ -668,7 +768,13 @@
     state.worker?.terminate();
     state.worker = null;
     showOnly("error");
-    elements.alertTitle.textContent = "เปิดไฟล์นี้ไม่ได้";
+    elements.alertTitle.textContent = state.publicMode ? "โหลดแผนที่สาธารณะไม่ได้" : "เปิดไฟล์นี้ไม่ได้";
+    if (state.publicMode) {
+      elements.alertDetail.textContent = `${clean(error?.message, "ข้อมูลไม่ผ่านการตรวจรุ่น", 220)} กรุณาลองโหลดใหม่ ข้อมูลรายบ้านต้นทางไม่ได้ถูกเปิดเผยแทนชุดนี้`;
+      elements.alertReset.textContent = "ลองโหลดข้อมูลอีกครั้ง";
+      elements.alert.focus();
+      return;
+    }
     const rowHint = Number.isInteger(error?.rowNumber) ? ` (ใกล้แถวที่ ${NUMBER.format(error.rowNumber)})` : "";
     const guidance = error?.category === "loader"
       ? "ข้อมูลยังไม่ได้ถูกเปิด กรุณารีโหลดหน้าเว็บแล้วเลือกไฟล์เดิมอีกครั้ง"
@@ -705,6 +811,7 @@
     state.worker = null;
     state.requestId += 1;
     state.rows = [];
+    state.mapRows = [];
     state.summary = null;
     state.searchIndex = [];
     state.rowIndexById.clear();
@@ -871,7 +978,7 @@
     }
   };
 
-  const prepareWorkspace = (rows, summary) => {
+  const prepareWorkspace = (rows, summary, { publicMode = false } = {}) => {
     if (!Array.isArray(rows) || rows.length !== 42524 || summary?.rowCount !== 42524) {
       showError({ message: "ผลตรวจไฟล์ไม่ครบตามชุดข้อมูลหน้าแผนที่" });
       return;
@@ -924,6 +1031,7 @@
     nextBaseOrder.sort((leftIndex, rightIndex) => {
       const left = sourceRows[leftIndex];
       const right = sourceRows[rightIndex];
+      if (publicMode) return publicEvidenceRank(left) - publicEvidenceRank(right) || leftIndex - rightIndex;
       const priority = rowSortPriority(left) - rowSortPriority(right);
       if (priority !== 0) return priority;
       const score = (right.review_score ?? -1) - (left.review_score ?? -1);
@@ -940,7 +1048,13 @@
 
     clearMapSelection();
     clearDatasetDraftState();
+    state.publicMode = publicMode;
     state.rows = sourceRows;
+    // Only these map-layout views use a fallback. Immutable source rows stay intact.
+    state.mapRows = publicMode ? Object.freeze(sourceRows.map((row) => {
+      const point = displayPoint(row);
+      return point?.parcelFallback ? Object.freeze({ ...row, lat: point.lat, lon: point.lon }) : row;
+    })) : sourceRows;
     state.summary = Object.freeze({ ...summary });
     state.searchIndex = Object.freeze(nextSearchIndex);
     state.rowIndexById = nextRowIndexById;
@@ -974,6 +1088,13 @@
     state.businessFilter = elements.businessFilter?.value || "";
     state.priorityFilter = elements.priorityFilter?.value || "";
     state.reviewFilter = "";
+    if (publicMode) {
+      if (elements.priorityFilter) elements.priorityFilter.value = "";
+      if (elements.businessFilter) elements.businessFilter.value = "";
+      state.priorityFilter = "";
+      state.businessFilter = "";
+    }
+    configurePublicPresentation();
     elements.reviewFilters.forEach((button) => {
       button.setAttribute("aria-pressed", String(button.dataset.reviewFilter === ""));
     });
@@ -981,11 +1102,231 @@
     showOnly("workspace");
     applyFilters({ selectFirst: true });
 
-    if (window.matchMedia("(min-width: 768px)").matches) ensureMap();
+    if (publicMode) setMobilePanel("map", { focus: false });
+    else if (window.matchMedia("(min-width: 768px)").matches) ensureMap();
     const queueTitle = document.getElementById("queue-title");
-    if (queueTitle) {
+    if (queueTitle && !publicMode) {
       queueTitle.tabIndex = -1;
       queueTitle.focus({ preventScroll: true });
+    }
+  };
+
+  let publicPresets = null;
+  let publicCandidatePanel = null;
+  const configurePublicPresentation = () => {
+    explorer.dataset.publicMode = String(state.publicMode);
+    const privateElements = [
+      elements.reviewForm, elements.exportButton, elements.exportAdjustments,
+      elements.changeFile, elements.clearFile,
+      elements.startAdjustment?.closest(".coordinate-adjustment-panel"),
+      elements.priorityFilter?.closest("label"), elements.businessFilter?.closest("label"),
+      elements.reviewFilters[0]?.closest(".review-tabs"),
+      elements.filteredBusiness?.closest("div"), elements.filteredReview?.closest("div")
+    ];
+    privateElements.filter(Boolean).forEach((element) => { element.hidden = state.publicMode; });
+    adjustmentControls.forEach((control) => { control.disabled = state.publicMode || !adjustmentUiReady; });
+    if (!state.publicMode) {
+      fileLabels.forEach((label) => { label.hidden = false; });
+      if (publicPresets) publicPresets.hidden = true;
+      if (publicCandidatePanel) publicCandidatePanel.hidden = true;
+      return;
+    }
+    fileLabels.forEach((label) => { label.hidden = true; });
+    if (elements.search) elements.search.placeholder = "ค้นหารหัสจุด ถนน หรือชุมชน";
+    const badge = explorer.querySelector(".local-badge");
+    if (badge) badge.textContent = "ข้อมูลสาธารณะ";
+    const identity = explorer.querySelector(".dataset-identity strong");
+    if (identity) identity.textContent = "จุดต้นทาง 8 ก.ย. 2569 · เทียบสิ่งปลูกสร้าง 11 พ.ย. 2569";
+    if (elements.evidenceFilter) {
+      const value = elements.evidenceFilter.value;
+      elements.evidenceFilter.replaceChildren(
+        new Option("ทุกสถานะ", ""),
+        new Option("สำรวจเทศบาลผูกถึงแปลง", "tier-a0"),
+        new Option("สถานะต้นทางต้องให้คนตรวจ", "source-needs-review"),
+        new Option("เดิมยังไม่มีพิกัด", "no-coordinate")
+      );
+      if (["", "tier-a0", "source-needs-review", "no-coordinate"].includes(value)) elements.evidenceFilter.value = value;
+    }
+    if (!publicPresets) {
+      publicPresets = document.createElement("div");
+      publicPresets.className = "public-presets";
+      publicPresets.setAttribute("role", "group");
+      publicPresets.setAttribute("aria-label", "เลือกชุดจุดที่ต้องการสำรวจ");
+      const choices = [
+        ["all", "ทั้งหมด 42,524"], ["strong-source", "สำรวจ/จับคู่ A0/A/B 12,713"],
+        ["candidates", "ข้อเสนอแปลง 70"], ["no-conflict", "เดิมไม่ระบุแปลง 68"], ["conflict", "แปลงขัดกับเดิม 2"]
+      ];
+      choices.forEach(([value, label]) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "quiet-button";
+        button.dataset.publicFilter = value;
+        button.textContent = label;
+        button.addEventListener("click", () => {
+          state.publicFilter = value;
+          elements.search.value = "";
+          elements.geomFilter.value = "";
+          elements.communityFilter.value = "";
+          ["roadFilter", "placeFilter", "confidenceFilter", "businessFilter", "priorityFilter", "evidenceFilter"].forEach((name) => {
+            state[name] = "";
+            if (elements[name]) elements[name].value = "";
+          });
+          state.page = 0;
+          syncPublicPresets();
+          applyFilters({ selectFirst: true });
+          fitFilteredResults();
+        });
+        publicPresets.append(button);
+      });
+      elements.resultNote.before(publicPresets);
+    }
+    publicPresets.hidden = false;
+    syncPublicPresets();
+  };
+
+  const syncPublicPresets = () => publicPresets?.querySelectorAll("[data-public-filter]").forEach((button) => {
+    button.setAttribute("aria-pressed", String(button.dataset.publicFilter === state.publicFilter));
+  });
+
+  const publicCandidateNote = (candidate) => {
+    if (!candidate) return "จุดต้นทางไม่ได้ถูกเปลี่ยนจากทะเบียนสิ่งปลูกสร้างรอบนี้";
+    return [
+      "จุดอ้างอิงระดับแปลง ไม่ใช่ตำแหน่งตัวบ้านที่ยืนยันแล้ว",
+      candidate.conflict ? "แปลงใหม่ขัดกับแปลงเดิม จึงพักไว้ตรวจ" : "ต้นทางไม่ระบุแปลงเดิม จึงยังเทียบรหัสแปลงเดิมไม่ได้ และยังต้องตรวจที่อยู่กับอาคาร",
+      candidate.auxiliary ? "ข้อมูลชี้ถึงสิ่งปลูกสร้างประกอบ เช่น โรงจอดรถหรือลานกีฬา" : "",
+      candidate.nonresidential ? "ประเภทสิ่งปลูกสร้างไม่ใช่ที่พักอาศัยโดยตรง" : "",
+      candidate.shift_m > 500 ? "จุดใหม่ห่างจากจุดเดิมเกิน 500 เมตร ต้องตรวจเป็นพิเศษ" : ""
+    ].filter(Boolean).join(" · ");
+  };
+
+  const renderPublicDetail = (row) => {
+    elements.detailEmpty.hidden = true;
+    elements.detail.hidden = false;
+    elements.detailId.textContent = "รายการสาธารณะ · ไม่แสดงชื่อเจ้าของหรือเลขทะเบียน";
+    elements.detailHouse.textContent = `จุด ${row.public_id}`;
+    elements.detailAnswer.textContent = `${geometryLabel(row.geom_level)} · ${statusLabel(row.status)} · จุดต้นทางยังไม่ถูกแทนที่`;
+    elements.detailChips.replaceChildren();
+    appendChip(confidenceLabel(row.confidence_band), "truth-chip-specific");
+    appendChip(statusLabel(row.status), "truth-chip-warning");
+    if (row.candidate) appendChip(row.candidate.conflict ? "แปลงขัดกับเดิม—พักไว้" : "มีข้อเสนอระดับแปลง—ยังไม่ยืนยัน", "truth-chip-warning");
+    elements.recordFields.replaceChildren();
+    appendField("รหัสจุดสาธารณะ", row.public_id, { data: true });
+    appendField("ถนน", row.road);
+    appendField("ชุมชน", row.community);
+    appendField("ประเภทสถานที่", row.place_type);
+    appendField("ตำแหน่งต้นทาง", Number.isFinite(row.lat) && Number.isFinite(row.lon) ? `${row.lat.toFixed(7)}, ${row.lon.toFixed(7)}` : "ยังไม่มีพิกัดต้นทาง", { data: true });
+    appendField("รัศมีประมาณจากต้นทาง", row.radius_m === null ? "ต้นทางไม่มีค่ารัศมี" : `${NUMBER.format(row.radius_m)} เมตร—ไม่ใช่ค่าความแม่นยำที่วัดแล้ว`);
+    appendField("ระดับตำแหน่งเดิม", geometryLabel(row.geom_level));
+    if (isPublicParcelFallback(row)) {
+      appendChip("ระดับแปลงสำรอง—ยังไม่ยืนยัน", "truth-chip-warning");
+      appendField("หมุดที่แสดงในมุมมองหลัก", "ระดับแปลงสำรอง—ยังไม่ยืนยัน · ไม่เปลี่ยนชั้นความเชื่อมั่นหรือสถานะต้นทาง");
+    }
+    if (row.candidate) {
+      appendField("จุดอ้างอิงระดับแปลง", `${row.candidate.lat.toFixed(7)}, ${row.candidate.lon.toFixed(7)}`, { data: true });
+      appendField("ระยะจากจุดเดิมถึงจุดแปลง", row.candidate.shift_m === null ? "เดิมไม่มีพิกัดให้วัดระยะ" : `${NUMBER.format(row.candidate.shift_m)} เมตร—ไม่ใช่ค่าความแม่นยำที่เพิ่มขึ้น`);
+    }
+    const eligibility = streetviewEligibility(row);
+    elements.streetviewButton.disabled = !eligibility.allowed;
+    elements.mapsButton.disabled = !Number.isFinite(row.lat) || !Number.isFinite(row.lon);
+    elements.streetviewButton.textContent = eligibility.allowed ? "Street View ที่จุดเดิม ↗" : "เดิมไม่มีพิกัดให้เปิดภาพถนน";
+    elements.mapsButton.textContent = "Google Maps ที่จุดเดิม ↗";
+    elements.streetviewNote.textContent = "เปิดแผนที่ภายนอกเฉพาะเมื่อกด ลิงก์ส่งพิกัดโดยไม่ส่งชื่อเจ้าของ เลขทะเบียน หรือบ้านเลขที่ ภาพถนนไม่ได้ยืนยันว่าเป็นบ้านถูกหลัง";
+    if (!publicCandidatePanel) {
+      publicCandidatePanel = document.createElement("section");
+      publicCandidatePanel.className = "public-candidate-panel";
+      const heading = document.createElement("h4");
+      heading.textContent = "เทียบข้อเสนอระดับแปลง";
+      const note = document.createElement("p");
+      note.dataset.publicCandidateNote = "";
+      const actions = document.createElement("div");
+      actions.className = "adjustment-comparison-actions";
+      [["compare", "เทียบสองจุดบนแผนที่"], ["map", "Google Maps ที่จุดแปลง ↗"], ["streetview", "Street View ที่จุดแปลง ↗"]].forEach(([mode, label]) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "quiet-button";
+        button.dataset.publicCandidateAction = mode;
+        button.textContent = label;
+        button.addEventListener("click", () => {
+          const selected = state.rows[state.selectedIndex];
+          if (!state.publicMode || !selected?.candidate) return;
+          if (mode === "compare") {
+            ensureMap();
+            updateMapSelection(true);
+            if (window.matchMedia("(max-width: 767px)").matches) setMobilePanel("map", { focus: false });
+            return;
+          }
+          const url = externalMapUrl(selected, mode, selected.candidate);
+          if (url) window.open(url, "_blank", "noopener,noreferrer");
+        });
+        actions.append(button);
+      });
+      publicCandidatePanel.append(heading, note, actions);
+      elements.reviewForm.before(publicCandidatePanel);
+    }
+    publicCandidatePanel.hidden = !row.candidate;
+    publicCandidatePanel.querySelector("[data-public-candidate-note]").textContent = publicCandidateNote(row.candidate);
+    elements.reviewForm.hidden = true;
+    elements.startAdjustment?.closest(".coordinate-adjustment-panel")?.setAttribute("hidden", "");
+  };
+
+  const renderPublicCandidateLayer = () => {
+    if (!state.map || !window.L) return;
+    if (!state.publicCandidateLayer) state.publicCandidateLayer = L.layerGroup().addTo(state.map);
+    state.publicCandidateLayer.clearLayers();
+    if (!state.publicMode || ["all", "strong-source"].includes(state.publicFilter)) return;
+    state.filtered.forEach((index) => {
+      const row = state.rows[index];
+      if (!row.candidate) return;
+      const point = L.circleMarker([row.candidate.lat, row.candidate.lon], {
+        radius: 7, color: cssColor("--map-selected", "Highlight"), weight: 2,
+        fillColor: cssColor("--surface-raised", "Canvas"), fillOpacity: 1,
+        dashArray: "3 3", interactive: true
+      });
+      point.bindTooltip(`ข้อเสนอระดับแปลง · ${row.public_id} · ยังไม่ยืนยัน`, { direction: "top" });
+      point.on("click", (event) => {
+        L.DomEvent.stopPropagation(event);
+        selectRecord(index, { moveMap: false });
+      });
+      point.addTo(state.publicCandidateLayer);
+    });
+  };
+
+  const loadPublicSnapshot = async () => {
+    if (!PUBLIC_SNAPSHOT_URL) return;
+    state.publicMode = true;
+    state.publicFilter = "all";
+    showOnly("parsing");
+    elements.parseTitle.textContent = "กำลังเปิดแผนที่สาธารณะ…";
+    elements.parseDetail.textContent = "กำลังโหลดจุดต้นทางและข้อเสนอระดับแปลง โดยไม่ต้องเลือกไฟล์";
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30000);
+    try {
+      if (!/^assets\/data\/public-housepoints-[a-f0-9]{12}\.json\.gz$/u.test(PUBLIC_SNAPSHOT_URL) || !/^[a-f0-9]{64}$/u.test(PUBLIC_SNAPSHOT_SHA256)) throw new Error("ตำแหน่งชุดข้อมูลสาธารณะไม่ครบ");
+      const response = await fetch(PUBLIC_SNAPSHOT_URL, { signal: controller.signal, credentials: "omit", redirect: "error", cache: "no-cache" });
+      if (response.status !== 200 || !/application\/(?:gzip|x-gzip|octet-stream)/iu.test(response.headers.get("content-type") || "")) throw new Error("ยังโหลดชุดข้อมูลสาธารณะไม่ได้");
+      const bytes = await response.arrayBuffer();
+      if (bytes.byteLength === 0 || bytes.byteLength > 20 * 1024 * 1024) throw new Error("ขนาดชุดข้อมูลสาธารณะไม่ตรงกับที่รองรับ");
+      if (!window.crypto?.subtle) throw new Error("เบราว์เซอร์นี้ตรวจความครบของชุดข้อมูลไม่ได้");
+      const hash = [...new Uint8Array(await window.crypto.subtle.digest("SHA-256", bytes))].map((value) => value.toString(16).padStart(2, "0")).join("");
+      if (hash !== PUBLIC_SNAPSHOT_SHA256) throw new Error("ชุดข้อมูลสาธารณะไม่ตรงกับรุ่นของหน้าเว็บ");
+      if (typeof DecompressionStream !== "function") throw new Error("เบราว์เซอร์นี้ยังเปิดข้อมูลบีบอัดไม่ได้ กรุณาใช้เบราว์เซอร์รุ่นปัจจุบัน");
+      const decoded = await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream("gzip"))).arrayBuffer();
+      if (decoded.byteLength === 0 || decoded.byteLength > 20 * 1024 * 1024) throw new Error("ข้อมูลที่คลายแล้วมีขนาดไม่ตรงกับที่รองรับ");
+      const snapshot = window.CityChatPublicSnapshot.validatePublicSnapshot(JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(decoded)));
+      const rows = snapshot.records.map((row) => ({
+        ...row, candidate: row.candidate ? Object.freeze({ ...row.candidate }) : null,
+        house_reg_id: row.public_id, house_no: "", trok: "", soi: "", method: "",
+        frontage_heading: null, frontage_road: "", frontage_road_layer: "", frontage_road_source: "",
+        soi_name_check: "", soi_name_check_confidence: "", business_count: 0, business_names: "", business_status: "", business_match_confidence: "",
+        review_priority: "", review_score: null, review_flags: "", pipeline_run_id: ""
+      }));
+      prepareWorkspace(rows, { rowCount: rows.length, sha256: hash, publicSnapshot: true }, { publicMode: true });
+      if (state.map) fitFilteredResults();
+      elements.answer.textContent = "เปิดทั้งหมด 42,524 รายการแล้ว · แสดงหมุด 40,240 รายการ รวมระดับแปลงสำรอง 34 รายการที่ยังไม่ยืนยัน · เรียง A0 → A/B → D/C และคงข้อมูลต้นทาง";
+    } catch (error) {
+      showError({ message: error?.name === "AbortError" ? "การโหลดใช้เวลานานเกินไป" : error?.message });
+    } finally {
+      clearTimeout(timeout);
     }
   };
 
@@ -1003,6 +1344,12 @@
 
     state.filtered = state.baseOrder.filter((index) => {
       const row = state.rows[index];
+      if (state.publicMode) {
+        if (state.publicFilter === "strong-source" && publicEvidenceRank(row) > 2) return false;
+        if (state.publicFilter === "candidates" && !row.candidate) return false;
+        if (state.publicFilter === "no-conflict" && (!row.candidate || row.candidate.conflict)) return false;
+        if (state.publicFilter === "conflict" && !row.candidate?.conflict) return false;
+      }
       if (query && !state.searchIndex[index].includes(query)) return false;
       if (geometry && row.geom_level !== geometry) return false;
       if (community && row.community !== community) return false;
@@ -1026,19 +1373,24 @@
       const row = state.rows[index];
       if (Number.isFinite(row?.lat) && Number.isFinite(row?.lon)) counts.withCoordinate += 1;
       else counts.withoutCoordinate += 1;
+      if (state.publicMode && displayPoint(row)) counts.withDisplayPoint += 1;
+      if (state.publicMode && isPublicParcelFallback(row)) counts.withParcelFallback += 1;
       if (Number(row?.business_count) > 0) counts.withBusiness += 1;
       if (row?.review_priority) counts.inReviewQueue += 1;
       return counts;
-    }, { withCoordinate: 0, withoutCoordinate: 0, withBusiness: 0, inReviewQueue: 0 });
+    }, { withCoordinate: 0, withoutCoordinate: 0, withBusiness: 0, inReviewQueue: 0, withDisplayPoint: 0, withParcelFallback: 0 });
     if (elements.filteredWithCoordinate) elements.filteredWithCoordinate.textContent = NUMBER.format(filteredStats.withCoordinate);
     if (elements.filteredWithoutCoordinate) elements.filteredWithoutCoordinate.textContent = NUMBER.format(filteredStats.withoutCoordinate);
     if (elements.filteredBusiness) elements.filteredBusiness.textContent = NUMBER.format(filteredStats.withBusiness);
     if (elements.filteredReview) elements.filteredReview.textContent = NUMBER.format(filteredStats.inReviewQueue);
-    elements.resultNote.textContent = state.filtered.length
+    elements.resultNote.textContent = state.publicMode
+      ? `พบ ${NUMBER.format(state.filtered.length)} รายการ · แสดงหมุด ${NUMBER.format(filteredStats.withDisplayPoint)} (ระดับแปลงสำรอง ${NUMBER.format(filteredStats.withParcelFallback)}) · จุดต้นทางมีพิกัด ${NUMBER.format(filteredStats.withCoordinate)} · ข้อเสนอแปลงยังไม่ใช่ตำแหน่งบ้านที่ยืนยันแล้ว`
+      : state.filtered.length
       ? `พบ ${NUMBER.format(state.filtered.length)} รายการ · มีพิกัด ${NUMBER.format(filteredStats.withCoordinate)} · ยังไม่มีพิกัด ${NUMBER.format(filteredStats.withoutCoordinate)} · บ้านที่มีข้อมูลทะเบียนกิจการ ${NUMBER.format(filteredStats.withBusiness)}`
       : "ไม่พบรายการที่ตรงตัวกรอง ลองลดเงื่อนไขหรือเปลี่ยนคำค้น";
 
     state.pointLayer?.setIndices(state.filtered);
+    renderPublicCandidateLayer();
 
     if (selectFirst || (state.selectedIndex !== null && !state.filtered.includes(state.selectedIndex))) {
       if (state.filtered.length) selectRecord(state.filtered[0], { moveMap: false, switchPanel: false });
@@ -1080,6 +1432,7 @@
       id.textContent = row.review_priority
         ? `รายการตรวจลำดับ${row.review_priority}${row.review_score === null ? "" : ` · ${NUMBER.format(row.review_score)} คะแนน`}`
         : "รายการสำรวจตำแหน่ง";
+      if (state.publicMode) id.textContent = isPublicParcelFallback(row) ? "ระดับแปลงสำรอง—ยังไม่ยืนยัน" : row.candidate ? (row.candidate.conflict ? "ข้อเสนอแปลงขัดกับแปลงเดิม—พักไว้ตรวจ" : "แสดงจุดเดิม · ข้อเสนอแปลงรอตรวจ") : "จุดต้นทาง—ยังไม่ยืนยัน";
       const meta = document.createElement("span");
       meta.className = "record-meta";
       const businessMeta = row.business_count > 0 ? ` · รายการทะเบียนกิจการต้นทาง ${NUMBER.format(row.business_count)}` : "";
@@ -1109,15 +1462,21 @@
         queueReason,
         radiusText
       ].filter(Boolean).join(" · ");
+      if (state.publicMode) {
+        radius.textContent = row.candidate
+          ? [row.candidate.shift_m === null ? "เดิมไม่มีพิกัด" : `จุดแปลงห่างจากจุดเดิม ${NUMBER.format(row.candidate.shift_m)} ม.`, row.candidate.auxiliary ? "อาจเป็นสิ่งปลูกสร้างประกอบ" : "", row.candidate.nonresidential ? "ประเภทไม่ใช่ที่พักอาศัยโดยตรง" : "", "ระยะย้ายไม่ใช่ค่าความแม่นยำ"].filter(Boolean).join(" · ")
+          : radiusText;
+      }
 
       button.append(address, id, meta, radius);
       const quickActions = document.createElement("div");
       quickActions.className = "record-quick-actions";
 
-      const streetViewUrl = externalMapUrl(row, "streetview");
+      const activePoint = displayPoint(row);
+      const streetViewUrl = externalMapUrl(row, "streetview", state.publicMode ? activePoint : null);
       const streetViewAction = document.createElement(streetViewUrl ? "a" : "span");
       streetViewAction.className = "record-quick-action";
-      streetViewAction.textContent = streetViewUrl ? "Street View ↗" : "ไม่มี Street View";
+      streetViewAction.textContent = streetViewUrl ? activePoint?.parcelFallback ? "Street View จุดแปลงสำรอง ↗" : "Street View ↗" : "ไม่มี Street View";
       if (streetViewUrl) {
         streetViewAction.href = streetViewUrl;
         streetViewAction.target = "_blank";
@@ -1132,7 +1491,7 @@
       satelliteAction.className = "record-quick-action";
       satelliteAction.dataset.satelliteIndex = String(index);
       satelliteAction.textContent = "เทียบภาพดาวเทียม";
-      satelliteAction.disabled = !Number.isFinite(row.lat) || !Number.isFinite(row.lon);
+      satelliteAction.disabled = !activePoint && !(state.publicMode && row.candidate);
       satelliteAction.setAttribute("aria-label", `เลือก ${addressLine(row)} แล้วเปิดพื้นหลังภาพดาวเทียม`);
 
       quickActions.append(streetViewAction, satelliteAction);
@@ -1179,6 +1538,7 @@
     renderDetail();
     updateMapSelection(options.moveMap !== false);
     elements.answer.textContent = `${confidenceLabel(row.confidence_band)} · ${statusLabel(row.status)} · ${row.radius_m === null ? "ยังไม่มีรัศมี" : `รัศมี ${NUMBER.format(row.radius_m)} ม.`}`;
+    if (state.publicMode && row.candidate) elements.answer.textContent = `${row.public_id} · ${publicCandidateNote(row.candidate)}`;
     if (options.switchPanel !== false && window.matchMedia("(max-width: 767px)").matches) {
       setMobilePanel("detail", { focus: false });
       requestAnimationFrame(() => elements.detailHouse.focus({ preventScroll: false }));
@@ -1463,6 +1823,10 @@
   const renderDetail = () => {
     const row = state.rows[state.selectedIndex];
     if (!row) return;
+    if (state.publicMode) {
+      renderPublicDetail(row);
+      return;
+    }
     elements.detailEmpty.hidden = true;
     elements.detail.hidden = false;
     elements.detailId.textContent = "รายละเอียดรายการทะเบียน";
@@ -1666,6 +2030,21 @@
     const bucket = markerBucket(row);
     context.save();
     context.translate(point.x, point.y);
+    if (state.publicMode && isPublicParcelFallback(row)) {
+      context.beginPath();
+      context.arc(0, 0, radius + 1, 0, Math.PI * 2);
+      context.strokeStyle = palette.halo;
+      context.lineWidth = 5;
+      context.stroke();
+      context.fillStyle = cssColor("--surface-raised", "Canvas");
+      context.fill();
+      context.strokeStyle = cssColor("--map-selected", "Highlight");
+      context.lineWidth = 2;
+      context.setLineDash([3, 3]);
+      context.stroke();
+      context.restore();
+      return;
+    }
     context.lineJoin = "round";
     tracePointShape(context, bucket, radius);
     context.strokeStyle = palette.halo;
@@ -1699,13 +2078,9 @@
     context.save();
     context.beginPath();
     context.arc(point.x, point.y, pixelRadius, 0, Math.PI * 2);
-    context.fillStyle = pointColor(row);
-    context.globalAlpha = 0.055;
-    context.fill();
-    context.globalAlpha = 0.72;
     context.strokeStyle = pointColor(row);
     context.lineWidth = 1.25;
-    context.setLineDash([5, 4]);
+    context.setLineDash([]);
     context.stroke();
     context.restore();
   };
@@ -1761,8 +2136,10 @@
   });
 
   const proposedMarkerIcon = (row) => L.divIcon({
-    className: "coordinate-adjustment-proposed-marker",
-    html: '<span class="coordinate-adjustment-proposed-core" aria-hidden="true"></span>',
+    className: state.publicMode ? "public-parcel-candidate-marker" : "coordinate-adjustment-proposed-marker",
+    html: state.publicMode
+      ? '<svg viewBox="0 0 46 46" aria-hidden="true"><circle cx="23" cy="23" r="14" fill="var(--surface-raised)" stroke="var(--map-marker-halo)" stroke-width="7"></circle><circle cx="23" cy="23" r="14" fill="var(--surface-raised)" stroke="var(--map-selected)" stroke-width="3" stroke-dasharray="4 3"></circle></svg>'
+      : '<span class="coordinate-adjustment-proposed-core" aria-hidden="true"></span>',
     iconSize: [46, 46],
     iconAnchor: [23, 23]
   });
@@ -1839,16 +2216,23 @@
         context.clearRect(0, 0, size.x, size.y);
         const zoom = this._map.getZoom();
         const palette = markerPalette();
-        this._drawn = markerGrouping.layoutGroups(this._indices, state.rows)
+        this._drawn = markerGrouping.layoutGroups(this._indices, state.mapRows)
           .map((group) => {
-            const row = state.rows[group.indices[0]];
+            const row = state.mapRows[group.indices[0]];
             if (!row) return null;
             const point = this._map.latLngToContainerPoint([row.lat, row.lon]);
             if (point.x < -24 || point.y < -24 || point.x > size.x + 24 || point.y > size.y + 24) return null;
             return { ...group, point };
           })
           .filter(Boolean)
-          .sort((left, right) => Number(left.buildingGroup) - Number(right.buildingGroup));
+          .sort((left, right) => {
+            // Paint lower-evidence source points first so A0/A/B remain visible.
+            if (state.publicMode) {
+              const evidence = publicEvidenceRank(state.rows[right.indices[0]]) - publicEvidenceRank(state.rows[left.indices[0]]);
+              if (evidence !== 0) return evidence;
+            }
+            return Number(left.buildingGroup) - Number(right.buildingGroup);
+          });
         this._coordinateTargets.clear();
         for (const marker of this._drawn) {
           if (!this._coordinateTargets.has(marker.coordinateKey)) this._coordinateTargets.set(marker.coordinateKey, []);
@@ -1860,6 +2244,7 @@
           for (const index of marker.indices) {
             const row = state.rows[index];
             if (!row || !Number.isFinite(row.radius_m) || row.radius_m <= 100) continue;
+            if (state.publicMode && isPublicParcelFallback(row)) continue;
             const key = `${marker.coordinateKey}|${row.radius_m}|${confidenceKey(row)}`;
             if (uncertaintyKeys.has(key)) continue;
             uncertaintyKeys.add(key);
@@ -1975,6 +2360,7 @@
     state.pointLayer = createPointLayer();
     state.pointLayer.addTo(state.map);
     state.pointLayer.setIndices(state.filtered);
+    renderPublicCandidateLayer();
     state.map.on("click", (event) => selectMapPoint(event));
     addSpatialLayers();
     if (state.selectedIndex !== null) updateMapSelection(false);
@@ -1997,7 +2383,7 @@
         icon: selectedMarkerIcon(row, candidate ? "selected-record-marker coordinate-adjustment-source-marker" : "selected-record-marker"),
         interactive: false,
         keyboard: false,
-        opacity: candidate ? 0.58 : 1,
+        opacity: 1,
         zIndexOffset: 1000
       }).addTo(state.map);
 
@@ -2006,10 +2392,8 @@
           radius: row.radius_m,
           color: markerColor,
           weight: 2,
-          dashArray: "6 6",
-          opacity: 0.95,
-          fillColor: markerColor,
-          fillOpacity: 0.08,
+          opacity: 1,
+          fill: false,
           interactive: false
         }).addTo(state.map);
       } else if (row.radius_m === 0) {
@@ -2020,7 +2404,7 @@
           color: markerColor,
           weight: 2,
           dashArray: "4 5",
-          opacity: 0.9,
+          opacity: 1,
           fill: false,
           interactive: false
         }).addTo(state.map);
@@ -2032,10 +2416,10 @@
       const proposedLocation = [candidate.lat, candidate.lon];
       state.proposedMarker = L.marker(proposedLocation, {
         icon: proposedMarkerIcon(row),
-        draggable: state.adjustmentMode !== "select",
+        draggable: !state.publicMode && state.adjustmentMode !== "select",
         keyboard: false,
         riseOnHover: true,
-        title: "จุดเสนอแก้—ยังไม่ยืนยัน",
+        title: state.publicMode ? "จุดอ้างอิงระดับแปลง—ยังไม่ยืนยันตัวบ้าน" : "จุดเสนอแก้—ยังไม่ยืนยัน",
         zIndexOffset: 1400
       }).addTo(state.map);
       state.proposedMarker.on("dragend", (event) => {
@@ -2126,7 +2510,12 @@
     const bounds = L.latLngBounds([]);
     state.filtered.forEach((index) => {
       const row = state.rows[index];
-      if (Number.isFinite(row?.lat) && Number.isFinite(row?.lon)) bounds.extend([row.lat, row.lon]);
+      const point = displayPoint(row);
+      if (point) bounds.extend([point.lat, point.lon]);
+      if (state.publicMode && row?.candidate && !["all", "strong-source"].includes(state.publicFilter)) {
+        if (Number.isFinite(row.lat) && Number.isFinite(row.lon)) bounds.extend([row.lat, row.lon]);
+        bounds.extend([row.candidate.lat, row.candidate.lon]);
+      }
     });
     if (bounds.isValid()) state.map.fitBounds(bounds, { padding: [24, 24], maxZoom: 18 });
   };
@@ -2221,6 +2610,7 @@
   };
 
   const beginAdjustment = () => {
+    if (state.publicMode) return;
     const row = state.rows[state.selectedIndex];
     if (!row) return;
     if (!adjustmentUiReady) {
@@ -2241,6 +2631,7 @@
   };
 
   const activateAdjustmentPlacement = () => {
+    if (state.publicMode) return;
     const row = state.rows[state.selectedIndex];
     if (!row) return;
     if (!adjustmentUiReady) {
@@ -2394,6 +2785,7 @@
 
   const saveAdjustment = (event) => {
     event?.preventDefault();
+    if (state.publicMode) return;
     if (!adjustmentUiReady) {
       setAdjustmentStatus("เครื่องมือเสนอจุดไม่พร้อมใช้งาน จึงไม่เก็บร่าง", "error");
       return;
@@ -2509,6 +2901,7 @@
 
   const saveReview = (event) => {
     event.preventDefault();
+    if (state.publicMode) return;
     const row = state.rows[state.selectedIndex];
     if (!row) return;
     const evidenceSource = elements.reviewSource.value;
@@ -2563,6 +2956,7 @@
   };
 
   const exportAdjustments = () => {
+    if (state.publicMode) return;
     if (!adjustmentUiReady) {
       setAdjustmentStatus("เครื่องมือตรวจร่างโหลดไม่ครบ จึงส่งออกไม่ได้", "error");
       return;
@@ -2609,6 +3003,7 @@
   };
 
   const exportReviews = () => {
+    if (state.publicMode) return;
     if (!state.reviews.size) return;
     const accepted = window.confirm("ไฟล์ส่งออกมีรหัสทะเบียน บ้านเลขที่ และพิกัด โปรดเก็บในพื้นที่งานที่มีสิทธิ์เข้าถึงเท่านั้น ต้องการส่งออกหรือไม่?");
     if (!accepted) return;
@@ -2837,7 +3232,7 @@
     elements.fileInput.value = "";
     elements.fileInput.click();
   };
-  elements.alertReset.addEventListener("click", openFilePicker);
+  elements.alertReset.addEventListener("click", () => state.publicMode ? loadPublicSnapshot() : openFilePicker());
   elements.changeFile.addEventListener("click", openFilePicker);
   elements.clearFile.addEventListener("click", () => {
     if (hasDatasetDraftState() && !window.confirm("ร่างผลตรวจ จุดเสนอที่เก็บแล้ว และงานแก้ที่ยังไม่เก็บทั้งหมดในแท็บนี้จะถูกล้างและกู้คืนไม่ได้ ต้องการล้างข้อมูลหรือไม่?")) return;
@@ -3031,5 +3426,6 @@
   if (typeof colorScheme.addEventListener === "function") colorScheme.addEventListener("change", refreshMapPalette);
 
   loadSpatialContext();
-  showOnly("gate");
+  if (PUBLIC_SNAPSHOT_URL) void loadPublicSnapshot();
+  else showOnly("gate");
 })();

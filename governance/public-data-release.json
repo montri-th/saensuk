@@ -1,0 +1,131 @@
+{
+  "schema_version": "saensuk-public-data-review-1",
+  "release_id": "public-20261111",
+  "owner_authorization": "owner-message:2026-11-11:เปิด public เลย",
+  "audience": "public",
+  "public_asset": {
+    "path": "assets/data/public-housepoints-43a6b7022e2b.json.gz",
+    "sha256": "43a6b7022e2b81e95e7a5ba80c7eec611e15adcf3f36b98fd42181705062c197",
+    "bytes": 327589,
+    "mime_type": "application/gzip",
+    "stored_compression": "gzip",
+    "decoded": {
+      "sha256": "d619529e8d2ae64bb40eeec1fac4122b6518cb510d8268d9d39481acdbe9321d",
+      "bytes": 15903624,
+      "mime_type": "application/json"
+    }
+  },
+  "snapshot": {
+    "source_date": "2026-09-08",
+    "rules": "1.9.0",
+    "buildings_received_date": "2026-11-11"
+  },
+  "summary": {
+    "rows": 42524,
+    "with_coordinates": 40236,
+    "without_coordinates": 2288,
+    "confidence_counts": {
+      "A0": 10114,
+      "A": 1855,
+      "B": 744,
+      "C": 2288,
+      "D": 27523
+    },
+    "parcel_candidates": 70,
+    "parcel_candidates_no_known_conflict": 68,
+    "parcel_candidates_conflict": 2
+  },
+  "source_hashes": {
+    "display_v3_sha256": "a57f1462fdc5b23f88d90856b0e2556d2d231d6e0b17af3468e133ed2770d8f5",
+    "private_candidate70_sha256": "bb68abbca7bea680b7f1d40bb72d51f3feabf45b9077a6e227ee3dbb4bc1ae03",
+    "ltax_sha256": "38e4d737533f7e639ce0ff43c631c13bc471bbe19cd44f76bcb225a5ec12eb06",
+    "buildings_received_sha256": "36b5c91e8de4f587468e20c00175dba18cba2d8b4f38e62779abe7c6f1cb4a66"
+  },
+  "fields_allowed": [
+    "candidate",
+    "community",
+    "confidence_band",
+    "geom_level",
+    "lat",
+    "lon",
+    "place_type",
+    "public_id",
+    "radius_m",
+    "road",
+    "status",
+    "tier"
+  ],
+  "candidate_fields_allowed": [
+    "auxiliary",
+    "conflict",
+    "lat",
+    "lon",
+    "nonresidential",
+    "shift_m"
+  ],
+  "fields_excluded": [
+    "owner_names",
+    "contact_details",
+    "house_reg_id",
+    "house_no",
+    "trok",
+    "soi",
+    "source_parcel_id",
+    "tax_parcel_codes",
+    "building_id",
+    "business_names",
+    "reviewer_metadata",
+    "review_notes"
+  ],
+  "disclosure": "Contains source household point coordinates and separate unverified parcel candidate coordinates under explicit owner authorization. Removing direct identifiers is data minimization, not a guarantee of anonymity; geographic context may allow re-identification.",
+  "public_id_meaning": "Snapshot-specific display sequence after geographic/category sorting; not a municipal registry identifier.",
+  "candidate_policy": {
+    "status": "candidate-unverified",
+    "auto_apply": false,
+    "source_fields_unchanged": true,
+    "newly_field_verified": 0
+  },
+  "display_coordinate_policy": {
+    "mode": "best_available_working_position",
+    "default_view": "all_records",
+    "default_record_count": 42524,
+    "source_coordinates_immutable": true,
+    "source_tier_status_immutable": true,
+    "source_coordinate_records": 40236,
+    "source_missing_coordinate_records": 2288,
+    "working_position_records": 40240,
+    "working_missing_position_records": 2284,
+    "source_priority_bands": [
+      "A0",
+      "A",
+      "B"
+    ],
+    "candidate_status": "candidate-unverified",
+    "candidate_geometry_level": "parcel",
+    "candidate_guards": {
+      "no_known_prior_parcel_conflict": true,
+      "exclude_auxiliary_structures": true,
+      "exclude_other_nonresidential_types": true,
+      "D_requires_finite_shift_and_source_radius": true,
+      "D_maximum_shift_m": 500,
+      "D_shift_must_not_exceed_source_radius": true,
+      "C_requires_both_original_coordinates_missing": true,
+      "A0_A_B_source_positions_never_replaced": true
+    },
+    "working_parcel_fallback_records": 34,
+    "working_parcel_fallback_from_D": 30,
+    "working_parcel_fallback_from_C": 4,
+    "remaining_candidates_comparison_only": 36,
+    "radius_policy": "Original radius is source evidence context, not a calibrated accuracy estimate for a parcel working point.",
+    "claim_boundary": "A working parcel position is not a verified dwelling, entrance, occupancy or measured accuracy improvement.",
+    "automatic_source_updates": false
+  },
+  "checks": {
+    "all_private_household_ids_absent": 42524,
+    "private_candidate_parcel_and_building_ids_absent": 70,
+    "strict_field_allowlist": true,
+    "controlled_text_vocabularies": true,
+    "source_hashes_match": true,
+    "aggregate_counts_match": true
+  }
+}

@@ -38,7 +38,7 @@ test("explorer consumes the display-only business, frontage, review, and provena
 
 test("worker and main-thread fallback use the same pinned verified parser", () => {
   const parserTag = 'assets/csv-parser.js?v=20260908-display-v3-r3';
-  const explorerTag = 'assets/record-explorer.js?v=20260908-v9-display-v3-r5';
+  const explorerTag = 'assets/record-explorer.js?v=20261111-public';
 
   assert.match(html, new RegExp(parserTag.replace(/[.?]/g, "\\$&")));
   assert.match(worker, /importScripts\("\.\/csv-parser\.js\?v=20260908-display-v3-r3"\)/);
@@ -49,11 +49,12 @@ test("worker and main-thread fallback use the same pinned verified parser", () =
   assert.match(explorer, /const WORKER_URL = "assets\/record-worker\.js\?v=20260908-display-v3-r3"/);
 });
 
-test("top-level and embedding-blocked pages share the v9 visual bundle", () => {
+test("top-level and embedding-blocked pages share the current public visual bundle", () => {
   for (const asset of [
-    "assets/tokens.css?v=20260908-v9",
-    "assets/styles.css?v=20260908-v9",
-    "assets/explorer.css?v=20260908-v9-map-focus-r2"
+    "assets/color-srgb-10.production.css?v=20261111",
+    "assets/tokens.css?v=20261111-public",
+    "assets/styles.css?v=20261111-public",
+    "assets/explorer.css?v=20261111-public"
   ]) {
     assert.ok(html.includes(asset));
     assert.ok(embedded.includes(asset));
@@ -112,7 +113,7 @@ test("filters cover road, place type, confidence, business presence, and review 
   assert.doesNotMatch(html, /value="nearer-to-another-soi"/);
 });
 
-test("filtered counters keep coordinate, no-coordinate, business, and review totals live", () => {
+test("filtered counters preserve source totals and distinguish public working positions", () => {
   for (const selector of [
     "data-filtered-with-coordinate",
     "data-filtered-without-coordinate",
@@ -121,9 +122,18 @@ test("filtered counters keep coordinate, no-coordinate, business, and review tot
   ]) {
     assert.match(explorer, new RegExp(`\\[${selector}\\]`));
   }
-  assert.match(explorer, /withCoordinate: 0, withoutCoordinate: 0, withBusiness: 0, inReviewQueue: 0/);
+  const counterInitializers = explorer.match(/const filteredStats = state\.filtered\.reduce\([\s\S]*?\},\s*\{([^}]+)\}\);/);
+  assert.ok(counterInitializers, "filtered counters have an explicit zero baseline");
+  for (const key of ["withCoordinate", "withoutCoordinate", "withBusiness", "inReviewQueue", "withDisplayPoint", "withParcelFallback"]) {
+    assert.match(counterInitializers[1], new RegExp(`\\b${key}:\\s*0\\b`));
+  }
+  assert.match(explorer, /Number\.isFinite\(row\?\.lat\) && Number\.isFinite\(row\?\.lon\)\) counts\.withCoordinate \+= 1;\s*else counts\.withoutCoordinate \+= 1/);
+  assert.match(explorer, /state\.publicMode && displayPoint\(row\)\) counts\.withDisplayPoint \+= 1/);
+  assert.match(explorer, /state\.publicMode && isPublicParcelFallback\(row\)\) counts\.withParcelFallback \+= 1/);
   assert.match(explorer, /filteredStats\.withCoordinate/);
   assert.match(explorer, /filteredStats\.withoutCoordinate/);
+  assert.match(explorer, /แสดงหมุด \$\{NUMBER\.format\(filteredStats\.withDisplayPoint\)\}/);
+  assert.match(explorer, /จุดต้นทางมีพิกัด \$\{NUMBER\.format\(filteredStats\.withCoordinate\)\}/);
 });
 
 test("review queue ordering uses supplied priority then descending score", () => {
@@ -308,7 +318,7 @@ test("point adjustment provides drag-independent controls and visible source/pro
   for (const direction of ["north", "south", "east", "west"]) {
     assert.match(html, new RegExp(`data-nudge-direction="${direction}"`));
   }
-  assert.match(explorer, /draggable: state\.adjustmentMode !== "select"/);
+  assert.match(explorer, /draggable: !state\.publicMode && state\.adjustmentMode !== "select"/);
   assert.match(explorer, /state\.adjustmentMode === "place"/);
   assert.match(explorer, /coordinate-adjustment-source-marker/);
   assert.match(explorer, /coordinate-adjustment-proposed-marker/);

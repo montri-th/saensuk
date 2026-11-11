@@ -1797,6 +1797,49 @@ html:not([data-top-level-safe="true"]) [data-file-label] {
   font-size: 0.75rem;
 }
 
+.public-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-block: var(--space-3);
+}
+
+.public-presets button {
+  flex: 1 1 9rem;
+  min-height: 44px;
+  white-space: normal;
+}
+
+.public-presets button[aria-pressed="true"] {
+  background: var(--surface-soft);
+  border-color: var(--border-emphasis);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.public-candidate-panel {
+  display: grid;
+  gap: var(--space-3);
+  padding-block: var(--space-4);
+  border-block-start: 1px solid var(--border-default);
+}
+
+.public-candidate-panel h4,
+.public-candidate-panel p {
+  margin: 0;
+}
+
+.public-candidate-panel p {
+  color: var(--text-secondary);
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+.public-candidate-panel .quiet-button {
+  min-height: 44px;
+  white-space: normal;
+}
+
 .review-form {
   margin-top: var(--space-6);
 }

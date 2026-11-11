@@ -3,8 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>โต๊ะตรวจตำแหน่งบ้าน | CityChat แสนสุข</title>
-  <meta name="description" content="เปิดตารางตำแหน่งทะเบียนบ้านแสนสุขจากเครื่องของคุณ ดูจุดร่วมกับแนวชุมชน 23 พื้นที่ กรอบพื้นที่อนุมาน แผนที่ถนน หรือภาพถ่ายดาวเทียม และเปิด Street View อย่างรู้ข้อจำกัด">
+  <title>สำรวจหมุดแสนสุข · CityChat</title>
+  <meta name="description" content="เปิดดูหมุดแสนสุขทั้งหมดได้ทันที ไม่ต้องเลือก CSV เรียงจุดสำรวจเทศบาลและจุดเชื่อมั่นสูงก่อน พร้อมตำแหน่งระดับแปลงสำรองที่ระบุสถานะชัดเจน">
+  <meta name="citychat-release" content="public-20261111">
   <meta name="robots" content="index,follow">
   <meta name="theme-color" content="#1D4497">
   <meta name="referrer" content="strict-origin-when-cross-origin">
@@ -14,24 +15,21 @@
   <meta property="og:type" content="website">
   <meta property="og:locale" content="th_TH">
   <meta property="og:site_name" content="CityChat · แสนสุข">
-  <meta property="og:title" content="โต๊ะตรวจตำแหน่งบ้าน · CityChat แสนสุข">
-  <meta property="og:description" content="เปิดไฟล์ในเครื่อง เลือกรายการ แล้วเทียบตำแหน่งกับแนวชุมชน กรอบพื้นที่อนุมาน แผนที่ถนน หรือภาพถ่ายดาวเทียม โดยไม่อัปโหลดตารางทะเบียนบ้าน">
+  <meta property="og:title" content="สำรวจหมุดแสนสุข · CityChat">
+  <meta property="og:description" content="ดูหมุดทั้งหมดทันที เน้นจุดสำรวจและจุดเชื่อมั่นสูงก่อน แยกจุดแปลงสำรองที่ยังไม่ยืนยัน โดยไม่แสดงชื่อเจ้าของหรือรหัสทะเบียนบ้าน">
   <meta property="og:url" content="https://montri-th.github.io/saensuk/">
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="โต๊ะตรวจตำแหน่งบ้าน · CityChat แสนสุข">
-  <meta name="twitter:description" content="สำรวจตำแหน่งบ้านรายรายการจากไฟล์ในเครื่อง พร้อมแนวชุมชน กรอบพื้นที่อนุมาน แผนที่ถนน ภาพถ่ายดาวเทียม และทางออกไป Street View แบบตั้งใจเปิด">
+  <meta name="twitter:title" content="สำรวจหมุดแสนสุข · CityChat">
+  <meta name="twitter:description" content="ดูหมุดทั้งหมดโดยไม่ต้องเลือก CSV เน้นจุดสำรวจและจุดเชื่อมั่นสูงก่อน แยกจุดแปลงสำรองที่ยังไม่ยืนยัน">
   <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@graph": [
         {
+          "@id": "https://montri-th.github.io/saensuk/#application",
           "@type": "WebApplication",
-          "name": "โต๊ะตรวจตำแหน่งบ้าน · CityChat แสนสุข",
-          "url": "https://montri-th.github.io/saensuk/",
-          "inLanguage": "th",
-          "applicationCategory": "BusinessApplication",
-          "isAccessibleForFree": true,
-          "description": "เครื่องมืออ่านชุดข้อมูลแผนที่ v3 จากกระบวนการ v9 ในเบราว์เซอร์ เพื่อสำรวจตำแหน่งทะเบียนบ้านแสนสุขโดยไม่อัปโหลดตารางไปยังเว็บไซต์"
+          "name": "สำรวจหมุดแสนสุข · CityChat",
+          "url": "https://montri-th.github.io/saensuk/"
         }
       ]
     }
@@ -39,17 +37,17 @@
   <script src="assets/theme-init.js"></script>
   <link rel="preload" href="assets/fonts/ibm-plex-sans-thai-looped-thai-700-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/bai-jamjuree-thai-400-normal.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="assets/color-srgb-05.production.css?v=3bac2499">
-  <link rel="stylesheet" href="assets/tokens.css?v=20260908-v9">
+  <link rel="stylesheet" href="assets/color-srgb-10.production.css?v=20261111">
+  <link rel="stylesheet" href="assets/tokens.css?v=20261111-public">
   <link rel="stylesheet" href="assets/vendor/leaflet/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
-  <link rel="stylesheet" href="assets/styles.css?v=20260908-v9">
-  <link rel="stylesheet" href="assets/explorer.css?v=20260908-v9-map-focus-r2">
+  <link rel="stylesheet" href="assets/styles.css?v=20261111-public">
+  <link rel="stylesheet" href="assets/explorer.css?v=20261111-public">
   <script defer src="assets/vendor/leaflet/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
   <script defer src="assets/app.js?v=20260908-v9"></script>
   <script defer src="assets/marker-grouping.js?v=20260906-building-only"></script>
   <script defer src="assets/csv-parser.js?v=20260908-display-v3-r3"></script>
   <script defer src="assets/coordinate-adjustment.js?v=20260908-display-v3-r2"></script>
-  <script defer src="assets/record-explorer.js?v=20260908-v9-display-v3-r5"></script>
+  <script defer src="assets/record-explorer.js?v=20261111-public"></script>
 </head>
 <body id="top">
   <a class="skip-link" href="#main">ข้ามไปยังเนื้อหาหลัก</a>
@@ -75,7 +73,7 @@
 
       <nav class="nav-panel" id="site-nav" aria-label="เมนูในหน้านี้">
         <div class="nav-links">
-          <a href="#explorer">ตรวจรายบ้าน</a>
+          <a href="#explorer">สำรวจหมุด</a>
           <a href="#results">ผลล่าสุด</a>
           <a href="#precision">ระดับตำแหน่ง</a>
           <a href="#next">งานที่ต้องทำต่อ</a>
@@ -101,15 +99,16 @@
             <img class="citychat-lockup-deep-surface" src="assets/brand/citychat-lockup-v091-deep-surface.png" width="494" height="106" alt="">
             <img class="citychat-lockup-light-surface" src="assets/brand/citychat-lockup-v091-light-surface.png" width="494" height="106" alt="">
           </div>
-          <p class="eyebrow eyebrow-on-deep">CityChat Review Desk · ผลรอบ v9 · 8 ก.ย. 2569</p>
-          <h1 id="hero-title">เปิดตาราง<br>แล้วตรวจทีละบ้าน</h1>
-          <p class="hero-lead" data-primary-answer>เลือกชุดข้อมูลแผนที่ v3 จากเครื่องของคุณ แล้วสำรวจ <strong>42,524 รายการ</strong> รอบ v9 ซึ่งตรวจชื่อถนนและซอยด้วยสามแหล่ง พร้อมทิศหน้าถนน ที่อยู่จดทะเบียนของกิจการ และลำดับคิว เพื่อพาเจ้าหน้าที่จากภาพรวมไปสู่รายการที่ควรตรวจจริง</p>
-          <p class="hero-signal" aria-label="94.6 เปอร์เซ็นต์มีตำแหน่งตั้งต้น และ 5,646 รายการอยู่ในบัญชีตรวจ">
-            <span><strong>94.6%</strong> มีตำแหน่งตั้งต้น</span>
-            <span class="hero-signal-warning"><strong>5,646</strong> อยู่ในบัญชีตรวจ</span>
+          <p class="eyebrow eyebrow-on-deep">CityChat · แสนสุข · เพิ่มข้อมูลสิ่งปลูกสร้าง 11 พ.ย. 2569</p>
+          <h1 id="hero-title">เห็นหมุดทั้งหมดทันที<br>เริ่มจากจุดที่เชื่อมั่นสูง</h1>
+          <p class="hero-lead" data-primary-answer>เปิดข้อมูล <strong>42,524 รายการ</strong> โดยไม่ต้องเลือก CSV แผนที่แสดงทุกจุดที่มีตำแหน่ง ให้จุดสำรวจเทศบาล <strong>10,114 รายการ</strong> และชั้น A/B <strong>2,599 รายการ</strong> เด่นและอยู่ต้นรายการ ใช้จุดระดับแปลงสำรองเฉพาะรายการที่ผ่านเงื่อนไข โดยไม่เพิ่มชั้นความเชื่อมั่นเดิม</p>
+          <p class="hero-signal" aria-label="40,240 รายการมีจุดแสดงผล รวมจุดระดับแปลงสำรอง 34 รายการ และยังไม่มีจุด 2,284 รายการ">
+            <span><strong>40,240</strong> รายการมีจุดให้ดู</span>
+            <span><strong>34</strong> ใช้จุดแปลงสำรอง</span>
+            <span class="hero-signal-warning"><strong>2,284</strong> ยังไม่มีจุด</span>
           </p>
           <div class="hero-actions">
-            <a class="button button-primary" href="#explorer" data-action-id="open-review-desk">เริ่มตรวจบนแผนที่</a>
+            <a class="button button-primary" href="#explorer" data-action-id="open-review-desk">ดูหมุดทั้งหมดบนแผนที่</a>
             <a class="text-link-on-deep" href="#results">อ่านภาพรวมก่อน</a>
           </div>
         </div>
@@ -120,16 +119,16 @@
             <img class="conversation-motif-dark" src="assets/brand/conversation-motif-v091-dark.svg" width="156" height="127" alt="">
           </div>
           <div>
-            <p class="eyebrow">ข้อมูลในมือคุณ · แผนที่ช่วยตั้งคำถาม</p>
-            <h2>จากหนึ่งแถว<br>สู่สิ่งที่ควรตรวจต่อ</h2>
+            <p class="eyebrow">เปิดแล้วไล่ดูได้ · ไม่ต้องล็อกอิน</p>
+            <h2>จุดเชื่อมั่นสูงมาก่อน<br>จุดแปลงสำรองแยกชัด</h2>
           </div>
           <ol class="hero-review-steps">
-            <li><span>1</span><p><strong>เลือกชุดข้อมูล</strong> ระบบตรวจไฟล์แสดงผล v3 ของรอบ v9 ก่อนเปิด</p></li>
-            <li><span>2</span><p><strong>คลิกบ้านหรือจุด</strong> เห็นระดับ ความเชื่อมั่น ถนน กิจการ และคิวตรวจ</p></li>
-            <li><span>3</span><p><strong>เสนอจุดและเก็บหลักฐาน</strong> เทียบภาพหรือเอกสาร วางจุดเสนอ แล้วดาวน์โหลดไฟล์ร่างแก้จุด</p></li>
+            <li><span>1</span><p><strong>ดูหมุดทั้งหมด</strong> จุดสำรวจเทศบาลและชั้น A/B อยู่ต้นรายการและวาดทับจุดประมาณ</p></li>
+            <li><span>2</span><p><strong>แยกหลักฐาน</strong> สีและรูปทรงบอกความเชื่อมั่น จุดแปลงสำรองเป็นหมุดกลวงและยังไม่ยืนยัน</p></li>
+            <li><span>3</span><p><strong>เปิดรายละเอียด</strong> เทียบจุดต้นทางกับจุดแปลงได้ โดยไม่ย้ายทับข้อมูลต้นทาง</p></li>
           </ol>
-          <label class="hero-file-button" for="record-file" role="button" tabindex="0" data-file-label>เลือกชุดข้อมูลแผนที่ v3 จากเครื่อง</label>
-          <p class="hero-local-note">ไฟล์ไม่ถูกอัปโหลด · ข้อมูลหายเมื่อปิดหรือรีโหลดแท็บ</p>
+          <a class="hero-file-button" href="#explorer">เปิดแผนที่</a>
+          <p class="hero-local-note">ชุดสาธารณะไม่แสดงชื่อเจ้าของ บ้านเลขที่ หรือรหัสทะเบียน แต่ตำแหน่งบนแผนที่เปิดให้ทุกคนดูได้</p>
         </div>
       </div>
     </section>
@@ -138,26 +137,26 @@
       <div class="truth-banner-inner">
         <p class="truth-mark" aria-hidden="true">≠</p>
         <div>
-          <h2 id="truth-banner-title">มีตำแหน่ง ไม่ได้แปลว่า ยืนยันถูกต้องแล้ว</h2>
-          <p>ตัวเลข 94.6% คือความครอบคลุมของตำแหน่งตั้งต้น ไม่ใช่คะแนนความแม่นยำ ตำแหน่งทุกแถวยังไม่ผ่านการยืนยันภาคสนามในชุดผลรอบนี้ ทิศหน้าถนน ชื่อกิจการ และสีความเชื่อมั่นล้วนเป็นตัวช่วยจัดคิว ไม่ใช่คำยืนยันจากการเห็นป้ายบ้านจริง</p>
+          <h2 id="truth-banner-title">จุดสำรวจ จุดจับคู่ และจุดสำรอง แยกกันชัดเจน</h2>
+          <p>คงชั้นความเชื่อมั่นต้นทางทุกจุด จุดแปลงสำรอง 34 รายการเป็นตำแหน่งชั่วคราว ไม่ใช่บ้านที่ยืนยันถูกหลังแล้ว ส่วนรายการที่ยังไม่มีหลักฐานพอจะอยู่ในรายการโดยไม่เดาพิกัด</p>
         </div>
       </div>
     </aside>
 
-    <section class="explorer-section" id="explorer" aria-labelledby="explorer-title" data-explorer>
+    <section class="explorer-section" id="explorer" aria-labelledby="explorer-title" data-explorer data-public-snapshot-url="assets/data/public-housepoints-43a6b7022e2b.json.gz" data-public-snapshot-sha256="43a6b7022e2b81e95e7a5ba80c7eec611e15adcf3f36b98fd42181705062c197">
       <div class="explorer-intro">
         <div>
-          <p class="eyebrow">CityChat Review Desk</p>
-          <h2 id="explorer-title">เลือกหนึ่งรายการ<br>แล้วถามแผนที่ให้ถูกคำถาม</h2>
+          <p class="eyebrow">CityChat · แผนที่หมุดทั้งหมด</p>
+          <h2 id="explorer-title">จุดสำรวจและจุดเชื่อมั่นสูง<br>เห็นก่อน ไล่ดูต่อได้ทันที</h2>
         </div>
-        <p>ดูระดับและรัศมีของจุด แนวถนน ชื่อกิจการ และเหตุผลที่เข้าคิว จากนั้นเทียบหลักฐาน ลากหรือขยับจุดเสนอ และดาวน์โหลดไฟล์ร่างแก้จุดโดยไม่แตะต้นฉบับ</p>
+        <p>เปิดมาพร้อมทุกจุดที่แสดงได้ เรียง A0 → A → B → D → C เลือกดูเฉพาะชั้นหลักฐานหรือไล่ดูทั้งหมดได้ จุดต้นทาง ระดับตำแหน่ง และสถานะเดิมยังเก็บแยกจากตำแหน่งแปลงสำรอง</p>
       </div>
 
       <div class="local-data-banner" role="note">
         <span class="local-data-icon" aria-hidden="true">⌂</span>
         <div>
-          <strong>ตารางทะเบียนอยู่ในเบราว์เซอร์นี้เท่านั้น</strong>
-          <p>เว็บไม่อัปโหลดหรือบันทึกไฟล์และผลตรวจ เมื่อรีโหลดหรือปิดแท็บ ข้อมูลรายบ้านจะถูกล้าง · แผนที่พื้นหลังปิดไว้ก่อน และจะส่งเฉพาะบริเวณที่กำลังดูไปยังผู้ให้บริการเมื่อคุณเลือกเปิดเอง</p>
+          <strong>แผนที่สาธารณะ · ตัดข้อมูลระบุตัวบุคคลออกจากชุดแสดงผล</strong>
+          <p>ไม่เผยแพร่ชื่อเจ้าของ บ้านเลขที่ รหัสทะเบียน รหัสแปลง หรือข้อมูลติดต่อ แต่พิกัดจุดเปิดให้ดูและดาวน์โหลดได้ · แผนที่พื้นหลังปิดไว้ก่อน ผู้ให้บริการจะได้รับบริเวณที่ดูเมื่อคุณเลือกเปิดเอง</p>
         </div>
       </div>
 
@@ -168,7 +167,7 @@
         </div>
       </div>
 
-      <div class="file-gate" data-file-gate>
+      <div class="file-gate" data-file-gate hidden>
         <div class="file-gate-copy">
           <p class="file-gate-step">01 · เปิดโต๊ะตรวจ</p>
           <h3>เลือกชุดข้อมูลแผนที่ v3</h3>
@@ -188,8 +187,8 @@
       <div class="parse-state" data-parse-state role="status" aria-live="polite" aria-atomic="true" hidden>
         <div class="parse-pulse" aria-hidden="true"></div>
         <div>
-          <strong data-parse-title>กำลังอ่านไฟล์ในเครื่อง…</strong>
-          <p data-parse-detail>กำลังตรวจโครงสร้างก่อนเปิดข้อมูลรายบ้าน</p>
+          <strong data-parse-title>กำลังเปิดแผนที่…</strong>
+          <p data-parse-detail>กำลังโหลดชุดแสดงผลสาธารณะ</p>
         </div>
       </div>
 
@@ -405,9 +404,9 @@
                   </span>
                   <span><i class="legend-cluster" aria-hidden="true">12</i> ทะเบียนอาคารที่พิกัดเดียวกัน</span>
                   <span><i class="legend-selected" aria-hidden="true"></i> รายการที่เลือก</span>
-                  <span class="legend-heading">ข้อเสนอปรับพิกัด</span>
+                  <span class="legend-heading">เทียบจุดเดิมกับข้อเสนอ</span>
                   <span><i class="legend-adjustment-source" aria-hidden="true"></i>จุดต้นทาง</span>
-                  <span><i class="legend-adjustment-proposed" aria-hidden="true"></i>จุดเสนอ—ยังไม่ยืนยัน</span>
+                  <span><i class="legend-adjustment-proposed" aria-hidden="true"></i>จุดแปลงสำรอง / ข้อเสนอ—ยังไม่ยืนยัน</span>
                   <span><i class="legend-adjustment-connector" aria-hidden="true"></i>ระยะที่เลื่อน</span>
                   <span class="legend-heading">เส้นพื้นที่ประกอบ</span>
                   <span><i class="boundary-line-sample boundary-line-community" aria-hidden="true"></i>แนวแบ่งชุมชนโดยประมาณ</span>
@@ -587,19 +586,27 @@
       </noscript>
     </section>
 
-    <div class="summary-divider" aria-hidden="true"><span></span><p>อ่านภาพรวมผลรอบล่าสุด</p><span></span></div>
+    <div class="summary-divider" aria-hidden="true"><span></span><p>สิ่งที่ข้อมูลใหม่ช่วยได้</p><span></span></div>
 
     <section class="section" id="results" aria-labelledby="results-title">
       <div class="section-heading">
         <p class="eyebrow">ตอนนี้เราอยู่ตรงไหน?</p>
-        <h2 id="results-title">รอบ v9 พาจุดเข้าหาถนน<br>และพาคนไปหารายการที่ควรตรวจ</h2>
-        <p>ตำแหน่งตั้งต้นยังครอบคลุมเท่าเดิม แต่กติกา 1.9 ตรวจชื่อถนนและซอยไขว้จากสามแหล่ง แยก 4 คีย์ที่ต้องให้เทศบาลสอบทาน และคงชั้นที่อยู่จดทะเบียนกิจการไว้เป็นหลักฐานประกอบ</p>
+        <h2 id="results-title">มีจุดระดับแปลงให้เทียบเพิ่ม<br>แต่ยังไม่ใช่บ้านที่ยืนยันแล้ว</h2>
+        <p>ข้อมูลสิ่งปลูกสร้างที่ได้รับ 11 พฤศจิกายน 2569 ไม่มีพิกัดในตัว จึงเชื่อมผ่านข้อมูลแปลงเดิม ได้ข้อเสนอสำหรับรายการชั้น C/D จำนวน 70 รายการ แยกจากจุดต้นทางโดยไม่ย้ายทับหรือเพิ่มระดับความเชื่อมั่น</p>
       </div>
+
+      <div class="metric-grid parcel-summary">
+        <article class="metric-card"><p class="metric-kicker">ต้นทางไม่ระบุแปลงเดิม</p><p class="metric-value">68</p><p class="metric-meta">จึงยังเทียบรหัสแปลงเดิมไม่ได้ และต้องตรวจว่าเป็นบ้านถูกหลัง รวม 4 รายการที่เดิมไม่มีพิกัด</p></article>
+        <article class="metric-card"><p class="metric-kicker">แปลงใหม่ขัดกับแปลงเดิม</p><p class="metric-value">2</p><p class="metric-meta">แยกไว้ให้ตรวจหลักฐาน ไม่เลือกแทนผู้ตรวจ</p></article>
+        <article class="metric-card"><p class="metric-kicker">ความแม่นยำที่เพิ่มขึ้นจริง</p><p class="metric-value metric-value-text">ยังไม่ทราบ</p><p class="metric-meta">มีอาคารประกอบ 4 และประเภทไม่ใช่ที่อยู่อาศัย 6 รายการในชุดข้อเสนอ ระยะย้ายไม่ใช่ค่าความแม่นยำ</p></article>
+      </div>
+      <p class="section-intro">ใช้จุดแปลงสำรองในมุมมองเริ่มต้น 34 รายการ: ชั้น D 30 และชั้น C ที่เดิมไม่มีพิกัด 4 รายการ ไม่ใช้กรณีแปลงขัดกัน อาคารประกอบ หรือประเภทไม่ใช่ที่อยู่อาศัย สำหรับ D ระยะต้องไม่เกิน 500 เมตรและอยู่ในรัศมีประมาณเดิม เงื่อนไขนี้เป็นการคัดกรอง ไม่ใช่ผลวัดความแม่นยำ ส่วนจุดต้นทางยังคงเดิม</p>
+      <p class="section-intro">ฐานด้านล่างยังเป็นผลรอบ v9 ณ 8 กันยายน 2569 ตัวเลขไม่รวมการรับข้อเสนอแปลงเข้าต้นทาง</p>
 
       <div class="coverage-layout">
         <figure class="coverage-figure" aria-labelledby="coverage-caption">
-          <div class="coverage-ring" role="img" aria-label="40,236 จาก 42,524 รายการ หรือ 94.6 เปอร์เซ็นต์ มีตำแหน่งตั้งต้น">
-            <div class="coverage-ring-center">
+          <div class="coverage-number" aria-label="40,236 จาก 42,524 รายการ หรือ 94.6 เปอร์เซ็นต์ มีตำแหน่งตั้งต้น">
+            <div>
               <strong>94.6%</strong>
               <span>มีตำแหน่งตั้งต้น</span>
             </div>
@@ -954,14 +961,14 @@
           <ul>
             <li>ยืนยันตำแหน่งบ้านหรือสิทธิ์ของบุคคล</li>
             <li>นำทางงานฉุกเฉินโดยไม่ตรวจซ้ำ</li>
-            <li>เผยแพร่เลขที่บ้าน รหัสแปลง หรือจุดรายหลัง</li>
+            <li>นำจุดไปเชื่อมเปิดเผยชื่อเจ้าของ เลขทะเบียน หรือข้อมูลส่วนบุคคล</li>
           </ul>
         </article>
       </div>
 
       <div class="privacy-note">
-        <p class="privacy-note-label">เว็บสาธารณะไม่ฝังข้อมูลรายหลัง แต่เปิดให้เจ้าหน้าที่อ่านไฟล์ของตนเอง</p>
-        <p>เลขที่บ้าน รหัสทะเบียน รหัสแปลง และพิกัดรายหลังไม่อยู่ในโค้ดเว็บไซต์ ข้อมูลจะแสดงต่อเมื่อผู้ใช้เลือกไฟล์จากเครื่อง และเก็บไว้เฉพาะในหน่วยความจำของแท็บนี้</p>
+        <p class="privacy-note-label">เปิดจุดสาธารณะ โดยตัดข้อมูลระบุตัวบุคคลออก</p>
+        <p>เว็บโหลดชุดหมุดสาธารณะอัตโนมัติ ไม่แสดงชื่อเจ้าของ บ้านเลขที่ รหัสทะเบียน รหัสแปลง หรือข้อมูลติดต่อ แต่พิกัดยังเปิดให้ทุกคนดูและดาวน์โหลดได้ การตัดชื่อออกไม่ได้ทำให้ตำแหน่งไม่สามารถเชื่อมโยงกลับได้</p>
       </div>
     </section>
 
@@ -1019,7 +1026,7 @@
         <p>CityChat · โต๊ะตรวจตำแหน่งทะเบียนบ้านเทศบาลเมืองแสนสุข</p>
       </div>
       <div class="footer-meta">
-        <p>ข้อมูลสรุปผลรอบ v9 ณ 8 กันยายน 2569</p>
+        <p>ฐาน 8 กันยายน 2569 · เพิ่มข้อเสนอระดับแปลง 11 พฤศจิกายน 2569</p>
         <a href="https://github.com/montri-th/saensuk" rel="external">ดูหน้าโครงการบน GitHub</a>
       </div>
     </div>

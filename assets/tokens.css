@@ -1,4 +1,4 @@
-/* Audience-safe CityChat aliases from the verified Landometer DS v0.9.1
+/* Audience-safe CityChat aliases from the current Landometer DS v0.9.7
    production color projection. No color value is duplicated here. */
 @font-face {
   font-family: "Arvo";
@@ -127,15 +127,15 @@
   --state-pending-bg: var(--ldm-semantic-pending-light-background);
   --state-pending-fg: var(--ldm-semantic-pending-light-foreground);
 
-  --series-1: var(--ldm-series-01-light);
-  --series-2: var(--ldm-series-02-light);
-  --series-3: var(--ldm-series-03-light);
-  --series-4: var(--ldm-series-04-light);
-  --series-5: var(--ldm-series-05-light);
-  --series-6: var(--ldm-series-06-light);
-  --series-7: var(--ldm-series-07-light);
-  --series-8: var(--ldm-series-08-light);
-  --series-9: var(--ldm-series-09-light);
+  --series-1: var(--ldm-series-01-fill-light);
+  --series-2: var(--ldm-series-02-fill-light);
+  --series-3: var(--ldm-series-03-fill-light);
+  --series-4: var(--ldm-series-04-fill-light);
+  --series-5: var(--ldm-series-05-fill-light);
+  --series-6: var(--ldm-series-06-fill-light);
+  --series-7: var(--ldm-series-07-fill-light);
+  --series-8: var(--ldm-series-08-fill-light);
+  --series-9: var(--ldm-series-09-fill-light);
 
   --atmosphere-entry: var(--ldm-signature-closing-light);
   --atmosphere-context: linear-gradient(135deg, var(--ldm-foundation-surface-blue-tint-light), var(--ldm-semantic-assisted-light-background), var(--ldm-semantic-success-light-background));
@@ -219,15 +219,15 @@
   --state-neutral-fg: var(--ldm-semantic-neutral-dark-foreground);
   --state-pending-bg: var(--ldm-semantic-pending-dark-background);
   --state-pending-fg: var(--ldm-semantic-pending-dark-foreground);
-  --series-1: var(--ldm-series-01-dark);
-  --series-2: var(--ldm-series-02-dark);
-  --series-3: var(--ldm-series-03-dark);
-  --series-4: var(--ldm-series-04-dark);
-  --series-5: var(--ldm-series-05-dark);
-  --series-6: var(--ldm-series-06-dark);
-  --series-7: var(--ldm-series-07-dark);
-  --series-8: var(--ldm-series-08-dark);
-  --series-9: var(--ldm-series-09-dark);
+  --series-1: var(--ldm-series-01-fill-dark);
+  --series-2: var(--ldm-series-02-fill-dark);
+  --series-3: var(--ldm-series-03-fill-dark);
+  --series-4: var(--ldm-series-04-fill-dark);
+  --series-5: var(--ldm-series-05-fill-dark);
+  --series-6: var(--ldm-series-06-fill-dark);
+  --series-7: var(--ldm-series-07-fill-dark);
+  --series-8: var(--ldm-series-08-fill-dark);
+  --series-9: var(--ldm-series-09-fill-dark);
   --atmosphere-entry: var(--ldm-signature-closing-dark);
   --atmosphere-context: var(--ldm-signature-closing-dark);
   --atmosphere-handoff: linear-gradient(135deg, var(--ldm-energy-coral), var(--ldm-energy-yellow), var(--ldm-brand-dark-beige));
@@ -279,15 +279,15 @@
     --state-neutral-fg: var(--ldm-semantic-neutral-dark-foreground);
     --state-pending-bg: var(--ldm-semantic-pending-dark-background);
     --state-pending-fg: var(--ldm-semantic-pending-dark-foreground);
-    --series-1: var(--ldm-series-01-dark);
-    --series-2: var(--ldm-series-02-dark);
-    --series-3: var(--ldm-series-03-dark);
-    --series-4: var(--ldm-series-04-dark);
-    --series-5: var(--ldm-series-05-dark);
-    --series-6: var(--ldm-series-06-dark);
-    --series-7: var(--ldm-series-07-dark);
-    --series-8: var(--ldm-series-08-dark);
-    --series-9: var(--ldm-series-09-dark);
+    --series-1: var(--ldm-series-01-fill-dark);
+    --series-2: var(--ldm-series-02-fill-dark);
+    --series-3: var(--ldm-series-03-fill-dark);
+    --series-4: var(--ldm-series-04-fill-dark);
+    --series-5: var(--ldm-series-05-fill-dark);
+    --series-6: var(--ldm-series-06-fill-dark);
+    --series-7: var(--ldm-series-07-fill-dark);
+    --series-8: var(--ldm-series-08-fill-dark);
+    --series-9: var(--ldm-series-09-fill-dark);
     --atmosphere-entry: var(--ldm-signature-closing-dark);
     --atmosphere-context: var(--ldm-signature-closing-dark);
     --atmosphere-handoff: linear-gradient(135deg, var(--ldm-energy-coral), var(--ldm-energy-yellow), var(--ldm-brand-dark-beige));
