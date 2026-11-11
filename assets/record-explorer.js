@@ -1133,6 +1133,8 @@
     }
     fileLabels.forEach((label) => { label.hidden = true; });
     if (elements.search) elements.search.placeholder = "ค้นหารหัสจุด ถนน หรือชุมชน";
+    const queueNote = explorer.querySelector(".queue-default-note");
+    if (queueNote) queueNote.textContent = "เริ่มที่รายการทั้งหมด เรียงจุดสำรวจ A0 ก่อน ตามด้วย A, B และจุดประมาณ";
     const badge = explorer.querySelector(".local-badge");
     if (badge) badge.textContent = "ข้อมูลสาธารณะ";
     const identity = explorer.querySelector(".dataset-identity strong");
@@ -2241,6 +2243,8 @@
 
         const uncertaintyKeys = new Set();
         for (const marker of this._drawn) {
+          // Public overview keeps all points legible; selection still shows the source radius.
+          if (state.publicMode) continue;
           for (const index of marker.indices) {
             const row = state.rows[index];
             if (!row || !Number.isFinite(row.radius_m) || row.radius_m <= 100) continue;

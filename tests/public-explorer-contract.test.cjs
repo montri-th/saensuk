@@ -150,6 +150,7 @@ test("confidence map colors stay opaque and uncertainty circles do not tint the 
   assert.doesNotMatch(uncertainty, /globalAlpha|\.fill\(/);
   assert.match(uncertainty, /strokeStyle = pointColor\(row\)/);
   assert.match(uncertainty, /setLineDash\(\[\]\)/);
+  assert.match(source, /for \(const marker of this\._drawn\) \{\s*\/\/ Public overview[^\n]*\n\s*if \(state\.publicMode\) continue;/);
   const selection = source.slice(source.indexOf("const updateMapSelection ="), source.indexOf("const selectMapPoint ="));
   assert.doesNotMatch(selection, /fillOpacity: 0\.|opacity: candidate/);
   assert.match(selection, /radius: row\.radius_m,[\s\S]*?opacity: 1,[\s\S]*?fill: false/);
