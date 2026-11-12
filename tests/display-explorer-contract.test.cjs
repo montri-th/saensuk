@@ -38,7 +38,7 @@ test("explorer consumes the display-only business, frontage, review, and provena
 
 test("worker and main-thread fallback use the same pinned verified parser", () => {
   const parserTag = 'assets/csv-parser.js?v=20260908-display-v3-r3';
-  const explorerTag = 'assets/record-explorer.js?v=20261112-registry';
+  const explorerTag = 'assets/record-explorer.js?v=20261112-basemap';
 
   assert.match(html, new RegExp(parserTag.replace(/[.?]/g, "\\$&")));
   assert.match(worker, /importScripts\("\.\/csv-parser\.js\?v=20260908-display-v3-r3"\)/);
@@ -54,7 +54,7 @@ test("top-level and embedding-blocked pages share the current public visual bund
     "assets/color-srgb-10.production.css?v=20261111",
     "assets/tokens.css?v=20261111-public",
     "assets/styles.css?v=20261112-review",
-    "assets/explorer.css?v=20261112-review"
+    "assets/explorer.css?v=20261112-basemap"
   ]) {
     assert.ok(html.includes(asset));
     assert.ok(embedded.includes(asset));

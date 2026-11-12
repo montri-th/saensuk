@@ -120,7 +120,70 @@
     if (positioned !== 40236 || candidates !== 70 || conflicts !== 2 || missingCandidates !== 4 || Object.keys(counts).some((key) => counts[key] !== expectedCounts[key])) fail();
     return snapshot;
   };
-  const api = Object.freeze({ validatePublicSnapshot, publicEvidenceRank, isPublicParcelFallback, publicDisplayPoint, matchesPublicPreset, matchesPublicSearch, PUBLIC_PRESETS });
+  const createBasemapController = ({ leaflet, map, onState = () => {} }) => {
+    const providers = {
+      streets: {
+        url: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+        maxZoom: 19,
+        attribution: 'พื้นหลังถนน © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap contributors</a>'
+      },
+      satellite: {
+        url: "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        maxZoom: 20,
+        attribution: '<a href="https://www.arcgis.com/home/item.html?id=10df2279f9684e4a9f6a7f08febac2a9" target="_blank" rel="noopener noreferrer">Esri World Imagery</a> · Source: Esri, Vantor, Earthstar Geographics, and the GIS User Community'
+      }
+    };
+    let provider = "none";
+    let active = null;
+    let generation = 0;
+    let errors = 0;
+    let status = "none";
+    const snapshot = () => ({ provider, status, errors, active: active !== null });
+    const notify = () => onState(snapshot());
+    const select = (value) => {
+      if (value !== "none" && !Object.prototype.hasOwnProperty.call(providers, value)) return false;
+      const selectedGeneration = ++generation;
+      if (active) map.removeLayer(active);
+      active = null;
+      provider = value;
+      errors = 0;
+      status = value === "none" ? "none" : "loading";
+      if (value === "none") { notify(); return true; }
+      const config = providers[value];
+      const layer = leaflet.tileLayer(config.url, {
+        maxZoom: config.maxZoom,
+        attribution: config.attribution,
+        crossOrigin: false,
+        // OSM requires a valid Referer. Only the site's origin is sent cross-origin.
+        referrerPolicy: "strict-origin-when-cross-origin"
+      });
+      active = layer;
+      const isCurrent = () => generation === selectedGeneration && active === layer;
+      layer.on("tileerror", (event) => {
+        if (!isCurrent()) return;
+        if (event?.tile) {
+          if (event.tile.style) event.tile.style.visibility = "hidden";
+          event.tile.setAttribute?.("aria-hidden", "true");
+        }
+        errors += 1;
+        status = errors >= 3 ? "stopped" : "unavailable";
+        if (errors >= 3) { active = null; map.removeLayer(layer); }
+        notify();
+      });
+      layer.on("load", () => {
+        if (!isCurrent() || errors !== 0) return;
+        status = "available";
+        notify();
+      });
+      notify();
+      layer.addTo(map);
+      if (isCurrent()) layer.bringToBack();
+      return true;
+    };
+    // No external map requests until the user selects a provider.
+    return Object.freeze({ select, retry: () => provider !== "none" && select(provider), getState: snapshot });
+  };
+  const api = Object.freeze({ validatePublicSnapshot, publicEvidenceRank, isPublicParcelFallback, publicDisplayPoint, matchesPublicPreset, matchesPublicSearch, createBasemapController, PUBLIC_PRESETS });
   root.CityChatPublicSnapshot = api;
   if (typeof module === "object" && module.exports) module.exports = api;
 })(typeof globalThis === "object" ? globalThis : this);
@@ -423,6 +486,9 @@
     mapElement: explorer.querySelector("#record-map"),
     mapLoading: explorer.querySelector("[data-map-loading]"),
     mapDisclosure: explorer.querySelector("[data-map-disclosure]"),
+    basemapNotice: explorer.querySelector("[data-basemap-notice]"),
+    basemapWarning: explorer.querySelector("[data-basemap-warning]"),
+    basemapRetry: explorer.querySelector("[data-basemap-retry]"),
     mapFocus: explorer.querySelector("[data-map-focus]"),
     mapFocusLabel: explorer.querySelector("[data-map-focus-label]"),
     fitResults: explorer.querySelector("[data-fit-results]"),
@@ -578,10 +644,7 @@
     radiusLayer: null,
     unknownRadiusLayer: null,
     basemap: "none",
-    basemapLayers: {
-      streets: null,
-      satellite: null
-    },
+    basemapController: null,
     searchTimer: null
   };
   state.publicMode = Boolean(PUBLIC_SNAPSHOT_URL);
@@ -2604,46 +2667,36 @@
     satellite: `ภาพถ่ายดาวเทียม Esri World Imagery เปิดอยู่ ผู้ให้บริการอาจได้รับ IP และพื้นที่แผนที่ที่เปิดดู แต่เว็บไม่ส่งเลขที่บ้าน รหัสทะเบียน หรือไฟล์ CSV · ${SPATIAL_CONTEXT_DISCLOSURE} · ทะเบียนคนละหลังไม่ถูกรวมเพราะอยู่ใกล้กัน หมุดตัวเลขใช้เฉพาะอาคารชุด สำนักงาน หรือรายการพิกัดระดับอาคารที่ใช้พิกัดเดียวกันในข้อมูล · ภาพอาจมาจากหลายช่วงเวลาและหลายแหล่ง ใช้เปรียบเทียบบริบท ไม่ใช่หลักฐานสิทธิหรือความสดของข้อมูล`
   };
 
-  const createBasemapLayer = (mode) => {
-    if (mode === "streets") {
-      return L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        maxZoom: 19,
-        attribution: 'พื้นหลังถนน © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap contributors</a>',
-        crossOrigin: false,
-        referrerPolicy: "no-referrer"
-      });
-    }
-    if (mode === "satellite") {
-      return L.tileLayer("https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
-        maxZoom: 20,
-        attribution: '<a href="https://www.arcgis.com/home/item.html?id=10df2279f9684e4a9f6a7f08febac2a9" target="_blank" rel="noreferrer">Esri World Imagery</a> · Source: Esri, Vantor, Earthstar Geographics, and the GIS User Community',
-        crossOrigin: false,
-        referrerPolicy: "no-referrer"
-      });
-    }
-    return null;
-  };
-
   const setBasemap = (mode) => {
     ensureMap();
     if (!state.map) return;
-
-    const nextMode = Object.prototype.hasOwnProperty.call(BASEMAP_DISCLOSURES, mode) ? mode : "none";
-    Object.entries(state.basemapLayers).forEach(([layerMode, layer]) => {
-      if (layerMode !== nextMode && layer && state.map.hasLayer(layer)) state.map.removeLayer(layer);
-    });
-
-    if (nextMode !== "none") {
-      if (!state.basemapLayers[nextMode]) state.basemapLayers[nextMode] = createBasemapLayer(nextMode);
-      state.basemapLayers[nextMode].addTo(state.map);
-      state.basemapLayers[nextMode].bringToBack();
+    if (!state.basemapController) {
+      state.basemapController = window.CityChatPublicSnapshot.createBasemapController({
+        leaflet: L,
+        map: state.map,
+        onState: (basemap) => {
+          state.basemap = basemap.provider;
+          elements.mapDisclosure.textContent = basemap.status === "stopped"
+            ? BASEMAP_DISCLOSURES[basemap.provider].replace("เปิดอยู่", "หยุดโหลดแล้ว")
+            : BASEMAP_DISCLOSURES[basemap.provider];
+          elements.basemapButtons.forEach((button) => {
+            button.setAttribute("aria-pressed", String(button.dataset.basemap === basemap.provider));
+          });
+          const failed = ["unavailable", "stopped"].includes(basemap.status);
+          elements.basemapNotice.hidden = !failed;
+          const pane = elements.mapElement.closest(".map-pane");
+          const resized = pane.classList.contains("has-basemap-warning") !== failed;
+          pane.classList.toggle("has-basemap-warning", failed);
+          if (resized) requestAnimationFrame(() => state.map?.invalidateSize({ pan: false }));
+          if (failed) {
+            const provider = basemap.provider === "streets" ? "ถนน (OpenStreetMap)" : "ดาวเทียม (Esri)";
+            elements.basemapWarning.textContent = `พื้นหลัง${provider} โหลดไม่สำเร็จ${basemap.status === "stopped" ? " จึงหยุดโหลดพื้นหลังนี้แล้ว" : "ในบางส่วน"} หมุดและรายการยังดูได้ กดลองใหม่ ปิดพื้นหลัง หรือเลือกพื้นหลังอีกแบบ`;
+          }
+        }
+      });
     }
-
-    state.basemap = nextMode;
-    elements.mapDisclosure.textContent = BASEMAP_DISCLOSURES[nextMode];
-    elements.basemapButtons.forEach((button) => {
-      button.setAttribute("aria-pressed", String(button.dataset.basemap === nextMode));
-    });
+    const nextMode = Object.prototype.hasOwnProperty.call(BASEMAP_DISCLOSURES, mode) ? mode : "none";
+    state.basemapController.select(nextMode);
   };
 
   const openExternalMap = (mode) => {
@@ -3430,6 +3483,7 @@
   elements.basemapButtons.forEach((button) => {
     button.addEventListener("click", () => setBasemap(button.dataset.basemap));
   });
+  elements.basemapRetry?.addEventListener("click", () => state.basemapController?.retry());
   elements.streetviewButton.addEventListener("click", () => openExternalMap("streetview"));
   elements.mapsButton.addEventListener("click", () => openExternalMap("map"));
   elements.reviewForm.addEventListener("submit", saveReview);

@@ -1081,6 +1081,7 @@ html:not([data-top-level-safe="true"]) [data-file-label] {
 
 .map-stage {
   position: relative;
+  isolation: isolate;
   flex: 1 1 auto;
   min-height: 560px;
   overflow: hidden;
@@ -1454,6 +1455,35 @@ html:not([data-top-level-safe="true"]) [data-file-label] {
 
 .record-map.is-placing-coordinate {
   cursor: crosshair;
+}
+
+.basemap-notice:not([hidden]) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-top: 1px solid var(--border-default);
+  background: var(--surface-raised);
+}
+
+.basemap-notice p {
+  flex: 1 1 22rem;
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  line-height: 1.7;
+}
+
+.basemap-notice button {
+  flex: 0 1 auto;
+}
+
+@media (min-width: 768px) {
+  .map-pane.has-basemap-warning .map-stage,
+  .map-pane.has-basemap-warning .record-map {
+    min-height: 320px;
+  }
 }
 
 .map-disclosure {

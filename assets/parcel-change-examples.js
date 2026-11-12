@@ -87,7 +87,55 @@
     const searchable = normalizeSearch([row.sample_id, row.house_no_before, row.house_no_after, row.road_before, row.road_after, row.old_parcel_code, row.new_parcel_code].join(" "));
     return rest.split(/\s+/u).filter(Boolean).every((token) => searchable.includes(token));
   };
-  const api = Object.freeze({ validateParcelChangeExamples, matchesExampleFilter, matchesExampleSearch, distanceMeters, STATUSES, GROUPS, ROW_FIELDS });
+  const createExampleBasemapController = ({ leaflet, map, onState = () => {} }) => {
+    const providers = {
+      road: { url: "https://tile.openstreetmap.org/{z}/{x}/{y}.png", attribution: '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a>' },
+      satellite: { url: "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", attribution: "Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community" }
+    };
+    let provider = "none";
+    let active = null;
+    let generation = 0;
+    let errors = 0;
+    let status = "none";
+    const snapshot = () => ({ provider, status, errors, active: active !== null });
+    const notify = () => onState(snapshot());
+    const select = (value) => {
+      if (value !== "none" && !Object.prototype.hasOwnProperty.call(providers, value)) return false;
+      const selectedGeneration = ++generation;
+      if (active) map.removeLayer(active);
+      active = null;
+      provider = value;
+      errors = 0;
+      status = value === "none" ? "none" : "loading";
+      if (value === "none") { notify(); return true; }
+      const config = providers[value];
+      const layer = leaflet.tileLayer(config.url, { maxZoom: 19, attribution: config.attribution, referrerPolicy: "strict-origin-when-cross-origin" });
+      active = layer;
+      const isCurrent = () => generation === selectedGeneration && active === layer;
+      layer.on("tileerror", (event) => {
+        if (!isCurrent()) return;
+        if (event?.tile) {
+          if (event.tile.style) event.tile.style.visibility = "hidden";
+          event.tile.setAttribute?.("aria-hidden", "true");
+        }
+        errors += 1;
+        status = errors >= 3 ? "stopped" : "unavailable";
+        if (errors >= 3) { active = null; map.removeLayer(layer); }
+        notify();
+      });
+      layer.on("load", () => {
+        if (!isCurrent() || errors !== 0) return;
+        status = "available";
+        notify();
+      });
+      notify();
+      layer.addTo(map);
+      return true;
+    };
+    // Constructing the controller does not create a tile layer or request tiles.
+    return Object.freeze({ select, retry: () => provider !== "none" && select(provider), getState: snapshot });
+  };
+  const api = Object.freeze({ validateParcelChangeExamples, matchesExampleFilter, matchesExampleSearch, createExampleBasemapController, distanceMeters, STATUSES, GROUPS, ROW_FIELDS });
   root.CityChatParcelChangeExamples = api;
   if (typeof module === "object" && module.exports) module.exports = api;
 })(typeof globalThis === "object" ? globalThis : this);
@@ -98,7 +146,7 @@
   const root = document.querySelector("[data-parcel-change-examples]");
   if (!root) return;
   if (document.documentElement.dataset.topLevelSafe !== "true") return;
-  const { validateParcelChangeExamples, matchesExampleFilter, matchesExampleSearch } = window.CityChatParcelChangeExamples;
+  const { validateParcelChangeExamples, matchesExampleFilter, matchesExampleSearch, createExampleBasemapController } = window.CityChatParcelChangeExamples;
   const number = new Intl.NumberFormat("th-TH", { maximumFractionDigits: 1 });
   const el = (tag, className, text) => {
     const node = document.createElement(tag);
@@ -122,7 +170,7 @@
   const app = el("div", "parcel-examples-app");
   app.hidden = true;
   root.append(app);
-  const state = { data: null, filtered: [], filter: "all", query: "", selected: null, map: null, marks: null, base: "none", baseLayer: null, busy: false };
+  const state = { data: null, filtered: [], filter: "all", query: "", selected: null, map: null, marks: null, basemapController: null, busy: false };
   const toolbar = el("div", "parcel-examples-toolbar");
   const searchLabel = el("label", "parcel-examples-search-label", "ค้นหาบ้านเลขที่ ถนน หรือรหัสแปลง");
   const search = el("input", "parcel-examples-search");
@@ -175,12 +223,21 @@
     mapControls.append(control);
   }
   const outbound = el("p", "parcel-examples-map-disclosure", "เมื่อเลือกแผนที่ถนนหรือภาพดาวเทียม ผู้ให้บริการจะได้รับ IP และบริเวณที่ดู ภาพพื้นหลังไม่ยืนยันบ้านหรือแนวเขตแปลง");
+  const basemapNotice = el("div", "parcel-examples-basemap-notice");
+  basemapNotice.hidden = true;
+  const basemapWarning = el("p", "parcel-examples-map-status");
+  basemapWarning.setAttribute("role", "status");
+  basemapWarning.setAttribute("aria-live", "polite");
+  basemapWarning.dataset.parcelExamplesBasemapWarning = "";
+  const basemapRetry = button("ลองเปิดพื้นหลังนี้อีกครั้ง", () => state.basemapController?.retry());
+  basemapRetry.dataset.parcelExamplesBasemapRetry = "";
+  basemapNotice.append(basemapWarning, basemapRetry);
   const mapElement = el("div", "parcel-examples-map");
   mapElement.setAttribute("role", "region");
   mapElement.setAttribute("aria-label", "แผนที่เปรียบเทียบจุดอ้างอิง LTAX เดิมของรหัสเก่าและรหัสใหม่");
   const mapStatus = el("p", "parcel-examples-map-status");
   const legend = el("p", "parcel-examples-map-legend", "● เก่า: รหัสในทะเบียนเดิม  ·  ◯ ใหม่: รหัสในทะเบียนใหม่ — ทั้งสองใช้พิกัดจากชั้น LTAX เดียวกัน");
-  detail.append(navigation, title, comparison, conclusion, mapHeading, mapNote, mapControls, outbound, mapElement, mapStatus, legend);
+  detail.append(navigation, title, comparison, conclusion, mapHeading, mapNote, mapControls, outbound, basemapNotice, mapElement, mapStatus, legend);
   layout.append(listPanel, detail);
   app.append(toolbar, result, layout);
 
@@ -239,6 +296,12 @@
     if (!window.L) { mapStatus.textContent = "ยังเปิดแผนที่ไม่ได้ อ่านรหัสและสถานะการเชื่อมต่อจากตารางด้านบนได้"; return false; }
     state.map = L.map(mapElement, { scrollWheelZoom: false }).setView([13.28, 100.93], 13);
     state.marks = L.layerGroup().addTo(state.map);
+    state.basemapController = createExampleBasemapController({ leaflet: L, map: state.map, onState: (basemap) => {
+      mapControls.querySelectorAll("button").forEach((control) => control.setAttribute("aria-pressed", String(control.dataset.parcelExamplesBasemap === basemap.provider)));
+      basemapNotice.hidden = !["unavailable", "stopped"].includes(basemap.status);
+      const provider = basemap.provider === "road" ? "ถนน (OpenStreetMap)" : "ดาวเทียม (Esri)";
+      basemapWarning.textContent = `พื้นหลัง${provider} โหลดไม่สำเร็จ${basemap.status === "stopped" ? " จึงหยุดโหลดพื้นหลังนี้แล้ว" : "ในบางส่วน"} หมุดและรายการยังดูได้ กดลองใหม่ ปิดพื้นหลัง หรือเลือกพื้นหลังอีกแบบจากปุ่มด้านบน`;
+    } });
     return true;
   };
   const renderMap = () => {
@@ -265,13 +328,7 @@
   };
   const setBasemap = (value) => {
     if (!ensureMap()) return;
-    if (state.baseLayer) state.map.removeLayer(state.baseLayer);
-    state.baseLayer = null;
-    state.base = value;
-    if (value === "road") state.baseLayer = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a>' });
-    if (value === "satellite") state.baseLayer = L.tileLayer("https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", { maxZoom: 19, attribution: "Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community" });
-    if (state.baseLayer) state.baseLayer.addTo(state.map);
-    mapControls.querySelectorAll("button").forEach((control) => control.setAttribute("aria-pressed", String(control.dataset.parcelExamplesBasemap === value)));
+    state.basemapController.select(value);
   };
   const render = () => { renderList(); renderDetail(); };
   const applyFilters = () => {

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>สำรวจหมุดแสนสุข · CityChat</title>
   <meta name="description" content="เปิดดูหมุดแสนสุขทันที ค้นหาบ้านเลขที่ รหัสประจำบ้าน 11 หลัก หรือถนน เทียบข้อเสนอระดับแปลงที่ยังไม่ยืนยัน โดยไม่ต้องเลือก CSV">
-  <meta name="citychat-release" content="public-20261112-r3">
+  <meta name="citychat-release" content="public-20261112-r4">
   <meta name="robots" content="index,follow">
   <meta name="theme-color" content="#1D4497">
   <meta name="referrer" content="strict-origin-when-cross-origin">
@@ -41,15 +41,15 @@
   <link rel="stylesheet" href="assets/tokens.css?v=20261111-public">
   <link rel="stylesheet" href="assets/vendor/leaflet/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
   <link rel="stylesheet" href="assets/styles.css?v=20261112-review">
-  <link rel="stylesheet" href="assets/explorer.css?v=20261112-review">
+  <link rel="stylesheet" href="assets/explorer.css?v=20261112-basemap">
   <link rel="stylesheet" href="assets/parcel-change-examples.css?v=20261112-examples">
   <script defer src="assets/vendor/leaflet/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
   <script defer src="assets/app.js?v=20260908-v9"></script>
   <script defer src="assets/marker-grouping.js?v=20260906-building-only"></script>
   <script defer src="assets/csv-parser.js?v=20260908-display-v3-r3"></script>
   <script defer src="assets/coordinate-adjustment.js?v=20260908-display-v3-r2"></script>
-  <script defer src="assets/record-explorer.js?v=20261112-registry"></script>
-  <script defer src="assets/parcel-change-examples.js?v=20261112-examples"></script>
+  <script defer src="assets/record-explorer.js?v=20261112-basemap"></script>
+  <script defer src="assets/parcel-change-examples.js?v=20261112-basemap"></script>
 </head>
 <body id="top">
   <a class="skip-link" href="#main">ข้ามไปยังเนื้อหาหลัก</a>
@@ -431,6 +431,10 @@
                   <span class="legend-boundary-note">ทั้งสองเส้นใช้ช่วยอ่านบริบท ไม่ใช่เขตเทศบาล แนวเขตทางกฎหมาย หรือแนวเขตสิทธิ</span>
                 </div>
               </details>
+            </div>
+            <div class="basemap-notice" data-basemap-notice hidden>
+              <p data-basemap-warning role="status" aria-live="polite"></p>
+              <button type="button" class="quiet-button" data-basemap-retry>ลองเปิดพื้นหลังนี้อีกครั้ง</button>
             </div>
             <p class="map-disclosure" data-map-disclosure>พื้นหลังปิดอยู่ จึงยังไม่ส่งพื้นที่ที่ดูออกไปภายนอก เลือกถนน (OpenStreetMap) หรือดาวเทียม (Esri World Imagery) เมื่อต้องการเปรียบเทียบ · แนวแบ่งชุมชนและกรอบพื้นที่อนุมานจากขอบนอก 23 ชุมชนเป็นชั้นประกอบ ไม่ใช่เขตเทศบาล แนวเขตทางกฎหมาย หรือแนวเขตสิทธิ · สีหมุดบอกชั้นความเชื่อมั่น โดย A0 ใช้สีเดียวกับ A และมีจุดวงเล็กด้านใน ส่วนรูปทรงบอกระดับตำแหน่ง · ทิศหน้าถนนใช้เฉพาะแถวที่มีค่าและเป็นเพียงมุมเริ่มดูภาพ · ภาพถ่ายอาจต่างช่วงเวลาและความละเอียด ไม่ใช่การยืนยันป้ายบ้าน</p>
           </section>
