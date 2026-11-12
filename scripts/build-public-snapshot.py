@@ -2,8 +2,9 @@
 """Build the owner-authorized public point projection from private local inputs.
 
 Private inputs are never copied into the release tree. Household-to-candidate
-joins happen only while building; output IDs identify this public snapshot, not
-the municipality's household registry. Every parcel candidate remains unverified.
+joins happen only while building. The owner separately approved publication of
+the source household registry identifier; public_id remains a display sequence.
+Every parcel candidate remains unverified.
 """
 
 import argparse
@@ -16,11 +17,11 @@ import math
 import re
 from pathlib import Path
 
-SCHEMA_VERSION = "saensuk-public-points-2"
-RELEASE_ID = "public-20261112"
+SCHEMA_VERSION = "saensuk-public-points-3"
+RELEASE_ID = "public-20261112-registry"
 DISPLAY_SHA256 = "a57f1462fdc5b23f88d90856b0e2556d2d231d6e0b17af3468e133ed2770d8f5"
 CANDIDATE_SHA256 = "bb68abbca7bea680b7f1d40bb72d51f3feabf45b9077a6e227ee3dbb4bc1ae03"
-PREVIOUS_PUBLIC_SHA256 = "43a6b7022e2b81e95e7a5ba80c7eec611e15adcf3f36b98fd42181705062c197"
+PREVIOUS_PUBLIC_SHA256 = "74080982aded398033ab40f71062557539fec09829d54df95db9a6e3cf3fd54f"
 LTAX_SHA256 = "38e4d737533f7e639ce0ff43c631c13bc471bbe19cd44f76bcb225a5ec12eb06"
 BUILDINGS_SHA256 = "36b5c91e8de4f587468e20c00175dba18cba2d8b4f38e62779abe7c6f1cb4a66"
 
@@ -56,7 +57,7 @@ CONFIDENCE = {
 STATUSES = frozenset(("prototype-unverified", "needs-review", "approximate-unverified", "building-lookup-pending", "desk-lookup-unverified"))
 GEOMETRIES = frozenset(("parcel", "review", "cluster", "soi_road", "interpolated", "building", "community"))
 TIERS = frozenset(("A0", "A1", "A2", "B2", "B3", "B4", "B5", "B6", "B7", "C1", "C2", "C3", "C4", "C5", "D"))
-ROW_FIELDS = frozenset(("public_id", "house_no", "road", "community", "place_type", "lat", "lon", "radius_m", "tier", "confidence_band", "status", "geom_level", "candidate"))
+ROW_FIELDS = frozenset(("public_id", "house_reg_id", "house_no", "road", "community", "place_type", "lat", "lon", "radius_m", "tier", "confidence_band", "status", "geom_level", "candidate"))
 CANDIDATE_FIELDS = frozenset(("lat", "lon", "shift_m", "conflict", "auxiliary", "nonresidential"))
 TOP_FIELDS = frozenset(("schema_version", "release_id", "snapshot", "summary", "records"))
 
@@ -85,6 +86,12 @@ def house_number(value):
     # This bounded house-number grammar cannot carry owner names or registry IDs.
     if not isinstance(value, str) or not re.fullmatch(r"[0-9]{1,6}(?:/{1,2}[0-9]{1,6})?(?: ?[ก-ฮ]\.?)?", value):
         raise ValueError("Unexpected house number; cannot release free text")
+    return value
+
+
+def house_registry_id(value):
+    if not isinstance(value, str) or not re.fullmatch(r"[0-9]{4}-[0-9]{6}-[0-9]", value):
+        raise ValueError("Unexpected house registry identifier; preserve the approved source string")
     return value
 
 
@@ -130,6 +137,7 @@ def project_records(source_rows, private_candidates):
                     raise ValueError("Candidate original source does not match display snapshot")
         record = {
             "public_id": "",
+            "house_reg_id": house_registry_id(private_id),
             "house_no": house_number(row["house_no"]),
             "road": controlled(row["road"], ROADS, "road"),
             "community": controlled(row["community"], COMMUNITIES, "community"),
@@ -154,22 +162,22 @@ def project_records(source_rows, private_candidates):
 
 
 def migrate_records(source_rows, previous_snapshot):
-    """Add only approved house numbers while retaining the prior public mapping.
+    """Add only approved registry identifiers while retaining the public mapping.
 
     The caller pins the compressed input hash. Every source-derived public field
     must also match after the identical stable geographic/category sort, so a
     changed source, ordering or coordinate cannot attach a candidate to a new row.
     """
-    if set(previous_snapshot) != TOP_FIELDS or previous_snapshot["schema_version"] != "saensuk-public-points-1" or previous_snapshot["release_id"] != "public-20261111":
+    if set(previous_snapshot) != TOP_FIELDS or previous_snapshot["schema_version"] != "saensuk-public-points-2" or previous_snapshot["release_id"] != "public-20261112":
         raise ValueError("Unexpected previous public snapshot")
     records = project_records(source_rows, [])
     previous_records = previous_snapshot["records"]
     if not isinstance(previous_records, list) or len(previous_records) != len(records):
         raise ValueError("Previous public record count mismatch")
     for record, previous in zip(records, previous_records):
-        if set(previous) != ROW_FIELDS - {"house_no"}:
+        if set(previous) != ROW_FIELDS - {"house_reg_id"}:
             raise ValueError("Previous public record field mismatch")
-        current_source = {key: value for key, value in record.items() if key not in ("house_no", "candidate")}
+        current_source = {key: value for key, value in record.items() if key not in ("house_reg_id", "candidate")}
         previous_source = {key: value for key, value in previous.items() if key != "candidate"}
         if current_source != previous_source:
             raise ValueError("Previous public record does not match exact source projection")
@@ -184,11 +192,16 @@ def validate_snapshot(snapshot):
         raise ValueError("Invalid public snapshot dates")
     counts = collections.Counter()
     ids = set()
+    registry_ids = set()
     bands = collections.Counter()
     for index, row in enumerate(snapshot["records"], 1):
         if set(row) != ROW_FIELDS or row["public_id"] != f"P{index:06d}" or row["public_id"] in ids:
             raise ValueError("Invalid public record fields or identifier")
         ids.add(row["public_id"])
+        source_id = house_registry_id(row["house_reg_id"])
+        if source_id in registry_ids:
+            raise ValueError("Duplicate public house registry identifier")
+        registry_ids.add(source_id)
         house_number(row["house_no"])
         for field, values in (("road", ROADS), ("community", COMMUNITIES), ("place_type", PLACE_TYPES), ("tier", TIERS), ("confidence_band", CONFIDENCE), ("status", STATUSES), ("geom_level", GEOMETRIES)):
             controlled(row[field], values, field)
@@ -224,14 +237,24 @@ def validate_snapshot(snapshot):
     return summary
 
 
-def assert_private_identifiers_absent(payload, source_rows, candidates):
-    """Scan every actual private key, including values hidden in extra JSON text."""
-    private_ids = {row["house_reg_id"] for row in source_rows}
+def assert_approved_identifier_projection(payload, source_rows, candidates):
+    """Permit exact approved registry IDs only in their dedicated record field.
+
+    Owner/contact and source parcel/building identifiers remain excluded. The
+    allowlist validator runs before this independent identifier-integrity scan.
+    """
+    source_ids = {house_registry_id(row["house_reg_id"]) for row in source_rows}
     id_pattern = r"[0-9]{4}-[0-9]{6}-[0-9]"
-    if not all(re.fullmatch(id_pattern, private_id) for private_id in private_ids):
-        raise ValueError("Unexpected private ID grammar; explicit leak scan must be updated")
-    if private_ids.intersection(re.findall(id_pattern, payload.decode("utf-8"))):
-        raise ValueError("Private household identifier leaked into projection")
+    decoded = json.loads(payload.decode("utf-8"))
+    if not isinstance(decoded, dict) or not isinstance(decoded.get("records"), list):
+        raise ValueError("Missing public records for identifier verification")
+    published_ids = [row.pop("house_reg_id", None) for row in decoded["records"]]
+    if any(not isinstance(value, str) for value in published_ids) or len(published_ids) != len(source_rows) or len(set(published_ids)) != len(published_ids) or set(published_ids) != source_ids:
+        raise ValueError("Approved registry identifiers must equal the exact source once each")
+    if re.search(id_pattern, json.dumps(decoded, ensure_ascii=False)):
+        raise ValueError("House registry identifiers may appear only in their approved field")
+    if re.search(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", payload.decode("utf-8"), flags=re.I):
+        raise ValueError("Excluded source object UUID in public projection")
     for candidate in candidates:
         for field in ("original_source_parcel_id", "new_source_parcel_id", "new_tax_parcel_code", "building_id"):
             value = candidate.get(field)
@@ -308,8 +331,8 @@ def build(display_path, candidates_path, output_root, previous_public_path=None)
     snapshot = {"schema_version": SCHEMA_VERSION, "release_id": RELEASE_ID, "snapshot": {"source_date": "2026-09-08", "rules": "1.9.0", "buildings_received_date": "2026-11-11"}, "summary": summary, "records": records}
     validate_snapshot(snapshot)
     payload = (json.dumps(snapshot, ensure_ascii=False, separators=(",", ":"), allow_nan=False) + "\n").encode("utf-8")
-    # Verify every actual private join key is absent, not only forbidden key names.
-    assert_private_identifiers_absent(payload, source_rows, candidates)
+    # Verify source registry IDs exactly once, and all other excluded keys absent.
+    assert_approved_identifier_projection(payload, source_rows, candidates)
     decoded_digest = hashlib.sha256(payload).hexdigest()
     compressed = gzip.compress(payload, compresslevel=9, mtime=0)
     digest = hashlib.sha256(compressed).hexdigest()
@@ -320,10 +343,10 @@ def build(display_path, candidates_path, output_root, previous_public_path=None)
         raise ValueError("Immutable public asset collision")
     destination.write_bytes(compressed)
     manifest = {
-        "schema_version": "saensuk-public-data-review-2",
+        "schema_version": "saensuk-public-data-review-3",
         "release_id": RELEASE_ID,
-        "owner_authorization": "owner-message:2026-11-12:public-house-number-and-road-approved",
-        "previous_owner_authorization": "owner-message:2026-11-11:เปิด public เลย",
+        "owner_authorization": "owner-message:2026-11-12:public-house-number-and-house-registry-id-approved",
+        "previous_owner_authorization": "owner-message:2026-11-12:public-house-number-and-road-approved",
         "audience": "public",
         "public_asset": {"path": relative_path, "sha256": digest, "bytes": len(compressed), "mime_type": "application/gzip", "stored_compression": "gzip", "decoded": {"sha256": decoded_digest, "bytes": len(payload), "mime_type": "application/json"}},
         "snapshot": snapshot["snapshot"],
@@ -331,12 +354,12 @@ def build(display_path, candidates_path, output_root, previous_public_path=None)
         "source_hashes": {"display_v3_sha256": DISPLAY_SHA256, "private_candidate70_sha256": CANDIDATE_SHA256, "ltax_sha256": LTAX_SHA256, "buildings_received_sha256": BUILDINGS_SHA256, **({"previous_public_sha256": PREVIOUS_PUBLIC_SHA256} if previous_public_path is not None else {})},
         "fields_allowed": sorted(ROW_FIELDS),
         "candidate_fields_allowed": sorted(CANDIDATE_FIELDS),
-        "fields_excluded": ["owner_names", "contact_details", "house_reg_id", "trok", "soi", "source_parcel_id", "tax_parcel_codes", "building_id", "business_names", "reviewer_metadata", "review_notes"],
-        "disclosure": "Contains original source house numbers, controlled road/community labels, household point coordinates and separate unverified parcel candidate coordinates under explicit owner authorization. These public addresses and coordinates can identify a location; owner names, municipal household identifiers, parcel identifiers and contact details remain excluded.",
+        "fields_excluded": ["owner_names", "contact_details", "trok", "soi", "source_parcel_id", "tax_parcel_codes", "building_id", "business_names", "reviewer_metadata", "review_notes"],
+        "disclosure": "Contains original source house numbers and 11-digit household registry identifiers in their original formatted strings, controlled road/community labels, household point coordinates and separate unverified parcel candidate coordinates under explicit owner authorization. These public addresses, identifiers and coordinates can identify a location; owner names, contact details and source parcel/building identifiers remain excluded from this point dataset.",
         "public_id_meaning": "Snapshot-specific display sequence after geographic/category sorting; not a municipal registry identifier.",
         "candidate_policy": {"status": "candidate-unverified", "auto_apply": False, "source_fields_unchanged": True, "newly_field_verified": 0},
         "display_coordinate_policy": display_coordinate_policy(records),
-        "checks": {"all_private_household_ids_absent": len(source_rows), "private_candidate_parcel_and_building_ids_absent": 70, "candidate_identifier_check": "inherited hash-pinned public projection; all candidate values unchanged" if previous_public_path is not None else "actual private candidate identifiers scanned", "strict_field_allowlist": True, "controlled_text_vocabularies": True, "strict_house_number_grammar": True, "house_numbers_preserved_from_exact_source": len(source_rows), "source_hashes_match": True, "aggregate_counts_match": True, **({"previous_public_source_fields_equal": len(records), "only_added_record_field": "house_no"} if previous_public_path is not None else {})},
+        "checks": {"approved_house_registry_ids_preserved_from_exact_source": len(source_rows), "approved_house_registry_ids_unique": len({row["house_reg_id"] for row in records}), "registry_identifiers_only_in_approved_field": True, "private_candidate_parcel_and_building_ids_absent": 70, "candidate_identifier_check": "inherited hash-pinned public projection; all candidate values unchanged" if previous_public_path is not None else "actual private candidate identifiers scanned", "strict_field_allowlist": True, "controlled_text_vocabularies": True, "strict_house_number_grammar": True, "house_numbers_preserved_from_exact_source": len(source_rows), "source_hashes_match": True, "aggregate_counts_match": True, **({"previous_public_source_fields_equal": len(records), "only_added_record_field": "house_reg_id"} if previous_public_path is not None else {})},
     }
     manifest_path = Path(output_root) / "governance/public-data-release.json"
     manifest_path.parent.mkdir(parents=True, exist_ok=True)
@@ -349,7 +372,7 @@ def main():
     parser.add_argument("--display", type=Path, required=True, help="Approved private display v3 CSV outside publication root")
     candidate_input = parser.add_mutually_exclusive_group(required=True)
     candidate_input.add_argument("--candidates", type=Path, help="Private reviewed candidate70 JSON outside publication root")
-    candidate_input.add_argument("--previous-public-snapshot", type=Path, help="Exact approved public v1 gzip; candidate fields are retained unchanged after full source parity")
+    candidate_input.add_argument("--previous-public-snapshot", type=Path, help="Exact approved public v2 gzip; candidate fields are retained unchanged after full source parity")
     parser.add_argument("--output-root", type=Path, required=True, help="Existing public repository root")
     arguments = parser.parse_args()
     root = arguments.output_root.resolve()

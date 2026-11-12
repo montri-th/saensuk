@@ -24,7 +24,7 @@ test("public explorer validates the complete public snapshot without mutating so
 test("public explorer rejects unexpected fields at every disclosure boundary", () => {
   for (const inject of [
     (data) => { data.owner = "not allowed"; },
-    (data) => { data.records[0].house_reg_id = "not allowed"; },
+    (data) => { data.records[0].building_id = "not allowed"; },
     (data) => { data.records[0].house_no = "not allowed"; },
     (data) => { data.records.find((row) => row.candidate).candidate.parcel_id = "not allowed"; }
   ]) {
@@ -32,6 +32,30 @@ test("public explorer rejects unexpected fields at every disclosure boundary", (
     inject(data);
     assert.throws(() => validatePublicSnapshot(data), /ชุดข้อมูลสาธารณะ/);
   }
+});
+
+test("public registry codes retain exact source grammar and uniqueness", () => {
+  assert.equal(new Set(snapshot.records.map((row) => row.house_reg_id)).size, 42524);
+  for (const change of [
+    (data) => { data.records[0].house_reg_id = "00010023456"; },
+    (data) => { data.records[0].house_reg_id = "PRIVATE PERSON"; },
+    (data) => { data.records[0].house_reg_id = data.records[1].house_reg_id; }
+  ]) {
+    const data = clone();
+    change(data);
+    assert.throws(() => validatePublicSnapshot(data));
+  }
+});
+
+test("registry searches accept exact formatted, compact and Thai-digit codes with leading zeros", () => {
+  const row = { public_id: "P000001", house_reg_id: "0001-002345-6", house_no: "657", road: "ถนน สุขุมวิท", community: "ชุมชน แสนสุข" };
+  for (const query of ["0001-002345-6", "00010023456", "๐๐๐๑๐๐๒๓๔๕๖", "00010023456 สุขุมวิท", "สุขุมวิท 00010023456"]) {
+    assert.equal(matchesPublicSearch(row, query), true, query);
+  }
+  assert.equal(matchesPublicSearch(row, "00010023457"), false);
+  assert.equal(matchesPublicSearch(row, "00010023456 บางแสน"), false);
+  const first = snapshot.records[0];
+  assert.deepEqual(snapshot.records.filter((record) => matchesPublicSearch(record, first.house_reg_id.replace(/-/gu, ""))).map((record) => record.public_id), [first.public_id]);
 });
 
 test("public explorer rejects invalid coordinates, partial missingness and changed source bands", () => {

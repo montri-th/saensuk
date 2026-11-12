@@ -1,6 +1,7 @@
 """Synthetic failure-mode tests for the private-to-public field projection."""
 import copy
 import importlib.util
+import json
 from pathlib import Path
 import sys
 import unittest
@@ -45,6 +46,7 @@ class ProjectionTests(unittest.TestCase):
         self.assertEqual(set(projected["candidate"]), builder.CANDIDATE_FIELDS)
         self.assertNotIn("PRIVATE", str(projected))
         self.assertEqual(projected["house_no"], "22/9 ก.")
+        self.assertEqual(projected["house_reg_id"], source()["house_reg_id"])
         self.assertEqual(projected["lat"], 13.2)
         self.assertEqual(projected["candidate"]["lat"], 13.21)
 
@@ -63,22 +65,29 @@ class ProjectionTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 builder.project_records([source(house_no=value)], [])
 
-    def test_previous_public_migration_adds_only_house_number_and_keeps_candidates_unchanged(self):
+    def test_registry_identifier_is_an_exact_formatted_source_string(self):
+        for value in ("1111-222222-3", "0001-000001-0"):
+            self.assertEqual(builder.project_records([source(house_reg_id=value)], [])[0]["house_reg_id"], value)
+        for value in ("11112222223", 11112222223, "1111-222222-33", "1.1112222223e10", "PRIVATE PERSON", "", None):
+            with self.assertRaises(ValueError):
+                builder.project_records([source(house_reg_id=value)], [])
+
+    def test_previous_public_migration_adds_only_registry_identifier_and_keeps_candidates_unchanged(self):
         previous_row = builder.project_records([source()], [candidate()])[0]
-        del previous_row["house_no"]
-        previous = {"schema_version": "saensuk-public-points-1", "release_id": "public-20261111", "snapshot": {}, "summary": {}, "records": [previous_row]}
+        del previous_row["house_reg_id"]
+        previous = {"schema_version": "saensuk-public-points-2", "release_id": "public-20261112", "snapshot": {}, "summary": {}, "records": [previous_row]}
         original = copy.deepcopy(previous)
         migrated = builder.migrate_records([source()], previous)[0]
-        self.assertEqual(migrated["house_no"], source()["house_no"])
-        self.assertEqual({key: value for key, value in migrated.items() if key != "house_no"}, previous_row)
+        self.assertEqual(migrated["house_reg_id"], source()["house_reg_id"])
+        self.assertEqual({key: value for key, value in migrated.items() if key != "house_reg_id"}, previous_row)
         self.assertEqual(previous, original)
         self.assertIsNot(migrated["candidate"], previous_row["candidate"])
 
     def test_previous_public_migration_rejects_changed_source_values_or_order(self):
         previous_row = builder.project_records([source()], [candidate()])[0]
-        del previous_row["house_no"]
-        for field, changed in (("public_id", "P000002"), ("lon", 101.1), ("radius_m", 200), ("status", "needs-review"), ("place_type", "ร้านค้า")):
-            previous = {"schema_version": "saensuk-public-points-1", "release_id": "public-20261111", "snapshot": {}, "summary": {}, "records": [{**previous_row, field: changed}]}
+        del previous_row["house_reg_id"]
+        for field, changed in (("public_id", "P000002"), ("house_no", "23/9 ก."), ("lon", 101.1), ("radius_m", 200), ("status", "needs-review"), ("place_type", "ร้านค้า")):
+            previous = {"schema_version": "saensuk-public-points-2", "release_id": "public-20261112", "snapshot": {}, "summary": {}, "records": [{**previous_row, field: changed}]}
             with self.assertRaises(ValueError):
                 builder.migrate_records([source()], previous)
 
@@ -110,19 +119,29 @@ class ProjectionTests(unittest.TestCase):
         self.assertIsNotNone(projected["candidate"]["lat"])
         self.assertIsNone(projected["candidate"]["shift_m"])
 
-    def test_actual_household_id_leak_fails_even_under_other_field_name(self):
+    def test_approved_registry_id_is_rejected_outside_its_dedicated_field(self):
+        payload = json.dumps({"records": [{"house_reg_id": source()["house_reg_id"], "debug": "prefix1111-222222-3suffix"}]}).encode()
         with self.assertRaises(ValueError):
-            builder.assert_private_identifiers_absent(b'{"debug":"prefix1111-222222-3suffix"}', [source()], [])
+            builder.assert_approved_identifier_projection(payload, [source()], [])
+
+    def test_published_registry_identifiers_must_match_source_once_each(self):
+        for records in ([], [{"house_reg_id": "1111-222222-4"}], [{"house_reg_id": source()["house_reg_id"]}] * 2):
+            with self.assertRaises(ValueError):
+                builder.assert_approved_identifier_projection(json.dumps({"records": records}).encode(), [source()], [])
 
     def test_actual_parcel_and_building_id_leaks_fail(self):
         for field in ("new_tax_parcel_code", "building_id"):
             private = candidate()
-            payload = ('{"debug":"' + private[field] + '"}').encode()
+            payload = json.dumps({"records": [{"house_reg_id": source()["house_reg_id"]}], "debug": private[field]}).encode()
             with self.assertRaises(ValueError):
-                builder.assert_private_identifiers_absent(payload, [source()], [private])
+                builder.assert_approved_identifier_projection(payload, [source()], [private])
 
-    def test_absence_scan_accepts_only_public_values(self):
-        builder.assert_private_identifiers_absent(b'{"public_id":"P000001","lat":13.2}', [source()], [candidate()])
+    def test_identifier_scan_accepts_approved_registry_field_and_rejects_object_uuid(self):
+        payload = {"records": [{"house_reg_id": source()["house_reg_id"], "public_id": "P000001", "lat": 13.2}]}
+        builder.assert_approved_identifier_projection(json.dumps(payload).encode(), [source()], [candidate()])
+        payload["debug"] = "12345678-1234-1234-1234-123456789abc"
+        with self.assertRaises(ValueError):
+            builder.assert_approved_identifier_projection(json.dumps(payload).encode(), [source()], [])
 
 
 if __name__ == "__main__":

@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>สำรวจหมุดแสนสุข · CityChat</title>
-  <meta name="description" content="เปิดดูหมุดแสนสุขทั้งหมดได้ทันที ไม่ต้องเลือก CSV เรียงจุดสำรวจเทศบาลและจุดเชื่อมั่นสูงก่อน พร้อมตำแหน่งระดับแปลงสำรองที่ระบุสถานะชัดเจน">
-  <meta name="citychat-release" content="public-20261112-r2">
+  <meta name="description" content="เปิดดูหมุดแสนสุขทันที ค้นหาบ้านเลขที่ รหัสประจำบ้าน 11 หลัก หรือถนน เทียบข้อเสนอระดับแปลงที่ยังไม่ยืนยัน โดยไม่ต้องเลือก CSV">
+  <meta name="citychat-release" content="public-20261112-r3">
   <meta name="robots" content="index,follow">
   <meta name="theme-color" content="#1D4497">
   <meta name="referrer" content="strict-origin-when-cross-origin">
@@ -16,11 +16,11 @@
   <meta property="og:locale" content="th_TH">
   <meta property="og:site_name" content="CityChat · แสนสุข">
   <meta property="og:title" content="สำรวจหมุดแสนสุข · CityChat">
-  <meta property="og:description" content="ดูหมุดทั้งหมดทันที เน้นจุดสำรวจและจุดเชื่อมั่นสูงก่อน แยกจุดแปลงสำรองที่ยังไม่ยืนยัน โดยไม่แสดงชื่อเจ้าของหรือรหัสทะเบียนบ้าน">
+  <meta property="og:description" content="ค้นหาบ้านเลขที่หรือรหัสประจำบ้าน 11 หลัก ดูหมุดและข้อเสนอระดับแปลงที่ยังไม่ยืนยัน ไม่แสดงชื่อเจ้าของหรือข้อมูลติดต่อ">
   <meta property="og:url" content="https://montri-th.github.io/saensuk/">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="สำรวจหมุดแสนสุข · CityChat">
-  <meta name="twitter:description" content="ดูหมุดทั้งหมดโดยไม่ต้องเลือก CSV เน้นจุดสำรวจและจุดเชื่อมั่นสูงก่อน แยกจุดแปลงสำรองที่ยังไม่ยืนยัน">
+  <meta name="twitter:description" content="ค้นหาบ้านเลขที่หรือรหัสประจำบ้าน 11 หลัก ดูหมุดและข้อเสนอระดับแปลงที่ยังไม่ยืนยัน โดยไม่ต้องเลือก CSV">
   <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -48,7 +48,7 @@
   <script defer src="assets/marker-grouping.js?v=20260906-building-only"></script>
   <script defer src="assets/csv-parser.js?v=20260908-display-v3-r3"></script>
   <script defer src="assets/coordinate-adjustment.js?v=20260908-display-v3-r2"></script>
-  <script defer src="assets/record-explorer.js?v=20261112-examples"></script>
+  <script defer src="assets/record-explorer.js?v=20261112-registry"></script>
   <script defer src="assets/parcel-change-examples.js?v=20261112-examples"></script>
 </head>
 <body id="top">
@@ -131,7 +131,7 @@
             <li><span>3</span><p><strong>เปิดรายละเอียด</strong> เทียบจุดต้นทางกับจุดแปลงได้ โดยไม่ย้ายทับข้อมูลต้นทาง</p></li>
           </ol>
           <a class="hero-file-button" href="#explorer">เปิดแผนที่</a>
-          <p class="hero-local-note">ค้นหาบ้านเลขที่และถนนจากทะเบียนได้ ไม่แสดงชื่อเจ้าของหรือรหัสประจำบ้าน 11 หลัก ตำแหน่งยังรอตรวจว่าตรงกับบ้านจริง</p>
+          <p class="hero-local-note">ค้นหาบ้านเลขที่ รหัสประจำบ้าน 11 หลัก หรือถนนจากทะเบียนได้ ไม่แสดงชื่อเจ้าของหรือข้อมูลติดต่อ ตำแหน่งยังรอตรวจว่าตรงกับบ้านจริง</p>
         </div>
       </div>
     </section>
@@ -146,7 +146,7 @@
       </div>
     </aside>
 
-    <section class="explorer-section" id="explorer" aria-labelledby="explorer-title" data-explorer data-public-snapshot-url="assets/data/public-housepoints-74080982aded.json.gz" data-public-snapshot-sha256="74080982aded398033ab40f71062557539fec09829d54df95db9a6e3cf3fd54f">
+    <section class="explorer-section" id="explorer" aria-labelledby="explorer-title" data-explorer data-public-snapshot-url="assets/data/public-housepoints-90968c55f259.json.gz" data-public-snapshot-sha256="90968c55f2594d3f65821851933921f32304bc97a62f1f3d257708f74ab5d47c">
       <div class="explorer-intro">
         <div>
           <p class="eyebrow">CityChat · แผนที่หมุดทั้งหมด</p>
@@ -158,8 +158,8 @@
       <div class="local-data-banner" role="note">
         <span class="local-data-icon" aria-hidden="true">⌂</span>
         <div>
-          <strong>แผนที่สาธารณะ · ค้นหาบ้านเลขที่และถนนได้</strong>
-          <p>บ้านเลขที่ ถนน และพิกัดในชุดนี้เปิดให้ทุกคนดูได้ ส่วนตัวอย่างรหัสแปลงที่เปลี่ยนแสดงรหัสก่อน–หลัง ไม่เผยแพร่ชื่อเจ้าของ รหัสประจำบ้าน 11 หลัก หรือข้อมูลติดต่อ · แผนที่พื้นหลังปิดไว้ก่อน ผู้ให้บริการจะได้รับบริเวณที่ดูเมื่อคุณเลือกเปิดเอง</p>
+          <strong>แผนที่สาธารณะ · ค้นหาบ้านเลขที่หรือรหัสประจำบ้านได้</strong>
+          <p>บ้านเลขที่ รหัสประจำบ้าน 11 หลัก ถนน และพิกัดในชุดนี้เปิดให้ทุกคนดูได้ ส่วนตัวอย่างรหัสแปลงที่เปลี่ยนแสดงรหัสก่อน–หลัง ไม่เผยแพร่ชื่อเจ้าของหรือข้อมูลติดต่อ · แผนที่พื้นหลังปิดไว้ก่อน ผู้ให้บริการจะได้รับบริเวณที่ดูเมื่อคุณเลือกเปิดเอง</p>
         </div>
       </div>
 
@@ -255,9 +255,9 @@
             <div class="queue-filters">
               <label class="field field-search">
                 <span>ค้นหารายการ</span>
-                <input type="search" data-search autocomplete="off" spellcheck="false" placeholder="เลขที่บ้าน ถนน ชุมชน ชื่อกิจการ หรือรหัส">
+                <input type="search" data-search autocomplete="off" spellcheck="false" placeholder="บ้านเลขที่ รหัสประจำบ้าน ถนน ชุมชน หรือรหัสจุด">
               </label>
-              <p class="public-house-search-note" data-public-update-tools hidden>บ้านเลขที่อาจซ้ำกันได้ ควรเลือกถนนหรือชุมชนประกอบ และเทียบหลักฐานก่อนใช้ตำแหน่ง</p>
+              <p class="public-house-search-note" data-public-update-tools hidden>ค้นหาด้วยรหัสประจำบ้าน 11 หลักได้โดยตรง ส่วนบ้านเลขที่อาจซ้ำกัน ควรเลือกถนนหรือชุมชนประกอบ การพบรายการยังไม่ยืนยันว่าหมุดตรงกับบ้านจริง</p>
               <div class="filter-row">
                 <label class="field">
                   <span>ลำดับคิวตรวจ</span>
@@ -439,7 +439,7 @@
             <div class="detail-empty" data-detail-empty>
               <span aria-hidden="true">↖</span>
               <h3 id="detail-title">เลือกรายการเพื่อเริ่มตรวจ</h3>
-              <p>บ้านเลขที่ ถนน ชุมชน หลักฐานตำแหน่งเดิม และข้อเสนอระดับแปลงที่มี จะปรากฏตรงนี้</p>
+              <p>บ้านเลขที่ รหัสประจำบ้าน 11 หลัก ถนน ชุมชน หลักฐานตำแหน่งเดิม และข้อเสนอระดับแปลงที่มี จะปรากฏตรงนี้</p>
             </div>
 
             <div class="record-detail" data-record-detail hidden>
@@ -608,6 +608,7 @@
         <h2 id="parcel-changes-title">เลือกรายการที่รหัสแปลงเปลี่ยน</h2>
         <p>เทียบทะเบียนสิ่งปลูกสร้าง 4 ก.ย. กับ 11 พ.ย. 2569 ด้วยรหัสสิ่งปลูกสร้างเดียวกัน พบ 5,069 รายการที่ระบุรหัสแปลงต่างจากเดิม คัดเลือกตัวอย่าง 40 รายการให้เลือกอ่านบ้านเลขที่ ถนน และรหัสแปลงก่อน–หลัง ครอบคลุมหลายลักษณะการเปลี่ยนแปลง โดยไม่ได้เป็นตัวอย่างสุ่มทางสถิติ</p>
         <p>การเปลี่ยนรหัสในทะเบียนยังไม่บอกว่าอาคารย้ายที่ หรือเกิดการแบ่งหรือรวมแปลง ตำแหน่งที่แสดงใช้ค้นจากชั้น LTAX เดิมตามแต่ละรหัส จึงเป็นจุดสำหรับเปรียบเทียบและยังต้องตรวจหลักฐาน</p>
+        <p>รหัสประจำบ้านไม่มีในทะเบียนสิ่งปลูกสร้างทั้งสองรอบ จึงยังระบุรหัสให้ตัวอย่างแต่ละรายการไม่ได้ <a href="#explorer">ค้นหารหัสประจำบ้านในฐานทะเบียนบ้าน</a></p>
       </div>
       <div data-parcel-change-examples data-examples-url="assets/data/parcel-code-change-examples-ce883c674c76.json" data-examples-sha256="ce883c674c76e2b6e50ff7269554f1b07fb94f8955bf3763f9671089aa702526" data-examples-bytes="20044">
         <p data-examples-fallback role="status">กำลังเปิดตัวอย่างรหัสแปลงที่เปลี่ยน…</p>
@@ -646,7 +647,7 @@
             </tbody>
           </table>
         </div>
-        <p class="building-evidence-note">ไฟล์ใหม่ไม่มีพิกัด ไม่มีซอย และช่องรหัสทะเบียนบ้านว่างทั้งหมด การเชื่อมบ้านยังใช้บ้านเลขที่กับถนน ซึ่งอาจซ้ำกันได้ จำนวนสิ่งปลูกสร้าง รหัสแปลง และรายการบ้านเป็นคนละหน่วย จึงไม่ควรบวกรวมกัน</p>
+        <p class="building-evidence-note">ไฟล์สิ่งปลูกสร้างใหม่ไม่มีพิกัด ไม่มีซอย และช่องรหัสประจำบ้านว่างทั้งหมด การเชื่อมกับฐานทะเบียนบ้านจึงยังใช้บ้านเลขที่กับถนน ซึ่งอาจซ้ำกันได้ จำนวนสิ่งปลูกสร้าง รหัสแปลง และรายการบ้านเป็นคนละหน่วย จึงไม่ควรบวกรวมกัน</p>
         <details class="building-history-note">
           <summary>เหตุใดจึงยังนำสิ่งปลูกสร้างทั้ง 16,953 รายการมาปรับหมุดไม่ได้?</summary>
           <p>เมื่อเทียบกับทะเบียนสิ่งปลูกสร้าง 4 ก.ย. 2569 ด้วยรหัสสิ่งปลูกสร้างเดียวกัน พบรายการที่อยู่ในทั้งสองชุด 14,417 รายการ ในจำนวนนี้รหัสแปลงเปลี่ยน 5,069 รายการ จึงนำรหัสใหม่ไปแทนรหัสเก่าโดยตรงไม่ได้ทุกกรณี ส่วนไฟล์ใหม่ยังขาดบ้านเลขที่ 2,127 รายการและถนน 1,194 รายการ</p>
@@ -727,11 +728,11 @@
         </div>
 
         <div class="audience-panel" id="panel-officer" role="tabpanel" tabindex="0" aria-labelledby="tab-officer">
-          <p class="panel-question">ค้นหาบ้านเลขที่พร้อมถนน แล้วเทียบจุดเดิมกับจุดแปลงก่อนตัดสินใจ</p>
+          <p class="panel-question">ค้นหาด้วยรหัสประจำบ้านหรือบ้านเลขที่พร้อมถนน แล้วเทียบจุดเดิมกับจุดแปลงก่อนตัดสินใจ</p>
           <div class="panel-columns">
             <div>
               <p class="panel-label">เปิดตรวจได้ทันที</p>
-              <p>ค้นหาบ้านเลขที่แล้วเลือกถนนหรือชุมชนประกอบ หรือใช้ปุ่มแยกดู 34 จุดแปลงสำรอง 4 รายการที่เดิมไม่มีพิกัด และ 36 ข้อเสนอที่พักไว้ เลือกรายการเพื่ออ่านหลักฐานและเปิดเทียบสองจุดบนแผนที่</p>
+              <p>ค้นหารหัสประจำบ้าน 11 หลัก หรือค้นหาบ้านเลขที่แล้วเลือกถนนหรือชุมชนประกอบ หรือใช้ปุ่มแยกดู 34 จุดแปลงสำรอง 4 รายการที่เดิมไม่มีพิกัด และ 36 ข้อเสนอที่พักไว้ เลือกรายการเพื่ออ่านหลักฐานและเปิดเทียบสองจุดบนแผนที่</p>
             </div>
             <div>
               <p class="panel-label">บันทึกผลตรวจในงานเทศบาล</p>
@@ -1014,14 +1015,14 @@
           <ul>
             <li>ยืนยันตำแหน่งบ้านหรือสิทธิ์ของบุคคล</li>
             <li>นำทางงานฉุกเฉินโดยไม่ตรวจซ้ำ</li>
-            <li>นำจุดไปเชื่อมเปิดเผยชื่อเจ้าของ เลขทะเบียน หรือข้อมูลส่วนบุคคล</li>
+            <li>ใช้หมุดสรุปตัวตนผู้อยู่อาศัย หรือเชื่อมเปิดเผยชื่อเจ้าของและข้อมูลติดต่อ</li>
           </ul>
         </article>
       </div>
 
       <div class="privacy-note">
-        <p class="privacy-note-label">บ้านเลขที่ ถนน และหมุดที่เผยแพร่</p>
-        <p>เว็บโหลดชุดหมุดสาธารณะอัตโนมัติ พร้อมบ้านเลขที่และถนนจากทะเบียน 8 ก.ย. 2569 เพื่อไล่ตรวจรายบ้าน และแสดงรหัสแปลงก่อน–หลังในชุดตัวอย่างที่รหัสเปลี่ยน ไม่แสดงชื่อเจ้าของ รหัสประจำบ้าน 11 หลัก หรือข้อมูลติดต่อ ข้อมูลที่แสดงเปิดให้ทุกคนดูและดาวน์โหลดได้</p>
+        <p class="privacy-note-label">บ้านเลขที่ รหัสประจำบ้าน ถนน และหมุดที่เผยแพร่</p>
+        <p>เว็บโหลดชุดหมุดสาธารณะอัตโนมัติ พร้อมบ้านเลขที่ รหัสประจำบ้าน 11 หลัก และถนนจากทะเบียน 8 ก.ย. 2569 เพื่อไล่ตรวจรายบ้าน และแสดงรหัสแปลงก่อน–หลังในชุดตัวอย่างที่รหัสเปลี่ยน ไม่แสดงชื่อเจ้าของหรือข้อมูลติดต่อ ข้อมูลที่แสดงเปิดให้ทุกคนดูและดาวน์โหลดได้</p>
       </div>
     </section>
 

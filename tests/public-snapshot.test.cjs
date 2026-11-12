@@ -12,7 +12,7 @@ const manifest = JSON.parse(fs.readFileSync(path.join(root, "governance", "publi
 const assetBytes = fs.readFileSync(path.join(root, manifest.public_asset.path));
 const decodedBytes = zlib.gunzipSync(assetBytes);
 const snapshot = JSON.parse(decodedBytes.toString("utf8"));
-const expectedRowKeys = ["public_id", "house_no", "road", "community", "place_type", "lat", "lon", "radius_m", "tier", "confidence_band", "status", "geom_level", "candidate"].sort();
+const expectedRowKeys = ["public_id", "house_reg_id", "house_no", "road", "community", "place_type", "lat", "lon", "radius_m", "tier", "confidence_band", "status", "geom_level", "candidate"].sort();
 const expectedCandidateKeys = ["lat", "lon", "shift_m", "conflict", "auxiliary", "nonresidential"].sort();
 const roads = new Set(["ถนน บางแสนสาย 2", "ถนน ลงหาดบางแสน", "ถนน สุขุมวิท", "ถนน แสนสุข", "ถนน บางแสนสาย 4 ใต้", "ถนน สันติเกษม", "ถนน บางแสนล่าง", "ถนน เนตรดี", "ถนน รอบเขาสามมุข", "ถนน มิตรสัมพันธ์", "ถนน บางแสน-อ่างศิลา", "ถนน บางแสนสาย 3", "ถนน บางแสนสาย 1", "ถนน เปรมใจราษฎร์", "ถนน มาบมะยม", "ถนน หลังวัดกลางดอน", "ถนน บางแสนสาย 4 เหนือ", "ถนน ข้าวหลาม", "ถนน เทศบาลพัฒนา 1", "ถนน เทศบาลพัฒนา 2"]);
 const communities = new Set(["ชุมชน สมใจนึก", "ชุมชน หน้ามอโชคดี", "ชุมชน วัดแสนสุข", "ชุมชน บางแสนบน", "ชุมชน หาดวอนนภา", "ชุมชน ตาลล้อม 2", "ชุมชน ดอนบน", "ชุมชน มณีแก้ว", "ชุมชน ร่วมใจพัฒนา", "ชุมชน ท้ายตลาด", "ชุมชน บ้านเหมือง", "ชุมชน แสนสุข", "ชุมชน มุขแสนเจริญ", "ชุมชน เขาสามมุข", "ชุมชน วัดกลางดอน", "ชุมชน บางเป้ง", "ชุมชน บ้านแหลมแท่น", "ชุมชน หน้าเทศบาล", "ชุมชน ตาลล้อม 1", "ชุมชน บางแสนทาวเวอร์", "ชุมชน มาบมะยม", "ชุมชน พัฒนา 2", "ชุมชน ดอนนารา"]);
@@ -35,7 +35,7 @@ test("public snapshot asset bytes are content-addressed and manifest-bound", () 
   assert.equal(manifest.public_asset.decoded.sha256, crypto.createHash("sha256").update(decodedBytes).digest("hex"));
   assert.equal(manifest.public_asset.decoded.bytes, decodedBytes.length);
   assert.equal(manifest.audience, "public");
-  assert.equal(manifest.owner_authorization, "owner-message:2026-11-12:public-house-number-and-road-approved");
+  assert.equal(manifest.owner_authorization, "owner-message:2026-11-12:public-house-number-and-house-registry-id-approved");
   assert.equal(manifest.candidate_policy.status, "candidate-unverified");
   assert.equal(manifest.candidate_policy.auto_apply, false);
   assert.equal(manifest.candidate_policy.newly_field_verified, 0);
@@ -43,12 +43,13 @@ test("public snapshot asset bytes are content-addressed and manifest-bound", () 
 
 test("public record schema contains only reviewed fields and vocabulary", () => {
   assert.deepEqual(Object.keys(snapshot).sort(), ["schema_version", "release_id", "snapshot", "summary", "records"].sort());
-  assert.equal(snapshot.schema_version, "saensuk-public-points-2");
-  assert.equal(snapshot.release_id, "public-20261112");
+  assert.equal(snapshot.schema_version, "saensuk-public-points-3");
+  assert.equal(snapshot.release_id, "public-20261112-registry");
   assert.deepEqual(snapshot.snapshot, { source_date: "2026-09-08", rules: "1.9.0", buildings_received_date: "2026-11-11" });
   for (const [index, record] of snapshot.records.entries()) {
     assert.deepEqual(Object.keys(record).sort(), expectedRowKeys);
     assert.equal(record.public_id, `P${String(index + 1).padStart(6, "0")}`);
+    assert.match(record.house_reg_id, /^[0-9]{4}-[0-9]{6}-[0-9]$/u);
     assert.match(record.house_no, /^[0-9]{1,6}(?:\/{1,2}[0-9]{1,6})?(?: ?[ก-ฮ]\.?)?$/u);
     assert.equal(roads.has(record.road), true);
     assert.equal(communities.has(record.community), true);
@@ -101,30 +102,37 @@ test("all 70 parcel comparisons remain separate unverified source-compatible can
   }
 });
 
-test("public payload includes approved house numbers but excludes private registry identifiers, owners and contacts", () => {
+test("public payload includes approved registry IDs and house numbers while excluding owner, contact and object identifiers", () => {
   const text = decodedBytes.toString("utf8");
-  assert.doesNotMatch(text, /[0-9]{4}-[0-9]{6}-[0-9]/);
+  assert.equal(new Set(snapshot.records.map((row) => row.house_reg_id)).size, 42524);
+  assert.equal(new Set(snapshot.records.map((row) => row.house_reg_id.replace(/-/gu, ""))).size, 42524);
+  const withoutRegistryIds = JSON.stringify(snapshot.records.map(({ house_reg_id, ...other }) => other));
+  assert.doesNotMatch(withoutRegistryIds, /[0-9]{4}-[0-9]{6}-[0-9]/);
   assert.doesNotMatch(text, /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
   assert.doesNotMatch(text, /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i);
-  for (const forbidden of ["house_reg_id", "trok", "soi", "source_parcel_id", "new_tax_parcel_code", "building_id", "business_names", "owner1_name", "owner1_phone", "owner1_address", "เจ้าของทรัพย์สิน", "verified_by", "review_notes", "original_pipeline_run_id"]) {
+  for (const forbidden of ["trok", "soi", "source_parcel_id", "new_tax_parcel_code", "building_id", "business_names", "owner1_name", "owner1_phone", "owner1_address", "เจ้าของทรัพย์สิน", "verified_by", "review_notes", "original_pipeline_run_id"]) {
     assert.equal(text.includes(`"${forbidden}"`), false, forbidden);
   }
-  assert.equal(manifest.checks.all_private_household_ids_absent, 42524);
+  assert.equal(manifest.checks.approved_house_registry_ids_preserved_from_exact_source, 42524);
+  assert.equal(manifest.checks.approved_house_registry_ids_unique, 42524);
+  assert.equal(manifest.checks.registry_identifiers_only_in_approved_field, true);
   assert.equal(manifest.checks.private_candidate_parcel_and_building_ids_absent, 70);
   assert.equal(manifest.fields_allowed.includes("house_no"), true);
   assert.equal(manifest.fields_excluded.includes("house_no"), false);
+  assert.equal(manifest.fields_allowed.includes("house_reg_id"), true);
+  assert.equal(manifest.fields_excluded.includes("house_reg_id"), false);
   assert.equal(manifest.checks.house_numbers_preserved_from_exact_source, 42524);
 });
 
-test("public v2 migration adds only approved house numbers to the exact prior public records", () => {
-  const previousBytes = fs.readFileSync(path.join(root, "assets/data/public-housepoints-43a6b7022e2b.json.gz"));
+test("public v3 migration adds only approved registry IDs to the exact prior public records", () => {
+  const previousBytes = fs.readFileSync(path.join(root, "assets/data/public-housepoints-74080982aded.json.gz"));
   assert.equal(crypto.createHash("sha256").update(previousBytes).digest("hex"), manifest.source_hashes.previous_public_sha256);
   const previous = JSON.parse(zlib.gunzipSync(previousBytes));
   assert.deepEqual(snapshot.snapshot, previous.snapshot);
   assert.deepEqual(snapshot.summary, previous.summary);
-  assert.deepEqual(snapshot.records.map(({ house_no, ...unchanged }) => unchanged), previous.records);
+  assert.deepEqual(snapshot.records.map(({ house_reg_id, ...unchanged }) => unchanged), previous.records);
   assert.equal(manifest.checks.previous_public_source_fields_equal, 42524);
-  assert.equal(manifest.checks.only_added_record_field, "house_no");
+  assert.equal(manifest.checks.only_added_record_field, "house_reg_id");
 });
 
 test("best working display retains immutable source truth and uses only 34 guarded parcel fallbacks", () => {

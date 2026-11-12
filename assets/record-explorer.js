@@ -48,21 +48,26 @@
   const matchesPublicSearch = (row, query, searchText) => {
     const normalized = normalizePublicSearch(query);
     if (!normalized) return true;
+    const registry = normalized.match(/^([0-9]{4}-[0-9]{6}-[0-9]|[0-9]{11})(?=\s|$)/u);
+    let textQuery = normalized;
+    if (registry) {
+      if (String(row?.house_reg_id || "").replace(/-/gu, "") !== registry[1].replace(/-/gu, "")) return false;
+      textQuery = normalized.slice(registry[0].length).trim();
+    }
     // A leading house number is an exact address component, never a fragment of
     // a public display ID or another house number. Remaining words narrow it.
-    const house = normalized.match(/^([0-9]{1,6}(?:\/{1,2}[0-9]{1,6})?(?: ?[ก-ฮ]\.?)?)(?=\s|$)/u);
-    let textQuery = normalized;
+    const house = !registry && normalized.match(/^([0-9]{1,6}(?:\/{1,2}[0-9]{1,6})?(?: ?[ก-ฮ]\.?)?)(?=\s|$)/u);
     if (house) {
       const houseKey = (value) => normalizePublicSearch(value).replace(/\s/gu, "").replace(/\.$/u, "");
       if (houseKey(row?.house_no) !== houseKey(house[1])) return false;
       textQuery = normalized.slice(house[0].length).trim();
     }
-    const text = normalizePublicSearch(searchText ?? [row?.public_id, row?.house_no, row?.road, row?.community, row?.place_type].join(" "));
+    const text = normalizePublicSearch([searchText ?? [row?.house_no, row?.road, row?.community, row?.place_type].join(" "), row?.public_id, row?.house_reg_id, String(row?.house_reg_id || "").replace(/-/gu, "")].join(" "));
     return textQuery.split(/\s+/u).filter(Boolean).every((token) => text.includes(token));
   };
   const validatePublicSnapshot = (snapshot) => {
     if (!exactKeys(snapshot, ["schema_version", "release_id", "snapshot", "summary", "records"])) fail();
-    if (snapshot.schema_version !== "saensuk-public-points-2" || snapshot.release_id !== "public-20261112") fail();
+    if (snapshot.schema_version !== "saensuk-public-points-3" || snapshot.release_id !== "public-20261112-registry") fail();
     if (!exactKeys(snapshot.snapshot, ["source_date", "rules", "buildings_received_date"]) || snapshot.snapshot.source_date !== "2026-09-08" || snapshot.snapshot.rules !== "1.9.0" || snapshot.snapshot.buildings_received_date !== "2026-11-11") fail();
     const expectedCounts = { A0: 10114, A: 1855, B: 744, C: 2288, D: 27523 };
     const summary = snapshot.summary;
@@ -82,9 +87,12 @@
     let candidates = 0;
     let conflicts = 0;
     let missingCandidates = 0;
+    const registryIds = new Set();
     snapshot.records.forEach((row, index) => {
-      if (!exactKeys(row, ["public_id", "house_no", "road", "community", "place_type", "lat", "lon", "radius_m", "tier", "confidence_band", "status", "geom_level", "candidate"])) fail();
+      if (!exactKeys(row, ["public_id", "house_reg_id", "house_no", "road", "community", "place_type", "lat", "lon", "radius_m", "tier", "confidence_band", "status", "geom_level", "candidate"])) fail();
       if (row.public_id !== `P${String(index + 1).padStart(6, "0")}`) fail();
+      if (typeof row.house_reg_id !== "string" || !/^[0-9]{4}-[0-9]{6}-[0-9]$/u.test(row.house_reg_id) || registryIds.has(row.house_reg_id)) fail();
+      registryIds.add(row.house_reg_id);
       if (typeof row.house_no !== "string" || !/^[0-9]{1,6}(?:\/{1,2}[0-9]{1,6})?(?: ?[ก-ฮ]\.?)?$/u.test(row.house_no)) fail();
       if (["road", "community", "place_type"].some((key) => typeof row[key] !== "string" || row[key].length > 200 || /[<>\u0000-\u001f]/u.test(row[key]))) fail();
       if (!tiers.has(row.tier) || !Object.prototype.hasOwnProperty.call(bands, row.confidence_band) || !statuses.has(row.status) || !geometries.has(row.geom_level)) fail();
@@ -1168,7 +1176,7 @@
       return;
     }
     fileLabels.forEach((label) => { label.hidden = true; });
-    if (elements.search) elements.search.placeholder = "ค้นหาบ้านเลขที่ ถนน ชุมชน หรือรหัสจุด";
+    if (elements.search) elements.search.placeholder = "บ้านเลขที่ รหัสประจำบ้าน 11 หลัก ถนน หรือชุมชน";
     const queueNote = explorer.querySelector(".queue-default-note");
     if (queueNote) queueNote.textContent = "เริ่มที่รายการทั้งหมด เรียงจุดสำรวจ A0 ก่อน ตามด้วย A, B และจุดประมาณ";
     const badge = explorer.querySelector(".local-badge");
@@ -1245,7 +1253,7 @@
   const renderPublicDetail = (row) => {
     elements.detailEmpty.hidden = true;
     elements.detail.hidden = false;
-    elements.detailId.textContent = "รายการสาธารณะ · ไม่แสดงชื่อเจ้าของหรือรหัสประจำบ้าน 11 หลัก";
+    elements.detailId.textContent = "ทะเบียนบ้านสาธารณะ · 8 ก.ย. 2569";
     elements.detailHouse.textContent = `บ้านเลขที่ ${clean(row.house_no, "ไม่ระบุ")}`;
     elements.detailAnswer.textContent = `${geometryLabel(row.geom_level)} · ${statusLabel(row.status)} · จุดต้นทางยังไม่ถูกแทนที่`;
     elements.detailChips.replaceChildren();
@@ -1253,6 +1261,7 @@
     appendChip(statusLabel(row.status), "truth-chip-warning");
     if (row.candidate) appendChip(row.candidate.conflict ? "แปลงขัดกับเดิม—พักไว้" : "มีข้อเสนอระดับแปลง—ยังไม่ยืนยัน", "truth-chip-warning");
     elements.recordFields.replaceChildren();
+    appendField("รหัสประจำบ้าน (11 หลัก)", row.house_reg_id, { data: true });
     appendField("รหัสจุดสาธารณะ", row.public_id, { data: true });
     appendField("บ้านเลขที่จากทะเบียน 8 ก.ย. 2569", row.house_no || "ไม่ระบุ");
     appendField("ถนน", row.road);
@@ -1359,7 +1368,7 @@
       const snapshot = window.CityChatPublicSnapshot.validatePublicSnapshot(JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(decoded)));
       const rows = snapshot.records.map((row) => ({
         ...row, candidate: row.candidate ? Object.freeze({ ...row.candidate }) : null,
-        house_reg_id: row.public_id, trok: "", soi: "", method: "",
+        trok: "", soi: "", method: "",
         frontage_heading: null, frontage_road: "", frontage_road_layer: "", frontage_road_source: "",
         soi_name_check: "", soi_name_check_confidence: "", business_count: 0, business_names: "", business_status: "", business_match_confidence: "",
         review_priority: "", review_score: null, review_flags: "", pipeline_run_id: ""
@@ -1475,7 +1484,7 @@
       id.textContent = row.review_priority
         ? `รายการตรวจลำดับ${row.review_priority}${row.review_score === null ? "" : ` · ${NUMBER.format(row.review_score)} คะแนน`}`
         : "รายการสำรวจตำแหน่ง";
-      if (state.publicMode) id.textContent = isPublicParcelFallback(row) ? "ระดับแปลงสำรอง—ยังไม่ยืนยัน" : row.candidate ? (row.candidate.conflict ? "ข้อเสนอแปลงขัดกับแปลงเดิม—พักไว้ตรวจ" : "แสดงจุดเดิม · ข้อเสนอแปลงรอตรวจ") : "จุดต้นทาง—ยังไม่ยืนยัน";
+      if (state.publicMode) id.textContent = `รหัสประจำบ้าน ${row.house_reg_id} · ${isPublicParcelFallback(row) ? "ระดับแปลงสำรอง—ยังไม่ยืนยัน" : row.candidate ? (row.candidate.conflict ? "ข้อเสนอแปลงขัดกับแปลงเดิม—พักไว้ตรวจ" : "แสดงจุดเดิม · ข้อเสนอแปลงรอตรวจ") : "จุดต้นทาง—ยังไม่ยืนยัน"}`;
       const meta = document.createElement("span");
       meta.className = "record-meta";
       const businessMeta = row.business_count > 0 ? ` · รายการทะเบียนกิจการต้นทาง ${NUMBER.format(row.business_count)}` : "";
