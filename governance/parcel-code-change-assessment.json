@@ -1,0 +1,98 @@
+{
+  "schema_version": "saensuk-parcel-code-change-assessment-1",
+  "release_id": "parcel-code-changes-20261112",
+  "owner_authorization": "owner-request:2026-11-12:examples-of-parcel-code-changes-on-existing-public-web",
+  "public_asset": {
+    "path": "assets/data/parcel-code-change-examples-ce883c674c76.json",
+    "sha256": "ce883c674c76e2b6e50ff7269554f1b07fb94f8955bf3763f9671089aa702526",
+    "bytes": 20044,
+    "mime_type": "application/json"
+  },
+  "source_hashes": {
+    "old_buildings_sha256": "4a6070ff73f4e2f1775deac140ec92b0f8c34f59e77decf821d00cfad9c72283",
+    "new_buildings_sha256": "36b5c91e8de4f587468e20c00175dba18cba2d8b4f38e62779abe7c6f1cb4a66",
+    "ltax_sha256": "38e4d737533f7e639ce0ff43c631c13bc471bbe19cd44f76bcb225a5ec12eb06"
+  },
+  "summary": {
+    "retained_building_ids": 14417,
+    "changed_parcel_codes": 5069,
+    "address_unchanged": 4943,
+    "address_changed": 126,
+    "old_ltax_code_found": 5002,
+    "new_ltax_code_found": 68,
+    "new_ltax_code_not_found": 5001,
+    "old_ltax_status_counts": {
+      "code-not-found": 67,
+      "point-missing": 0,
+      "point-outside-geometry": 2,
+      "point-inside-geometry": 5000
+    },
+    "new_ltax_status_counts": {
+      "code-not-found": 5001,
+      "point-missing": 0,
+      "point-outside-geometry": 0,
+      "point-inside-geometry": 68
+    },
+    "both_historical_points": 67,
+    "both_historical_points_over_50m": 2,
+    "both_historical_points_over_500m": 1,
+    "both_historical_points_max_separation_m": 1029.09,
+    "example_count": 40,
+    "example_groups": {
+      "same-address-missing-new-code": 16,
+      "changed-address": 11,
+      "both-historical-points": 11,
+      "one-or-no-historical-point": 0,
+      "large-historical-separation": 2
+    }
+  },
+  "selection": {
+    "sample_count": 40,
+    "safe_eligible_changes": 4826,
+    "method": "Deterministic condition groups with road and historical coordinate-cell variety; includes largest historical point separations. Not a random statistical sample."
+  },
+  "provenance": {
+    "internal_match": "Exact stable building identifier retained between the September and November registers; raw key excluded from public projection.",
+    "parcel_lookup": "Exact old/new tax parcel code lookup into the same historical LTAX export; municipality remains scoped to Saensuk.",
+    "coordinate_rule": "Original LTAX map coordinates only when strictly inside Polygon/MultiPolygon exterior and outside holes; boundary excluded. Never synthesized or snapped."
+  },
+  "checks": {
+    "source_hashes_match": true,
+    "all_5069_changes_reconciled": true,
+    "selected_sample_lineage_checked": 40,
+    "strict_field_allowlist": true,
+    "coordinate_containment_checked": 53,
+    "household_dataset_unchanged": true
+  },
+  "limitations": [
+    "Current parcel geometry was not supplied by the November workbook.",
+    "Two historical code-associated point locations do not demonstrate that a building moved.",
+    "Historical point separation is neither survey displacement nor measured accuracy improvement.",
+    "Strict ring containment was checked for released points; this release does not claim a new formal topology-validity audit."
+  ],
+  "fields_allowed": [
+    "address_changed",
+    "group",
+    "historical_point_separation_m",
+    "house_no_after",
+    "house_no_before",
+    "new_ltax_point",
+    "new_ltax_status",
+    "new_parcel_code",
+    "old_ltax_point",
+    "old_ltax_status",
+    "old_parcel_code",
+    "road_after",
+    "road_before",
+    "sample_id"
+  ],
+  "fields_excluded": [
+    "owner_names",
+    "resident_names",
+    "contact_details",
+    "house_reg_id",
+    "building_id",
+    "parcel_uuid",
+    "private_source_rows"
+  ]
+}

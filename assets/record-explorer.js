@@ -1245,7 +1245,7 @@
   const renderPublicDetail = (row) => {
     elements.detailEmpty.hidden = true;
     elements.detail.hidden = false;
-    elements.detailId.textContent = "รายการสาธารณะ · ไม่แสดงชื่อเจ้าของหรือเลขทะเบียน";
+    elements.detailId.textContent = "รายการสาธารณะ · ไม่แสดงชื่อเจ้าของหรือรหัสประจำบ้าน 11 หลัก";
     elements.detailHouse.textContent = `บ้านเลขที่ ${clean(row.house_no, "ไม่ระบุ")}`;
     elements.detailAnswer.textContent = `${geometryLabel(row.geom_level)} · ${statusLabel(row.status)} · จุดต้นทางยังไม่ถูกแทนที่`;
     elements.detailChips.replaceChildren();

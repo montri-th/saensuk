@@ -8,7 +8,7 @@ This repository contains the 2026-11-12 release source. Repository text and loca
 
 ## Public data and disclosure
 
-The published data projection contains snapshot-specific display IDs, house numbers, road and community labels, controlled place categories, source coordinates/radii, source evidence categories, and separate candidate coordinates/flags. The owner explicitly approved public house numbers and roads on 2026-11-12. It excludes names of owners, contacts, municipal household identifiers, trok/soi addresses, parcel UUIDs, tax parcel codes, building identifiers, business names, reviewer metadata, and review notes. No raw registry CSV, building XLSX or LTAX file is deployed.
+The main point projection contains snapshot-specific display IDs, house numbers, road and community labels, controlled place categories, source coordinates/radii, source evidence categories, and separate candidate coordinates/flags. The owner explicitly approved public house numbers and roads on 2026-11-12. This main projection excludes names of owners, contacts, municipal household identifiers, trok/soi addresses, parcel UUIDs, tax parcel codes, building identifiers, business names, reviewer metadata, and review notes. A separate owner-requested sample viewer exposes old/new tax parcel codes alongside house numbers and roads to make the reported code changes inspectable. No raw registry CSV, building XLSX or LTAX file is deployed.
 
 **House numbers, roads and point coordinates are public and downloadable under the owner's explicit authorization.** Owner names and municipal identifiers remain excluded. The `P000001` display sequence identifies only a record within this public snapshot, not a municipal registry identity. It is assigned after geographic/category sorting, not private source-file order. House numbers retain the 2026-09-08 baseline spelling; a public address is not confirmation of the correct dwelling at a displayed point.
 
@@ -52,6 +52,10 @@ The independent 2026-11-12 audit in `governance/building-register-assessment.jso
 - Source categories remain visible through labels and shape/color cues. Missing points are listed separately, never placed at `0,0`. Categorical and quantitative colors follow their own LDS theme contracts; color alone does not establish accuracy.
 
 The local 23-community layer is communication/QA context, not a legal municipal boundary. Its safe name-and-geometry projection has SHA-256 `1419e28b00ed22ba4802a30cc3e0d01e4051c57165bc20e548b055839f4b8d71`. The separate inferred outer frame is the dissolved union's exterior, not a convex hull, cadastral boundary or official municipality extent; SHA-256 `8f0661e695b20e606fd38084ca5d4281b3b318ea054cf4dadf74b4c1033eac9e`. Parcel polygons used during private analysis are not included in the public data asset.
+
+## Parcel code change examples
+
+The `#parcel-changes` sample viewer compares the September and November building registers by the same private building identity. Its published rows use sample-specific IDs and omit the source building key, household registration IDs, owner names and contact fields. Code changes do not establish building movement, parcel split/merge, a corrected household position, or accuracy improvement. Exact old/new code lookups use the historical LTAX layer; absent codes and unusable reference points remain missing. This comparison does not change any of the 42,524 source records or 70 prior candidates.
 
 ## Design release and retained asset provenance
 

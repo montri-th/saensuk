@@ -38,7 +38,7 @@ test("explorer consumes the display-only business, frontage, review, and provena
 
 test("worker and main-thread fallback use the same pinned verified parser", () => {
   const parserTag = 'assets/csv-parser.js?v=20260908-display-v3-r3';
-  const explorerTag = 'assets/record-explorer.js?v=20261112-review';
+  const explorerTag = 'assets/record-explorer.js?v=20261112-examples';
 
   assert.match(html, new RegExp(parserTag.replace(/[.?]/g, "\\$&")));
   assert.match(worker, /importScripts\("\.\/csv-parser\.js\?v=20260908-display-v3-r3"\)/);

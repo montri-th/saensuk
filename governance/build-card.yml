@@ -1,13 +1,13 @@
 artifact: saensuk-public-house-map
-artifact_release: "public-20261112-r1"
+artifact_release: "public-20261112-r2"
 release_status: "source_candidate_live_attestation_external"
-release_authority: "owner-message:2026-11-12:publish-existing-site; explicit-followup:public-house-numbers-and-roads"
+release_authority: "owner-message:2026-11-12:publish-existing-site; explicit-followups:public-house-numbers-and-roads, selectable-examples-of-changed-parcel-codes"
 audience: [public_reader, municipal_officer]
 locale: [th]
 job: "Open all points immediately; search house numbers and inspect the specific contribution of the new building register."
 primary_action: "Search a house number or inspect working parcel fallbacks."
 historical_baseline_commit: "de79a43e6919b58bc8bb3c25948aaed08b767699"
-previous_public_commit: "dca7dcc7b2fa0b1fcd9f8abd98c1c7b21bae4dca"
+previous_public_commit: "23da1e22e07a925e9b2c1e38f85703f84a109853"
 
 lds:
   document_id: "lds-0.9.7-landometer-standalone-r1"
@@ -67,6 +67,10 @@ data:
   paint_order: "Lower-evidence points first; A0/A/B remain on top."
   candidates: 70
   assessment: "governance/building-register-assessment.json"
+  parcel_code_examples: "governance/parcel-code-change-assessment.json"
+  parcel_code_example_rows: 40
+  parcel_code_changed_building_rows: 5069
+  parcel_code_examples_policy: "Selected examples, not a statistical sample. Exact old/new code lookup into historical LTAX only; no household source changes or inferred building movement."
   quick_inspection_presets: {working_fallback: 34, previously_missing: 4, comparison_only: 36}
   candidates_without_prior_parcel_id: 68
   candidates_with_prior_parcel_conflict: 2
@@ -83,9 +87,9 @@ data:
   boundaries: "23-community context and its dissolved exterior are not legal or cadastral boundaries."
 
 privacy:
-  public_payload: "Owner-approved house numbers, controlled road/community/place labels, coordinates, source evidence/status and separate parcel candidates."
+  public_payload: "Owner-approved house numbers, controlled road/community/place labels, coordinates, source evidence/status and separate parcel candidates; separate changed-code examples disclose old/new tax parcel codes."
   house_number_authority: "Explicit current user replies on 2026-11-12 approve house numbers and roads on the existing public site."
-  excluded: "Owner names, registration IDs, parcel/building IDs, contacts, business names, reviewer information, trok/soi and free-text addresses."
+  excluded: "Owner names, household registration IDs, private parcel UUIDs/building IDs, contacts, business names, reviewer information, trok/soi and free-text addresses. Main 42,524 point projection still excludes tax parcel codes; examples intentionally show those codes."
   exposure: "House numbers, roads and coordinates are public and downloadable."
   raw_inputs: "No private CSV, XLSX, LTAX records or private comparison report deployed."
   mutation: "Public mode is read-only; no review/export/adjustment controls or backend submissions."
@@ -94,14 +98,17 @@ privacy:
 
 qa:
   tested_at: "2026-11-12"
-  node: "83/83 tests pass with the exact private display CSV supplied outside the repository."
+  node: "90/90 tests pass with the exact private display CSV supplied outside the repository."
   python_projection: "14/14 tests pass."
+  python_parcel_examples: "6/6 tests pass, including all 40 source lineages and exact deterministic rebuild from the three pinned private sources."
   independent_data_audit: "70 candidates and 34 fallbacks independently reconstructed; none of the 34 has a changed-code building history. Aggregate assessment recorded separately."
   gzip: "Deterministic bytes, content-addressed name, compressed SHA verified before decompression."
   token_aliases: "27 categorical aliases resolve current fill definitions; analytical light/dark anchors match."
   local_browser: "Observed automatic load, house-number/Thai-digit/house-plus-road search, no-results recovery, presets 34/4/36, unchanged source missingness and keyboard 3px focus in local HTTP preview. No console errors observed."
+  local_parcel_examples_browser: "1440x1000 light and 390x844 light/dark observed: 40 examples load automatically, old/new codes and historical point statuses, R004 1,029.1m comparison, R008 99m comparison, next selection, code search, found-code filter13/40, empty search and recovery. No document overflow or console errors observed."
   live_browser: "Pending deployed-origin inspection; no source inference substitutes for this."
   physical_device: "Not tested."
   responsive_current: "1440x1000 and 390x844 observed; light/dark rendered. Additional temporary 130% desktop and 200% mobile root-font simulations had no document or evidence-table horizontal overflow. These are text-size simulations, not native browser-zoom or physical-device passes."
   static_artifact_checker: "FAIL on pre-existing Leaflet vendor literal colors and unresolved color functions in existing vendor/styles/explorer rules. No new authored color literals introduced."
+  new_parcel_module_static_check: "No new parcel-module issues in LDS scan; scoped visual detector returned no findings. Full DS conformance is not claimed."
   certification: "No formal DS conformance or signed artifact-promotion level claimed."
